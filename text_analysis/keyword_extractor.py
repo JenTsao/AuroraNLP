@@ -1,6 +1,6 @@
 import math
-from typing import List, Tuple, Dict, Optional, Set
 from collections import Counter
+from typing import Dict, List, Optional, Set, Tuple
 
 
 class KeywordExtractor:

@@ -3,10 +3,10 @@
 import pytest
 
 from AuroraNLP.dictionary.thesaurus import (
-    Thesaurus,
-    ThesaurusManager,
-    ThesaurusEntry,
     SemanticCategory,
+    Thesaurus,
+    ThesaurusEntry,
+    ThesaurusManager,
     WordRelation,
 )
 

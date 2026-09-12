@@ -3,12 +3,12 @@
 import pytest
 
 from AuroraNLP.ner.ner import (
-    NERRecognizer,
-    CRFNERModel,
-    Entity,
-    NER_TAGS,
     DEFAULT_NER_TAGS,
     NER_ENTITY_TYPES,
+    NER_TAGS,
+    CRFNERModel,
+    Entity,
+    NERRecognizer,
 )
 
 

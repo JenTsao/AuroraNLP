@@ -1,7 +1,7 @@
 import os
 import threading
 import warnings
-from typing import Set, Optional, List, Tuple, Dict, Any
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 from AuroraNLP.dictionary.trie import Trie
 
@@ -52,7 +52,7 @@ class Dictionary:
         loaded_count = 0
         error_count = 0
 
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, encoding='utf-8') as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
@@ -287,7 +287,7 @@ class UserDictionary:
         loaded_count = 0
         error_count = 0
 
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, encoding='utf-8') as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
@@ -430,7 +430,7 @@ class DictionaryManager:
     def __init__(self):
         self._dictionaries: Dict[str, Dictionary] = {}
         self._user_dictionaries: Dict[str, UserDictionary] = {}
-        self._domain_dictionaries: Dict[str, 'DomainDictionary'] = {}
+        self._domain_dictionaries: Dict[str, DomainDictionary] = {}
         self._merged_trie: Optional[Trie] = None
         self._cache_valid: bool = False
         self._lock = threading.RLock()

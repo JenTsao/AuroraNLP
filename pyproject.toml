@@ -1,0 +1,30 @@
+[tool.ruff]
+target-version = "py38"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["I", "F", "E", "W", "UP", "RUF"]
+ignore = [
+    "N999",    # Invalid module name: 'AuroraNLP' (intentional PascalCase)
+    "E501",    # Line too long (handled by formatter)
+    "F401",    # Unused imports (public API re-exports)
+    "F841",    # Local variable assigned but never used (cosmetic)
+    "F821",    # Undefined names (forward references in type hints)
+    "E741",    # Ambiguous variable name
+    "RUF001",  # Ambiguous unicode character in string (Chinese full-width punctuation)
+    "RUF002",  # Ambiguous unicode character in docstring
+    "RUF003",  # Ambiguous unicode character in comment
+    "RUF012",  # Mutable class default
+    "RUF013",  # Implicit optional
+    "RUF059",  # Unused unpacked variable
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["AuroraNLP"]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401", "I001"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

@@ -1,66 +1,67 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-import unittest
+import json
 import os
 import tempfile
-import json
-import time
 import threading
+import time
+import unittest
 
 from AuroraNLP import (
-    LogLevel,
-    LogFormat,
-    StructuredLogRecord,
-    ConsoleLogHandler,
-    FileLogHandler,
-    TimeRotatingFileLogHandler,
-    MemoryLogHandler,
-    LevelFilter,
-    KeywordFilter,
-    ModuleFilter,
-    Logger,
-    LogManager,
-    get_logger,
-    HealthStatus,
-    HealthCheck,
-    MemoryHealthCheck,
-    DiskHealthCheck,
-    HealthChecker,
-    MetricType,
-    PrometheusMetric,
-    PrometheusCounter,
-    PrometheusGauge,
-    PrometheusRegistry,
-    generate_dockerfile_content,
-    generate_k8s_deployment_content,
-    generate_k8s_service_content,
-    generate_k8s_ingress_content,
-    CircuitState,
-    RateLimitState,
-    TokenBucket,
-    SlidingWindow,
-    CircuitBreaker,
-    TokenType,
-    Permission,
-    EnterpriseToken as Token,
     AuthContext,
     Authenticator,
     Authorizer,
-    ConfigEvent,
-    ConfigWatch,
-    InMemoryConfigStore,
-    FileConfigStore,
-    ConfigManager,
-    DeploymentState,
-    TrafficRule,
-    DeploymentVersion,
-    CanaryDeployer,
     BackupType,
+    CanaryDeployer,
+    CircuitBreaker,
+    CircuitState,
     ClusterNode,
-    FailoverStrategy,
+    ConfigEvent,
+    ConfigManager,
+    ConfigWatch,
+    ConsoleLogHandler,
     DataBackupManager,
+    DeploymentState,
+    DeploymentVersion,
+    DiskHealthCheck,
     FailoverController,
+    FailoverStrategy,
+    FileConfigStore,
+    FileLogHandler,
+    HealthCheck,
+    HealthChecker,
+    HealthStatus,
+    InMemoryConfigStore,
+    KeywordFilter,
+    LevelFilter,
+    LogFormat,
+    Logger,
+    LogLevel,
+    LogManager,
+    MemoryHealthCheck,
+    MemoryLogHandler,
+    MetricType,
+    ModuleFilter,
+    Permission,
+    PrometheusCounter,
+    PrometheusGauge,
+    PrometheusMetric,
+    PrometheusRegistry,
+    RateLimitState,
+    SlidingWindow,
+    StructuredLogRecord,
+    TimeRotatingFileLogHandler,
+    TokenBucket,
+    TokenType,
+    TrafficRule,
+    generate_dockerfile_content,
+    generate_k8s_deployment_content,
+    generate_k8s_ingress_content,
+    generate_k8s_service_content,
+    get_logger,
+)
+from AuroraNLP import (
+    EnterpriseToken as Token,
 )
 
 
@@ -238,7 +239,7 @@ class TestFileLogHandler(unittest.TestCase):
         handler.emit(StructuredLogRecord(level=LogLevel.INFO, message="hello"))
         handler.close()
 
-        with open(self.log_path, "r", encoding="utf-8") as f:
+        with open(self.log_path, encoding="utf-8") as f:
             content = f.read()
         self.assertIn("hello", content)
         self.assertIn("INFO", content)
@@ -251,7 +252,7 @@ class TestFileLogHandler(unittest.TestCase):
         handler.emit(StructuredLogRecord(level=LogLevel.INFO, message="测试"))
         handler.close()
 
-        with open(self.log_path, "r", encoding="utf-8") as f:
+        with open(self.log_path, encoding="utf-8") as f:
             lines = f.readlines()
         self.assertEqual(len(lines), 1)
         parsed = json.loads(lines[0])
@@ -284,7 +285,7 @@ class TestFileLogHandler(unittest.TestCase):
         handler.emit(StructuredLogRecord(level=LogLevel.ERROR, message="error"))
         handler.close()
 
-        with open(self.log_path, "r", encoding="utf-8") as f:
+        with open(self.log_path, encoding="utf-8") as f:
             content = f.read()
         self.assertNotIn("info", content)
         self.assertIn("error", content)
@@ -326,7 +327,7 @@ class TestTimeRotatingFileLogHandler(unittest.TestCase):
         dated_files = [f for f in files if f.startswith("timed.log.")]
         self.assertGreaterEqual(len(dated_files), 1)
 
-        with open(os.path.join(self.temp_dir, dated_files[0]), "r", encoding="utf-8") as f:
+        with open(os.path.join(self.temp_dir, dated_files[0]), encoding="utf-8") as f:
             lines = f.readlines()
         parsed = json.loads(lines[0])
         self.assertEqual(parsed["message"], "json_test")
@@ -717,8 +718,8 @@ class TestAuth(unittest.TestCase):
     def test_authorizer_permissions(self):
         auth = Authenticator()
         token = Token(
-            TokenType.API_KEY, 
-            "valid_token", 
+            TokenType.API_KEY,
+            "valid_token",
             user_id="user1",
             permissions=[Permission.READ],
         )

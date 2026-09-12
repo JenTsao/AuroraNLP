@@ -3,10 +3,10 @@
 import pytest
 
 from AuroraNLP.dictionary.terminology import (
-    TerminologyDatabase,
-    TerminologyManager,
     Term,
     TermDomain,
+    TerminologyDatabase,
+    TerminologyManager,
 )
 
 

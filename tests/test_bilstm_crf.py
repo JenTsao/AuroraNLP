@@ -1,8 +1,9 @@
 """
 测试 BiLSTM-CRF 模型
 """
-import sys
 import os
+import sys
+
 import pytest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -21,7 +22,7 @@ def test_crf_init():
     from AuroraNLP.deep_learning.bilstm_crf import CRF
     crf = CRF(4)
     assert crf.num_tags == 4
-    
+
     # 尝试导入 PyTorch 来测试，否则跳过
     try:
         import torch

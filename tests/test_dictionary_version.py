@@ -1,8 +1,9 @@
 """测试词典版本管理模块"""
 
-import pytest
-import tempfile
 import shutil
+import tempfile
+
+import pytest
 
 from AuroraNLP.dictionary.dictionary_version import (
     DictionaryVersion,

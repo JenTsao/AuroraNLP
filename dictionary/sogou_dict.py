@@ -1,10 +1,10 @@
-import os
 import json
-from typing import List, Dict, Optional, Set
+import os
 from pathlib import Path
+from typing import Dict, List, Optional, Set
 
-from AuroraNLP.dictionary.scel_parser import ScelParser, ScelWord, ScelBatchParser, ScelMetadata
 from AuroraNLP.dictionary.dictionary import Dictionary, UserDictionary
+from AuroraNLP.dictionary.scel_parser import ScelBatchParser, ScelMetadata, ScelParser, ScelWord
 
 
 class ScelConverter:
@@ -201,7 +201,7 @@ class SogouDictionary(UserDictionary):
         default_pos: str = 'n'
     ) -> int:
         loaded_count = 0
-        with open(txt_path, 'r', encoding='utf-8') as f:
+        with open(txt_path, encoding='utf-8') as f:
             for line in f:
                 line = line.strip()
                 if not line:
@@ -235,7 +235,7 @@ class SogouDictionary(UserDictionary):
         default_weight: float = 5.0,
         default_pos: str = 'n'
     ) -> int:
-        with open(json_path, 'r', encoding='utf-8') as f:
+        with open(json_path, encoding='utf-8') as f:
             data = json.load(f)
 
         loaded_count = 0

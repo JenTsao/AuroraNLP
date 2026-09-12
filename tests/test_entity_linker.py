@@ -4,10 +4,10 @@ import pytest
 
 from AuroraNLP.ner.entity_linker import (
     EntityLinker,
+    EntityNormalizer,
     KnowledgeBase,
     KnowledgeEntity,
     LinkedEntity,
-    EntityNormalizer,
     create_sample_knowledge_base,
     create_sample_normalizer,
 )

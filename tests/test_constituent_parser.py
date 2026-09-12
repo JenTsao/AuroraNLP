@@ -3,15 +3,15 @@
 import pytest
 
 from AuroraNLP.parsing.constituent_parser import (
-    ConstituentParser,
-    ConstituentTree,
-    ConstituentNode,
-    PCFG,
-    CKYParser,
     CONSTITUENT_LABELS,
-    POS_LABELS,
     DEFAULT_NON_TERMINALS,
     DEFAULT_TERMINALS,
+    PCFG,
+    POS_LABELS,
+    CKYParser,
+    ConstituentNode,
+    ConstituentParser,
+    ConstituentTree,
     GrammarRule,
 )
 

@@ -1,5 +1,6 @@
 """BatchProcessor 批量处理器测试"""
 import pytest
+
 from AuroraNLP.core.batch_processor import BatchProcessor
 
 

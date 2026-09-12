@@ -1,17 +1,18 @@
 """Managers 管理器测试"""
 import pytest
-from AuroraNLP.managers.managers import (
-    DictionaryService,
-    StopWordsManager,
-    KeywordExtractorManager,
-    SimilarityManager,
-    MLSegmentorManager,
-    LatticeSegmentorManager,
-    AmbiguityDetectorManager,
-    NewWordDetectorManager,
-    HybridSegmentorManager,
-)
+
 from AuroraNLP.dictionary.dictionary import Dictionary
+from AuroraNLP.managers.managers import (
+    AmbiguityDetectorManager,
+    DictionaryService,
+    HybridSegmentorManager,
+    KeywordExtractorManager,
+    LatticeSegmentorManager,
+    MLSegmentorManager,
+    NewWordDetectorManager,
+    SimilarityManager,
+    StopWordsManager,
+)
 
 
 class TestDictionaryService:

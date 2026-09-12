@@ -1,7 +1,7 @@
-from typing import List, Tuple, Optional, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, List, Optional, Tuple, Union
 
 if TYPE_CHECKING:
-    from AuroraNLP.dictionary.dictionary import Dictionary, UserDictionary, DictionaryManager
+    from AuroraNLP.dictionary.dictionary import Dictionary, DictionaryManager, UserDictionary
 
 
 def forward_max_match(text: str, dictionary: Union['Dictionary', 'UserDictionary', 'DictionaryManager'], max_len: int = 15) -> List[str]:
@@ -274,18 +274,18 @@ def bidirectional_max_match_weighted_with_pos(
 
 
 __all__ = [
-    'forward_max_match',
     'backward_max_match',
-    'bidirectional_max_match',
-    'choose_best_result',
-    'forward_max_match_with_pos',
-    'backward_max_match_with_pos',
-    'bidirectional_max_match_with_pos',
-    'choose_best_result_with_pos',
-    'forward_max_match_weighted',
     'backward_max_match_weighted',
-    'bidirectional_max_match_weighted',
-    'forward_max_match_weighted_with_pos',
     'backward_max_match_weighted_with_pos',
-    'bidirectional_max_match_weighted_with_pos'
+    'backward_max_match_with_pos',
+    'bidirectional_max_match',
+    'bidirectional_max_match_weighted',
+    'bidirectional_max_match_weighted_with_pos',
+    'bidirectional_max_match_with_pos',
+    'choose_best_result',
+    'choose_best_result_with_pos',
+    'forward_max_match',
+    'forward_max_match_weighted',
+    'forward_max_match_weighted_with_pos',
+    'forward_max_match_with_pos'
 ]

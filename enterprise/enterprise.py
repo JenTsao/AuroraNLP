@@ -16,24 +16,20 @@ AuroraNLP 企业级功能模块 - 阶段六
 约束：零外部依赖，纯Python标准库实现
 """
 
-import os
-import sys
 import json
-import time
 import logging
 import logging.handlers
+import os
+import sys
 import threading
+import time
 import traceback
-from typing import (
-    Any, Callable, Dict, List, Optional,
-    Tuple, Union, Iterator
-)
 from abc import ABC, abstractmethod
-from enum import Enum, IntEnum
 from collections import deque
 from datetime import datetime, timezone
+from enum import Enum, IntEnum
 from functools import wraps
-
+from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 # ==================== 步骤81: 日志系统 ====================
 
@@ -1359,22 +1355,22 @@ class RateLimitState(Enum):
 
 class TokenBucket:
     """令牌桶限流算法
-    
+
     使用场景：平滑限流，允许一定突发流量
-    
+
     使用示例:
     >>> bucket = TokenBucket(capacity=100, rate=10)
     >>> if bucket.acquire(5):
     ...     print("获取令牌成功")
     """
-    
+
     def __init__(self, capacity: int, rate: float):
         self.capacity = capacity
         self.rate = rate
         self.tokens = capacity
         self.last_refill = time.time()
         self.lock = threading.Lock()
-    
+
     def _refill(self):
         """补充令牌"""
         now = time.time()
@@ -1382,7 +1378,7 @@ class TokenBucket:
         new_tokens = elapsed * self.rate
         self.tokens = min(self.capacity, self.tokens + new_tokens)
         self.last_refill = now
-    
+
     def acquire(self, tokens: int = 1) -> bool:
         """获取指定数量的令牌"""
         with self.lock:
@@ -1391,7 +1387,7 @@ class TokenBucket:
                 self.tokens -= tokens
                 return True
             return False
-    
+
     def get_available_tokens(self) -> float:
         """获取当前可用令牌数"""
         with self.lock:
@@ -1401,26 +1397,26 @@ class TokenBucket:
 
 class SlidingWindow:
     """滑动窗口限流算法
-    
+
     使用场景：精确限制指定时间窗口内的请求数
-    
+
     使用示例:
     >>> window = SlidingWindow(window_seconds=60, max_requests=1000)
     >>> if window.allow():
     ...     print("请求通过")
     """
-    
+
     def __init__(self, window_seconds: float, max_requests: int):
         self.window_seconds = window_seconds
         self.max_requests = max_requests
         self.timestamps = []
         self.lock = threading.Lock()
-    
+
     def _cleanup(self, now: float):
         """清理过期的时间戳"""
         cutoff = now - self.window_seconds
         self.timestamps = [t for t in self.timestamps if t > cutoff]
-    
+
     def allow(self) -> bool:
         """检查是否允许通过"""
         now = time.time()
@@ -1430,7 +1426,7 @@ class SlidingWindow:
                 self.timestamps.append(now)
                 return True
             return False
-    
+
     def get_current_count(self) -> int:
         """获取当前窗口内的请求数"""
         now = time.time()
@@ -1441,9 +1437,9 @@ class SlidingWindow:
 
 class CircuitBreaker:
     """熔断器，实现自动熔断与恢复
-    
+
     使用场景：保护系统免受故障服务的影响，快速失败
-    
+
     使用示例:
     >>> breaker = CircuitBreaker(fail_threshold=5, reset_timeout=30)
     >>> try:
@@ -1452,11 +1448,11 @@ class CircuitBreaker:
     ... except CircuitOpenError:
     ...     print("熔断器已打开")
     """
-    
+
     class CircuitOpenError(Exception):
         """熔断器打开时抛出的错误"""
         pass
-    
+
     def __init__(
         self,
         fail_threshold: int = 5,
@@ -1471,7 +1467,7 @@ class CircuitBreaker:
         self.successes = 0
         self.last_failure_time = 0.0
         self.lock = threading.Lock()
-    
+
     def allow_request(self) -> bool:
         """检查是否允许请求通过"""
         with self.lock:
@@ -1486,7 +1482,7 @@ class CircuitBreaker:
                     self.successes = 0
                     return True
                 return False
-    
+
     def on_success(self):
         """请求成功时调用"""
         with self.lock:
@@ -1496,7 +1492,7 @@ class CircuitBreaker:
                     self.state = CircuitState.CLOSED
                     self.failures = 0
                     self.successes = 0
-    
+
     def on_failure(self):
         """请求失败时调用"""
         with self.lock:
@@ -1508,12 +1504,12 @@ class CircuitBreaker:
                     self.failures = 0
             elif self.state == CircuitState.HALF_OPEN:
                 self.state = CircuitState.OPEN
-    
+
     def __enter__(self):
         if not self.allow_request():
             raise CircuitBreaker.CircuitOpenError("Circuit is open")
         return self
-    
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_type is None:
             self.on_success()
@@ -1541,7 +1537,7 @@ class Permission(Enum):
 
 class Token:
     """认证令牌"""
-    
+
     def __init__(
         self,
         token_type: TokenType,
@@ -1555,13 +1551,13 @@ class Token:
         self.user_id = user_id
         self.permissions = permissions or []
         self.expires_at = expires_at
-    
+
     def is_expired(self) -> bool:
         """检查令牌是否过期"""
         if self.expires_at is None:
             return False
         return time.time() > self.expires_at
-    
+
     def has_permission(self, permission: Permission) -> bool:
         """检查是否有指定权限"""
         if Permission.ADMIN in self.permissions:
@@ -1571,19 +1567,19 @@ class Token:
 
 class AuthContext:
     """认证上下文，保存当前请求的认证信息"""
-    
+
     _local = threading.local()
-    
+
     @classmethod
     def set_token(cls, token: Token):
         """设置当前请求的令牌"""
         cls._local.token = token
-    
+
     @classmethod
     def get_token(cls) -> Optional[Token]:
         """获取当前请求的令牌"""
         return getattr(cls._local, "token", None)
-    
+
     @classmethod
     def clear(cls):
         """清除当前请求的认证信息"""
@@ -1593,22 +1589,22 @@ class AuthContext:
 
 class Authenticator:
     """认证器，验证令牌有效性"""
-    
+
     def __init__(self):
         self._tokens: dict[str, Token] = {}
         self._lock = threading.Lock()
-    
+
     def register_token(self, token: Token):
         """注册一个有效令牌"""
         with self._lock:
             self._tokens[token.value] = token
-    
+
     def revoke_token(self, token_value: str):
         """撤销令牌"""
         with self._lock:
             if token_value in self._tokens:
                 del self._tokens[token_value]
-    
+
     def authenticate(self, token_value: str) -> Optional[Token]:
         """验证令牌，返回Token对象或None"""
         with self._lock:
@@ -1620,14 +1616,14 @@ class Authenticator:
 
 class Authorizer:
     """授权器，检查权限"""
-    
+
     def __init__(self, authenticator: Optional[Authenticator] = None):
         self.authenticator = authenticator
-    
+
     def has_permission(self, token: Token, permission: Permission) -> bool:
         """检查令牌是否有指定权限"""
         return token.has_permission(permission)
-    
+
     def authorize(self, token_value: str, permission: Permission) -> bool:
         """验证并授权"""
         if not self.authenticator:
@@ -1649,16 +1645,16 @@ class ConfigEvent(Enum):
 
 class ConfigWatch:
     """配置变更监听器"""
-    
+
     def __init__(self):
         self._callbacks: list[tuple[str, Callable]] = []
         self._lock = threading.Lock()
-    
+
     def watch(self, key: str, callback: Callable):
         """监听特定配置键的变更"""
         with self._lock:
             self._callbacks.append((key, callback))
-    
+
     def notify(self, key: str, event: ConfigEvent, value: Any):
         """通知所有监听器"""
         with self._lock:
@@ -1672,17 +1668,17 @@ class ConfigWatch:
 
 class InMemoryConfigStore:
     """内存配置存储"""
-    
+
     def __init__(self):
         self._configs: dict[str, Any] = {}
         self._lock = threading.Lock()
         self.watch = ConfigWatch()
-    
+
     def get(self, key: str, default: Any = None) -> Any:
         """获取配置"""
         with self._lock:
             return self._configs.get(key, default)
-    
+
     def set(self, key: str, value: Any):
         """设置配置"""
         with self._lock:
@@ -1690,14 +1686,14 @@ class InMemoryConfigStore:
             self._configs[key] = value
             event = ConfigEvent.UPDATED if exists else ConfigEvent.ADDED
             self.watch.notify(key, event, value)
-    
+
     def delete(self, key: str):
         """删除配置"""
         with self._lock:
             if key in self._configs:
                 value = self._configs.pop(key)
                 self.watch.notify(key, ConfigEvent.DELETED, value)
-    
+
     def get_all(self) -> dict[str, Any]:
         """获取所有配置"""
         with self._lock:
@@ -1706,7 +1702,7 @@ class InMemoryConfigStore:
 
 class FileConfigStore:
     """文件配置存储，支持自动热更新"""
-    
+
     def __init__(self, file_path: str):
         self.file_path = file_path
         self._configs: dict[str, Any] = {}
@@ -1714,18 +1710,18 @@ class FileConfigStore:
         self._lock = threading.Lock()
         self.watch = ConfigWatch()
         self._load_config()
-    
+
     def _load_config(self):
         """加载配置文件"""
         try:
             if os.path.exists(self.file_path):
                 stat = os.stat(self.file_path)
                 self._last_modified = stat.st_mtime
-                with open(self.file_path, "r", encoding="utf-8") as f:
+                with open(self.file_path, encoding="utf-8") as f:
                     self._configs = json.load(f)
         except Exception:
             self._configs = {}
-    
+
     def _check_and_reload(self) -> bool:
         """检查文件变化并重新加载"""
         try:
@@ -1745,13 +1741,13 @@ class FileConfigStore:
             return False
         except Exception:
             return False
-    
+
     def get(self, key: str, default: Any = None) -> Any:
         """获取配置，自动检查更新"""
         with self._lock:
             self._check_and_reload()
             return self._configs.get(key, default)
-    
+
     def get_all(self) -> dict[str, Any]:
         """获取所有配置"""
         with self._lock:
@@ -1761,30 +1757,30 @@ class FileConfigStore:
 
 class ConfigManager:
     """配置管理器，统一管理配置"""
-    
+
     def __init__(self):
         self._stores: dict[str, Any] = {}
         self._default_store: Optional[str] = None
         self._lock = threading.Lock()
-    
+
     def add_store(self, name: str, store, is_default: bool = False):
         """添加配置存储"""
         with self._lock:
             self._stores[name] = store
             if is_default or self._default_store is None:
                 self._default_store = name
-    
+
     def get(self, key: str, default: Any = None, store_name: Optional[str] = None) -> Any:
         """获取配置"""
         store = self._get_store(store_name)
         return store.get(key, default) if store else default
-    
+
     def set(self, key: str, value: Any, store_name: Optional[str] = None):
         """设置配置"""
         store = self._get_store(store_name)
         if store and hasattr(store, "set"):
             store.set(key, value)
-    
+
     def _get_store(self, name: Optional[str]):
         """获取配置存储"""
         with self._lock:
@@ -1804,7 +1800,7 @@ class DeploymentState(Enum):
 
 class TrafficRule:
     """流量规则，定义如何分配流量"""
-    
+
     def __init__(self, percentage: float, key: Optional[str] = None):
         self.percentage = percentage
         self.key = key or "random"
@@ -1812,7 +1808,7 @@ class TrafficRule:
 
 class DeploymentVersion:
     """部署版本信息"""
-    
+
     def __init__(
         self,
         version_id: str,
@@ -1829,20 +1825,20 @@ class DeploymentVersion:
 
 class CanaryDeployer:
     """灰度发布管理器
-    
+
     使用场景：逐步将流量切换到新版本，支持快速回滚
-    
+
     使用示例:
     >>> deployer = CanaryDeployer()
     >>> deployer.deploy_canary("v2", percentage=10)
     >>> deployer.rollback("v2")
     """
-    
+
     def __init__(self):
         self._versions: dict[str, DeploymentVersion] = {}
         self._current_stable: Optional[str] = None
         self._lock = threading.Lock()
-    
+
     def deploy_version(self, version_id: str, metadata: Optional[dict[str, Any]] = None):
         """部署新版本作为稳定版本"""
         with self._lock:
@@ -1857,7 +1853,7 @@ class CanaryDeployer:
             for vid, v in self._versions.items():
                 if vid != version_id:
                     v.state = DeploymentState.STAGING
-    
+
     def deploy_canary(self, version_id: str, percentage: float, metadata: Optional[dict[str, Any]] = None):
         """部署灰度版本，分配指定百分比的流量"""
         with self._lock:
@@ -1871,19 +1867,19 @@ class CanaryDeployer:
             if self._current_stable:
                 stable_version = self._versions[self._current_stable]
                 stable_version.traffic_rule.percentage = max(0.0, 100.0 - percentage)
-    
+
     def update_traffic(self, version_id: str, percentage: float):
         """更新版本的流量分配"""
         with self._lock:
             if version_id in self._versions:
                 self._versions[version_id].traffic_rule.percentage = percentage
-    
+
     def promote_to_stable(self, version_id: str):
         """将版本晋升为稳定版本，接管100%流量"""
         with self._lock:
             if version_id in self._versions:
                 self.deploy_version(version_id, self._versions[version_id].metadata)
-    
+
     def rollback(self, version_id: str):
         """回滚指定版本"""
         with self._lock:
@@ -1892,7 +1888,7 @@ class CanaryDeployer:
                 self._versions[version_id].traffic_rule.percentage = 0.0
                 if self._current_stable:
                     self._versions[self._current_stable].traffic_rule.percentage = 100.0
-    
+
     def select_version(self, request_key: Optional[str] = None) -> Optional[str]:
         """根据规则选择处理请求的版本"""
         with self._lock:
@@ -1917,13 +1913,13 @@ class BackupType(Enum):
 
 class ClusterNode:
     """集群节点信息"""
-    
+
     def __init__(self, node_id: str, is_master: bool = False):
         self.node_id = node_id
         self.is_master = is_master
         self.is_alive = True
         self.last_heartbeat = time.time()
-    
+
     def heartbeat(self):
         """节点心跳"""
         self.is_alive = True
@@ -1939,20 +1935,20 @@ class FailoverStrategy(Enum):
 
 class DataBackupManager:
     """数据备份管理器
-    
+
     使用场景：定期备份数据，支持完整备份和增量备份
-    
+
     使用示例:
     >>> manager = DataBackupManager("/backups")
     >>> manager.create_backup("data/1", BackupType.FULL)
     >>> manager.restore("backup_123456")
     """
-    
+
     def __init__(self, backup_dir: str):
         self.backup_dir = backup_dir
         os.makedirs(backup_dir, exist_ok=True)
         self._backups: list[dict[str, Any]] = []
-    
+
     def create_backup(self, source_path: str, backup_type: BackupType, name: Optional[str] = None) -> str:
         """创建备份"""
         backup_name = name or f"backup_{int(time.time())}"
@@ -1975,11 +1971,11 @@ class DataBackupManager:
             pass
         self._backups.append(backup_info)
         return backup_name
-    
+
     def list_backups(self) -> list[dict[str, Any]]:
         """列出所有备份"""
         return self._backups.copy()
-    
+
     def restore(self, backup_name: str, target_path: str) -> bool:
         """恢复备份"""
         try:
@@ -1998,45 +1994,45 @@ class DataBackupManager:
 
 class FailoverController:
     """故障转移控制器
-    
+
     使用场景：实现高可用架构，自动故障转移
-    
+
     使用示例:
     >>> controller = FailoverController()
     >>> controller.register_node(ClusterNode("node1", is_master=True))
     >>> controller.register_node(ClusterNode("node2"))
     >>> controller.failover()
     """
-    
+
     def __init__(self, strategy: FailoverStrategy = FailoverStrategy.AUTOMATIC):
         self.strategy = strategy
         self._nodes: dict[str, ClusterNode] = {}
         self._current_master: Optional[str] = None
         self._lock = threading.Lock()
-    
+
     def register_node(self, node: ClusterNode):
         """注册集群节点"""
         with self._lock:
             self._nodes[node.node_id] = node
             if node.is_master and self._current_master is None:
                 self._current_master = node.node_id
-    
+
     def get_nodes(self) -> list[ClusterNode]:
         """获取所有节点"""
         with self._lock:
             return list(self._nodes.values())
-    
+
     def get_current_master(self) -> Optional[ClusterNode]:
         """获取当前主节点"""
         with self._lock:
             return self._nodes.get(self._current_master)
-    
+
     def heartbeat(self, node_id: str):
         """节点心跳"""
         with self._lock:
             if node_id in self._nodes:
                 self._nodes[node_id].heartbeat()
-    
+
     def failover(self) -> Optional[ClusterNode]:
         """执行故障转移，选举新的主节点"""
         with self._lock:

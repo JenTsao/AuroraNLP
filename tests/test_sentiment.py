@@ -3,12 +3,12 @@
 import pytest
 
 from AuroraNLP.text_analysis.sentiment import (
-    SentimentDictionary,
     SentimentAnalyzer,
-    SentimentPolarity,
+    SentimentDictionary,
     SentimentIntensity,
-    SentimentWord,
+    SentimentPolarity,
     SentimentResult,
+    SentimentWord,
 )
 
 

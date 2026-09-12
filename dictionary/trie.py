@@ -1,11 +1,11 @@
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 
 class TrieNode:
-    __slots__ = ['children', 'is_word', 'pos_tag', 'weight', 'priority']
+    __slots__ = ['children', 'is_word', 'pos_tag', 'priority', 'weight']
 
     def __init__(self):
-        self.children: Dict[str, 'TrieNode'] = {}
+        self.children: Dict[str, TrieNode] = {}
         self.is_word: bool = False
         self.pos_tag: Optional[str] = None
         self.weight: float = 1.0

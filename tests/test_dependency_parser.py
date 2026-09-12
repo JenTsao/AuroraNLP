@@ -3,14 +3,14 @@
 import pytest
 
 from AuroraNLP.parsing.dependency_parser import (
+    DEFAULT_RELATIONS,
+    DEPENDENCY_RELATIONS,
+    ArcEagerOracle,
+    DependencyArc,
+    DependencyNode,
     DependencyParser,
     DependencyTree,
-    DependencyNode,
-    DependencyArc,
     ParserState,
-    ArcEagerOracle,
-    DEPENDENCY_RELATIONS,
-    DEFAULT_RELATIONS,
     Transition,
 )
 

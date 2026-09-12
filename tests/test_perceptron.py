@@ -1,6 +1,7 @@
 """感知器模型测试"""
 import pytest
-from AuroraNLP.segmentation.perceptron import StructuredPerceptron, PerceptronSegmentor, PerceptronFeatureTemplate
+
+from AuroraNLP.segmentation.perceptron import PerceptronFeatureTemplate, PerceptronSegmentor, StructuredPerceptron
 
 
 class TestPerceptronInit:

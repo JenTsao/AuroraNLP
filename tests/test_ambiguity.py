@@ -4,9 +4,9 @@ import pytest
 
 from AuroraNLP.segmentation.ambiguity import (
     AmbiguityDetector,
-    AmbiguityType,
     AmbiguityRegion,
     AmbiguityResult,
+    AmbiguityType,
 )
 
 

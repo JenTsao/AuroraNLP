@@ -1,6 +1,6 @@
-import os
 import json
-from typing import Set, List, Optional, Dict, Any
+import os
+from typing import Any, Dict, List, Optional, Set
 
 
 class StopWords:
@@ -21,7 +21,7 @@ class StopWords:
 
     def _load_scenarios(self) -> None:
         if os.path.exists(self.SCENARIOS_PATH):
-            with open(self.SCENARIOS_PATH, 'r', encoding='utf-8') as f:
+            with open(self.SCENARIOS_PATH, encoding='utf-8') as f:
                 data = json.load(f)
                 self._scenarios = data.get('scenarios', {})
 
@@ -36,7 +36,7 @@ class StopWords:
     def load_stopwords(self, path: str) -> None:
         if not os.path.exists(path):
             raise FileNotFoundError(f"停用词文件不存在: {path}")
-        with open(path, 'r', encoding='utf-8') as f:
+        with open(path, encoding='utf-8') as f:
             for line in f:
                 word = line.strip()
                 if word:
@@ -63,19 +63,19 @@ class StopWords:
             raise ValueError(f"场景不存在: {scenario_name}")
         scenario = self._scenarios[scenario_name]
         stopwords_config = scenario.get('stopwords', {})
-        
+
         common_files = stopwords_config.get('common', [])
         for file in common_files:
             file_path = os.path.join(self.STOPWORDS_DIR, 'common', file)
             if os.path.exists(file_path):
                 self.load_stopwords(file_path)
-        
+
         domain_files = stopwords_config.get('domain', [])
         for file in domain_files:
             file_path = os.path.join(self.STOPWORDS_DIR, 'domain', file)
             if os.path.exists(file_path):
                 self.load_stopwords(file_path)
-        
+
         custom_files = stopwords_config.get('custom', [])
         for file in custom_files:
             if os.path.exists(file):

@@ -1,7 +1,7 @@
-from typing import List, Dict, Tuple, Optional, Set
-from collections import defaultdict
 import math
 import re
+from collections import defaultdict
+from typing import Dict, List, Optional, Set, Tuple
 
 
 class NewWordDetector:
@@ -98,7 +98,7 @@ class NewWordDetector:
 
     def train_from_file(self, filepath: str, encoding: str = 'utf-8') -> None:
         corpus = []
-        with open(filepath, 'r', encoding=encoding) as f:
+        with open(filepath, encoding=encoding) as f:
             for line in f:
                 line = line.strip()
                 if line:
@@ -610,4 +610,4 @@ class EntropyCalculator:
         return self._trained
 
 
-__all__ = ['NewWordDetector', 'MutualInformation', 'EntropyCalculator']
+__all__ = ['EntropyCalculator', 'MutualInformation', 'NewWordDetector']

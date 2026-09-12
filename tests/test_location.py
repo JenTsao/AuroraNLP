@@ -3,10 +3,10 @@
 import pytest
 
 from AuroraNLP.ner.location import (
+    AdminLevel,
+    Location,
     LocationDatabase,
     LocationManager,
-    Location,
-    AdminLevel,
 )
 
 

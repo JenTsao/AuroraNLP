@@ -1,5 +1,6 @@
 """TraditionalChinese 繁体中文测试"""
 import pytest
+
 from AuroraNLP.core.traditional_chinese import TraditionalChineseConverter, TraditionalChineseDictionary
 
 

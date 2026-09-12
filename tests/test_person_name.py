@@ -3,14 +3,14 @@
 import pytest
 
 from AuroraNLP.ner.person_name import (
+    NAME_CHAR_CATEGORIES,
+    Gender,
+    NameChar,
+    PersonName,
     PersonNameDictionary,
     PersonNameManager,
-    PersonName,
     Surname,
-    NameChar,
-    Gender,
     SurnameType,
-    NAME_CHAR_CATEGORIES,
 )
 
 

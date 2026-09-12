@@ -1,20 +1,21 @@
 """Hybrid 混合分词测试"""
 import pytest
+
 from AuroraNLP.segmentation.hybrid import (
-    HybridStrategy,
-    SegmenterType,
-    SegmenterResult,
-    HybridConfig,
+    CascadeFusionStrategy,
+    ConfidenceEstimator,
+    ConfidenceFusionStrategy,
     FusionContext,
     FusionStrategy,
+    FusionStrategyFactory,
+    HybridConfig,
+    HybridStrategy,
+    SegmenterResult,
+    SegmenterType,
+    StrategySelector,
+    TextClassifier,
     VoteFusionStrategy,
     WeightedFusionStrategy,
-    CascadeFusionStrategy,
-    ConfidenceFusionStrategy,
-    FusionStrategyFactory,
-    ConfidenceEstimator,
-    TextClassifier,
-    StrategySelector,
 )
 
 

@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-import unittest
-import time
 import os
 import tempfile
+import time
+import unittest
 from typing import List
 
 from AuroraNLP import (
-    ObjectPool,
-    PerformanceBatchProcessor as BatchProcessor,
-    MemoryPool, MemoryBlock,
-    DelayedGC,
-    NLPThreadPoolExecutor as ThreadPoolExecutor,
-    ParallelTokenizer,
-    NLPProcessPoolExecutor as ProcessPoolExecutor,
-    GPUInterface,
     BatchInference,
-    MixedPrecisionInference,
-    TensorRTInterface,
-    MemoryMappedFile,
+    DelayedGC,
     DictionaryCompressor,
-    LRUResultCache,
-    PerformanceMonitor,
-    OptimizationSuite,
-    Metric,
     DistributedTask,
-    SimpleTaskScheduler
+    GPUInterface,
+    LRUResultCache,
+    MemoryBlock,
+    MemoryMappedFile,
+    MemoryPool,
+    Metric,
+    MixedPrecisionInference,
+    ObjectPool,
+    OptimizationSuite,
+    ParallelTokenizer,
+    PerformanceMonitor,
+    SimpleTaskScheduler,
+    TensorRTInterface,
 )
+from AuroraNLP import NLPProcessPoolExecutor as ProcessPoolExecutor
+from AuroraNLP import NLPThreadPoolExecutor as ThreadPoolExecutor
+from AuroraNLP import PerformanceBatchProcessor as BatchProcessor
 
 
 # 用于多进程测试的函数必须在模块顶层
@@ -67,11 +67,11 @@ class TestObjectPool(unittest.TestCase):
         obj1 = self.pool.acquire()
         obj2 = self.pool.acquire()
         obj3 = self.pool.acquire()
-        
+
         self.assertEqual(len(obj1), 0)  # 应该被重置过
         self.assertEqual(len(obj2), 0)
         self.assertEqual(len(obj3), 0)
-        
+
         self.pool.release(obj1)
         self.pool.release(obj2)
         self.pool.release(obj3)
@@ -81,11 +81,11 @@ class TestObjectPool(unittest.TestCase):
         stats_before = self.pool.get_stats()
         self.assertEqual(stats_before.allocated, 2)
         self.assertEqual(stats_before.in_use, 0)
-        
+
         obj1 = self.pool.acquire()
         stats_mid = self.pool.get_stats()
         self.assertEqual(stats_mid.in_use, 1)
-        
+
         self.pool.release(obj1)
         stats_after = self.pool.get_stats()
         self.assertEqual(stats_after.in_use, 0)
@@ -105,10 +105,10 @@ class TestBatchProcessor(unittest.TestCase):
     def test_batch_process(self):
         """测试批量处理"""
         items = list(range(100))
-        
+
         def double(x):
             return x * 2
-        
+
         results = self.processor.process(items, double)
         expected = [x * 2 for x in items]
         self.assertEqual(results, expected)
@@ -116,10 +116,10 @@ class TestBatchProcessor(unittest.TestCase):
     def test_batch_process_with_batch_func(self):
         """测试使用专用批量函数"""
         items = list(range(100))
-        
+
         def batch_double(xs):
             return [x * 2 for x in xs]
-        
+
         results = self.processor.process(items, None, batch_double)
         expected = [x * 2 for x in items]
         self.assertEqual(results, expected)
@@ -127,10 +127,10 @@ class TestBatchProcessor(unittest.TestCase):
     def test_stream_process(self):
         """测试流式处理"""
         items = (x for x in range(100))  # 生成器
-        
+
         def double(x):
             return x * 2
-        
+
         results = list(self.processor.process_stream(items, double))
         expected = [x * 2 for x in range(100)]
         self.assertEqual(results, expected)
@@ -138,13 +138,13 @@ class TestBatchProcessor(unittest.TestCase):
     def test_map_reduce(self):
         """测试MapReduce模式"""
         items = list(range(100))
-        
+
         def local_square(x):
             return x * x
-        
+
         def sum_list(xs):
             return sum(xs)
-        
+
         result = self.processor.map_reduce(items, local_square, sum_list)
         expected = sum(x * x for x in range(100))
         self.assertEqual(result, expected)
@@ -166,13 +166,13 @@ class TestMemoryPool(unittest.TestCase):
         block = self.pool.acquire(min_size=100)
         self.assertIsInstance(block, MemoryBlock)
         self.assertGreaterEqual(block.size, 100)
-        
+
         block.write(b"hello world")
         self.assertEqual(block.used, 11)
-        
+
         block.reset()
         self.assertEqual(block.used, 0)
-        
+
         self.pool.release(block)
 
     def test_memory_pool_usage(self):
@@ -193,10 +193,10 @@ class TestDelayedGC(unittest.TestCase):
     def test_disable_enable_gc(self):
         """测试GC启用/禁用"""
         import gc
-        
+
         self.dgc.disable_gc()
         self.assertFalse(gc.isenabled())
-        
+
         self.dgc.enable_gc()
         self.assertTrue(gc.isenabled())
 
@@ -214,7 +214,7 @@ class TestDelayedGC(unittest.TestCase):
             for i in range(10000):
                 result += i
             return result
-        
+
         result = compute()
         self.assertEqual(result, sum(range(10000)))
 
@@ -238,14 +238,14 @@ class TestThreadPool(unittest.TestCase):
     def test_parallel_tokenizer(self):
         """测试并行分词器"""
         tokenizer = ParallelTokenizer(simple_tokenizer, num_workers=2)
-        
+
         texts = [
             "hello world",
             "foo bar baz",
             "a b c d",
             "one two three four"
         ]
-        
+
         results = tokenizer.tokenize_batch(texts)
         expected = [text.split() for text in texts]
         self.assertEqual(results, expected)
@@ -308,12 +308,12 @@ class TestBatchInference(unittest.TestCase):
         # 创建简单的模型和预测函数
         class DummyModel:
             pass
-        
+
         model = DummyModel()
-        
+
         def predict(model, batch):
             return [x * 2 for x in batch]
-        
+
         items = list(range(100))
         results = self.inference.infer(model, items, predict)
         expected = [x * 2 for x in items]
@@ -351,7 +351,7 @@ class TestMemoryMappedFile(unittest.TestCase):
         self.temp_file = tempfile.NamedTemporaryFile(delete=False)
         self.temp_file.write(b"hello world\nthis is a test file")
         self.temp_file.close()
-        
+
         self.mmap_file = MemoryMappedFile(self.temp_file.name, writeable=False)
 
     def tearDown(self):
@@ -361,10 +361,10 @@ class TestMemoryMappedFile(unittest.TestCase):
     def test_memory_mapped_read(self):
         """测试内存映射读取"""
         self.mmap_file.open()
-        
+
         data = self.mmap_file.read_bytes(0, 5)
         self.assertEqual(data, b"hello")
-        
+
         data = self.mmap_file.read_bytes(6, 5)
         self.assertEqual(data, b"world")
 
@@ -375,7 +375,7 @@ class TestDictionaryCompressor(unittest.TestCase):
     def test_zlib_compression(self):
         """测试zlib压缩"""
         compressor = DictionaryCompressor()
-        
+
         data = b"this is some test data for compression"
         compressed = compressor.compress(data)
         decompressed = compressor.decompress(compressed)
@@ -384,9 +384,9 @@ class TestDictionaryCompressor(unittest.TestCase):
     def test_bz2_compression(self):
         """测试bz2压缩"""
         from AuroraNLP.core.performance import CompressionType
-        
+
         compressor = DictionaryCompressor(method=CompressionType.BZ2)
-        
+
         data = b"this is some test data for compression"
         compressed = compressor.compress(data)
         decompressed = compressor.decompress(compressed)
@@ -403,7 +403,7 @@ class TestLRUResultCache(unittest.TestCase):
         """测试缓存存和取"""
         self.cache.put("text1", "result1")
         self.cache.put("text2", "result2")
-        
+
         self.assertEqual(self.cache.get("text1"), "result1")
         self.assertEqual(self.cache.get("text2"), "result2")
         self.assertIsNone(self.cache.get("text3"))
@@ -412,9 +412,9 @@ class TestLRUResultCache(unittest.TestCase):
         """测试缓存过期"""
         self.cache.put("text_with_ttl", "result", ttl=0.1)
         self.assertEqual(self.cache.get("text_with_ttl"), "result")
-        
+
         time.sleep(0.2)
-        
+
         # 过期之后可能还在，直到下次清理
         self.cache.put("new_text", "new_result")  # 触发清理
         # 可能已经被清理
@@ -423,7 +423,7 @@ class TestLRUResultCache(unittest.TestCase):
         """测试LRU淘汰"""
         for i in range(20):
             self.cache.put(f"text{i}", f"result{i}")
-        
+
         stats = self.cache.get_stats()
         self.assertLessEqual(stats["size"], 10)
 
@@ -431,10 +431,10 @@ class TestLRUResultCache(unittest.TestCase):
         """测试缓存统计"""
         self.cache.put("a", "1")
         self.cache.put("b", "2")
-        
+
         self.cache.get("a")  # 命中
         self.cache.get("c")  # 未命中
-        
+
         stats = self.cache.get_stats()
         self.assertIn("hits", stats)
         self.assertIn("misses", stats)
@@ -447,13 +447,13 @@ class TestDistributedTask(unittest.TestCase):
     def test_simple_task_scheduler(self):
         """测试简单任务调度器"""
         scheduler = SimpleTaskScheduler()
-        
+
         def add(x, y):
             return x + y
-        
+
         task_id = scheduler.submit(add, 2, 3)
         scheduler.run(task_id)
-        
+
         task = scheduler._tasks.get(task_id)
         self.assertIsNotNone(task)
         self.assertEqual(task.result, 5)
@@ -469,10 +469,10 @@ class TestPerformanceMonitor(unittest.TestCase):
     def test_metric_recording(self):
         """测试指标记录"""
         metric = self.monitor.get_metric("test_metric")
-        
+
         for i in range(10):
             metric.record(i)
-        
+
         stats = metric.get_stats()
         self.assertEqual(stats["count"], 10)
         self.assertEqual(stats["min"], 0)
@@ -481,11 +481,11 @@ class TestPerformanceMonitor(unittest.TestCase):
     def test_counter_increment(self):
         """测试计数器"""
         metric = self.monitor.get_metric("test_counter")
-        
+
         metric.incr(1)
         metric.incr(2)
         metric.incr(3)
-        
+
         stats = metric.get_stats()
         self.assertEqual(stats["value"], 6)
 
@@ -495,10 +495,10 @@ class TestPerformanceMonitor(unittest.TestCase):
         def compute():
             time.sleep(0.1)
             return 42
-        
+
         result = compute()
         self.assertEqual(result, 42)
-        
+
         metric = self.monitor.get_metric("test_function")
         stats = metric.get_stats()
         self.assertGreater(stats["sum"], 0)
@@ -522,7 +522,7 @@ class TestOptimizationSuite(unittest.TestCase):
         self.assertIsNotNone(self.suite.monitor)
         self.assertIsNotNone(self.suite.batch_processor)
         self.assertIsNotNone(self.suite.cache)
-        
+
         # 测试注册对象池
         pool = self.suite.register_object_pool(
             "test_pool",
@@ -531,11 +531,11 @@ class TestOptimizationSuite(unittest.TestCase):
             max_size=10
         )
         self.assertIsNotNone(pool)
-        
+
         # 测试获取对象池
         retrieved = self.suite.get_object_pool("test_pool")
         self.assertIsNotNone(retrieved)
-        
+
         # 测试获取完整报告
         report = self.suite.get_full_report()
         self.assertIn("monitor", report)

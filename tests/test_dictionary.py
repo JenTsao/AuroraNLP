@@ -1,7 +1,9 @@
 """Dictionary 和 UserDictionary 测试"""
 import os
+
 import pytest
-from AuroraNLP.dictionary.dictionary import Dictionary, UserDictionary, DictionaryManager
+
+from AuroraNLP.dictionary.dictionary import Dictionary, DictionaryManager, UserDictionary
 
 
 class TestDictionary:

@@ -5,52 +5,52 @@ AuroraNLP pipeline.py 核心类测试
 使用 pytest 框架，中文测试函数名和注释。
 """
 
+import asyncio
 import json
 import os
-import asyncio
 import tempfile
+
 import pytest
 
 from AuroraNLP.pipeline.pipeline import (
-    StringStore,
-    Doc,
-    Span,
-    Token,
-    PipelineComponent,
-    ConditionalBranch,
-    Pipeline,
-    ComponentRegistry,
-    PipelineConfig,
-    ConfigSchema,
-    FreezableParams,
-    ModelVersion,
-    ModelLifecycle,
-    LRUCache,
-    ModelCache,
     APIRequest,
     APIResponse,
-    RequestValidator,
-    Route,
     APIServer,
-    RPCMessage,
-    RPCError,
-    RPCStatusCode,
-    RPCService,
-    RPCServer,
-    RPCClient,
     AsyncPipeline,
-    StreamProcessor,
-    ProgressCallback,
-    PluginState,
-    PluginInfo,
+    ComponentRegistry,
+    ComponentState,
+    ConditionalBranch,
+    ConfigSchema,
+    Doc,
+    FreezableParams,
+    LRUCache,
+    ModelCache,
+    ModelLifecycle,
+    ModelVersion,
+    Pipeline,
+    PipelineComponent,
+    PipelineConfig,
     Plugin,
     PluginDependency,
+    PluginInfo,
     PluginManager,
-    SimpleTokenizerComponent,
+    PluginState,
     POSTaggerComponent,
-    ComponentState,
+    ProgressCallback,
+    RequestValidator,
+    Route,
+    RPCClient,
+    RPCError,
+    RPCMessage,
+    RPCServer,
+    RPCService,
+    RPCStatusCode,
+    SimpleTokenizerComponent,
+    Span,
+    StreamProcessor,
+    StringStore,
+    Token,
 )
-
 
 # ============================================================
 # 辅助：创建简单的测试用组件

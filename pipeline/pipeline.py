@@ -21,35 +21,46 @@ AuroraNLP 架构重构模块 - Pipeline系统
 约束：零外部依赖，纯Python标准库实现
 """
 
-import json
-import hashlib
-import time
-import threading
 import asyncio
+import copy
 import functools
-import os
-import sys
-import struct
-import socket
-import traceback
+import hashlib
 import importlib
 import inspect
-import weakref
-import copy
+import json
+import os
 import re
-from typing import (
-    List, Dict, Any, Optional, Tuple, Set, Callable, Union,
-    Iterator, Iterable, Type, TypeVar, Generic, NamedTuple
-)
-from collections import OrderedDict
-from enum import Enum, IntEnum
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from urllib.parse import urlparse, parse_qs
-from io import StringIO, BytesIO
-from concurrent.futures import ThreadPoolExecutor
+import socket
+import struct
+import sys
+import threading
+import time
+import traceback
+import weakref
 from abc import ABC, abstractmethod
+from collections import OrderedDict
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-
+from enum import Enum, IntEnum
+from http.server import BaseHTTPRequestHandler, HTTPServer
+from io import BytesIO, StringIO
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    Iterator,
+    List,
+    NamedTuple,
+    Optional,
+    Set,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
+from urllib.parse import parse_qs, urlparse
 
 # ============================================================
 # 步骤58: 词汇表共享 - StringStore实现
@@ -254,9 +265,9 @@ class Doc:
         """
         self._text = text
         self._string_store = string_store or get_string_store()
-        self._tokens: List['Token'] = []
-        self._spans: List['Span'] = []
-        self._entities: List['Span'] = []
+        self._tokens: List[Token] = []
+        self._spans: List[Span] = []
+        self._entities: List[Span] = []
         self._attrs: Dict[str, Any] = {}
         self._metadata: Dict[str, Any] = metadata or {}
         self._user_data: Dict[str, Any] = {}
@@ -464,7 +475,7 @@ class Doc:
         )
         new_doc._attrs = dict(self._attrs)
         new_doc._user_data = dict(self._user_data)
-        
+
         new_doc._tokens = []
         for token in self._tokens:
             new_token = Token(
@@ -482,13 +493,13 @@ class Doc:
             new_token._attrs = dict(token._attrs)
             new_token._relations = {k: list(v) for k, v in token._relations.items()}
             new_doc._tokens.append(new_token)
-        
+
         for i, new_token in enumerate(new_doc._tokens):
             old_token = self._tokens[i]
             if old_token._head is not None:
                 head_idx = self._tokens.index(old_token._head)
                 new_token._head = new_doc._tokens[head_idx]
-        
+
         new_doc._spans = []
         for span in self._spans:
             new_span = Span(
@@ -501,7 +512,7 @@ class Doc:
             )
             new_span._relations = {k: list(v) for k, v in span._relations.items()}
             new_doc._spans.append(new_span)
-        
+
         new_doc._entities = []
         for entity in self._entities:
             new_entity = Span(
@@ -514,7 +525,7 @@ class Doc:
             )
             new_entity._relations = {k: list(v) for k, v in entity._relations.items()}
             new_doc._entities.append(new_entity)
-        
+
         return new_doc
 
 
@@ -562,7 +573,7 @@ class Span:
         self._label = label
         self._string_store = string_store or get_string_store()
         self._attrs: Dict[str, Any] = dict(kwargs)
-        self._relations: Dict[str, List['Span']] = {}
+        self._relations: Dict[str, List[Span]] = {}
 
     def __repr__(self) -> str:
         text = self.text
@@ -809,10 +820,10 @@ class Token:
         self._lemma: str = ""
         self._tag: str = ""
         self._dep: str = ""
-        self._head: Optional['Token'] = None
+        self._head: Optional[Token] = None
         self._ner_label: str = ""
         self._attrs: Dict[str, Any] = {}
-        self._relations: Dict[str, List[Union['Token', 'Span']]] = {}
+        self._relations: Dict[str, List[Union[Token, Span]]] = {}
 
     def __repr__(self) -> str:
         return f"Token(\"{self.text}\", pos=\"{self._pos}\")"
@@ -1078,7 +1089,7 @@ class Token:
         if not descendants:
             return self
         leftmost = self
-        for t in [self] + descendants:
+        for t in [self, *descendants]:
             if t.start < leftmost.start:
                 leftmost = t
         return leftmost
@@ -1092,7 +1103,7 @@ class Token:
         if not descendants:
             return self
         rightmost = self
-        for t in [self] + descendants:
+        for t in [self, *descendants]:
             if t.end > rightmost.end:
                 rightmost = t
         return rightmost
@@ -1153,7 +1164,7 @@ class PipelineComponent(ABC):
         self._disabled = disabled
         self._state = ComponentState.UNINITIALIZED
         self._config: Dict[str, Any] = {}
-        self._pipeline: Optional['Pipeline'] = None
+        self._pipeline: Optional[Pipeline] = None
         self._frozen = False
         self._requirements: List[str] = []
         self._provides: List[str] = []
@@ -2008,7 +2019,7 @@ class ConfigSchema:
 
             # 类型检查
             if not isinstance(value, expected_type):
-                if expected_type == float and isinstance(value, int):
+                if expected_type is float and isinstance(value, int):
                     pass
                 else:
                     errors.append(
@@ -2247,7 +2258,7 @@ class PipelineConfig:
         Returns:
             PipelineConfig实例
         """
-        with open(file_path, 'r', encoding='utf-8') as f:
+        with open(file_path, encoding='utf-8') as f:
             config = json.load(f)
         return cls(config=config)
 
@@ -4643,7 +4654,7 @@ class StreamProcessor:
     def _count_lines(self, file_path: str, encoding: str = "utf-8") -> int:
         """计算文件行数"""
         count = 0
-        with open(file_path, 'r', encoding=encoding) as f:
+        with open(file_path, encoding=encoding) as f:
             for _ in f:
                 count += 1
         return count
@@ -4688,7 +4699,7 @@ class StreamProcessor:
             if output_path:
                 output_file = open(output_path, 'w', encoding=encoding)
 
-            with open(file_path, 'r', encoding=encoding) as f:
+            with open(file_path, encoding=encoding) as f:
                 batch = []
                 for line in f:
                     line = line.strip()
@@ -5537,65 +5548,65 @@ class POSTaggerComponent(PipelineComponent):
 # ============================================================
 
 __all__ = [
-    # 步骤58: 词汇表共享
-    "StringStore",
-    "get_string_store",
-    # 步骤55: Doc对象
-    "Doc",
-    # 步骤56: Span对象
-    "Span",
-    # 步骤57: Token对象
-    "Token",
-    # 步骤51: Pipeline架构
-    "ComponentState",
-    "PipelineComponent",
-    "ConditionalBranch",
-    "Pipeline",
-    # 步骤52: 组件注册
-    "ComponentRegistry",
-    "get_registry",
-    "register_component",
-    # 步骤53: 配置系统
-    "ConfigValidationError",
-    "ConfigSchema",
-    "PipelineConfig",
-    # 步骤54: 组件冻结
-    "FreezableParams",
-    # 步骤59: 模型版本管理
-    "VersionInfo",
-    "ModelVersion",
-    "ModelLifecycle",
-    # 步骤60: 模型缓存
-    "LRUCache",
-    "ModelCache",
     # 步骤61: RESTful API
     "APIRequest",
     "APIResponse",
-    "RequestValidator",
-    "Route",
     "APIServer",
-    # 步骤62: gRPC接口
-    "RPCMessage",
-    "RPCError",
-    "RPCStatusCode",
-    "RPCServiceDescriptor",
-    "RPCMethodHandler",
-    "RPCService",
-    "RPCServer",
-    "RPCClient",
     # 步骤63: 异步处理
     "AsyncPipeline",
     "AsyncTaskManager",
-    # 步骤64: 流式处理
-    "ProgressCallback",
-    "StreamProcessor",
-    # 步骤65: 插件系统
-    "PluginState",
-    "PluginInfo",
+    # 步骤52: 组件注册
+    "ComponentRegistry",
+    # 步骤51: Pipeline架构
+    "ComponentState",
+    "ConditionalBranch",
+    "ConfigSchema",
+    # 步骤53: 配置系统
+    "ConfigValidationError",
+    # 步骤55: Doc对象
+    "Doc",
+    # 步骤54: 组件冻结
+    "FreezableParams",
+    # 步骤60: 模型缓存
+    "LRUCache",
+    "ModelCache",
+    "ModelLifecycle",
+    "ModelVersion",
+    "POSTaggerComponent",
+    "Pipeline",
+    "PipelineComponent",
+    "PipelineConfig",
     "Plugin",
     "PluginDependency",
+    "PluginInfo",
     "PluginManager",
+    # 步骤65: 插件系统
+    "PluginState",
+    # 步骤64: 流式处理
+    "ProgressCallback",
+    "RPCClient",
+    "RPCError",
+    # 步骤62: gRPC接口
+    "RPCMessage",
+    "RPCMethodHandler",
+    "RPCServer",
+    "RPCService",
+    "RPCServiceDescriptor",
+    "RPCStatusCode",
+    "RequestValidator",
+    "Route",
     # 示例组件
     "SimpleTokenizerComponent",
-    "POSTaggerComponent",
+    # 步骤56: Span对象
+    "Span",
+    "StreamProcessor",
+    # 步骤58: 词汇表共享
+    "StringStore",
+    # 步骤57: Token对象
+    "Token",
+    # 步骤59: 模型版本管理
+    "VersionInfo",
+    "get_registry",
+    "get_string_store",
+    "register_component",
 ]

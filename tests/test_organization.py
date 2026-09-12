@@ -3,22 +3,22 @@
 import pytest
 
 from AuroraNLP.ner.organization import (
+    ENTERPRISE_SUFFIXES,
+    GOV_SUFFIXES,
+    HOSPITAL_SUFFIXES,
+    SCHOOL_SUFFIXES,
+    Enterprise,
+    EnterpriseType,
+    Government,
+    GovType,
+    Hospital,
+    HospitalType,
+    Organization,
     OrganizationDatabase,
     OrganizationManager,
-    Organization,
-    Enterprise,
-    School,
-    Hospital,
-    Government,
     OrgType,
-    EnterpriseType,
+    School,
     SchoolType,
-    HospitalType,
-    GovType,
-    ENTERPRISE_SUFFIXES,
-    SCHOOL_SUFFIXES,
-    HOSPITAL_SUFFIXES,
-    GOV_SUFFIXES,
 )
 
 

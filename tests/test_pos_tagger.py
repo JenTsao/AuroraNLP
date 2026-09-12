@@ -2,7 +2,7 @@
 
 import pytest
 
-from AuroraNLP.parsing.pos_tagger import HMMPOSTagger, CRFPOSTagger, POS_TAGS, DEFAULT_TAGS
+from AuroraNLP.parsing.pos_tagger import DEFAULT_TAGS, POS_TAGS, CRFPOSTagger, HMMPOSTagger
 
 
 @pytest.fixture

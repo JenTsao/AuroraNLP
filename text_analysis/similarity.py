@@ -1,6 +1,6 @@
 import math
-from typing import List, Dict, Set, Optional, Tuple
 from collections import Counter
+from typing import Dict, List, Optional, Set, Tuple
 
 
 class Similarity:
@@ -218,16 +218,16 @@ class Similarity:
     ) -> float:
         """
         计算两个文本之间的编辑距离相似度。
-        
+
         编辑距离算法基于字符级别，不需要分词和停用词处理。
         segmentor 和 stopwords 参数仅为保持接口一致性而保留，实际不使用。
-        
+
         Args:
             text1: 第一个文本
             text2: 第二个文本
             segmentor: 分词器（编辑距离方法不使用此参数）
             stopwords: 停用词集合（编辑距离方法不使用此参数）
-        
+
         Returns:
             相似度分数，范围 [0, 1]
         """
@@ -250,7 +250,7 @@ class Similarity:
         valid_methods = ['cosine', 'jaccard', 'dice', 'overlap', 'edit']
         if method not in valid_methods:
             raise ValueError(f"Unknown method: {method}. Use one of {valid_methods}.")
-        
+
         method_func = {
             'cosine': self.cosine_similarity,
             'jaccard': self.jaccard_similarity,

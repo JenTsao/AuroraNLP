@@ -2,14 +2,14 @@
 
 import pytest
 
+from AuroraNLP.dictionary.dictionary import DictionaryManager
 from AuroraNLP.dictionary.incremental_dictionary import (
+    DictionaryObserver,
+    DictionaryUpdateEvent,
+    DictionaryUpdateManager,
     IncrementalDictionary,
     IncrementalUserDictionary,
-    DictionaryUpdateEvent,
-    DictionaryObserver,
-    DictionaryUpdateManager,
 )
-from AuroraNLP.dictionary.dictionary import DictionaryManager
 
 
 class TestIncrementalDictionary:

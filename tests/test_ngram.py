@@ -1,6 +1,7 @@
 """N-gram 模型测试"""
 import pytest
-from AuroraNLP.segmentation.ngram import NGramModel, BigramModel, TrigramModel
+
+from AuroraNLP.segmentation.ngram import BigramModel, NGramModel, TrigramModel
 
 
 class TestNGramInit:

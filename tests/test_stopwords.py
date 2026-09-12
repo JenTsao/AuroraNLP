@@ -1,6 +1,8 @@
 """停用词测试"""
 import os
+
 import pytest
+
 from AuroraNLP.dictionary.stopwords import StopWords
 
 

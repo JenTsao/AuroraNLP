@@ -1,5 +1,6 @@
 """Segmentor 主类测试"""
 import pytest
+
 from AuroraNLP.segmentation.segmentor import Segmentor
 
 

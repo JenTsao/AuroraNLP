@@ -1,4 +1,5 @@
-from typing import List, Tuple, Optional, Iterator
+from typing import Iterator, List, Optional, Tuple
+
 from AuroraNLP.segmentation.segmentor import Segmentor
 
 
@@ -166,7 +167,7 @@ class BatchProcessor:
     ) -> List[List[str]]:
         results = []
 
-        with open(file_path, 'r', encoding=encoding) as f:
+        with open(file_path, encoding=encoding) as f:
             if line_by_line:
                 for line in f:
                     line = line.strip()

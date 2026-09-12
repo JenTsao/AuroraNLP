@@ -1,7 +1,7 @@
-import time
 import functools
-from typing import List, Callable, Dict, Any, Optional
+import time
 from dataclasses import dataclass
+from typing import Any, Callable, Dict, List, Optional
 
 
 @dataclass
@@ -189,4 +189,4 @@ def measure_time(func):
     return wrapper
 
 
-__all__ = ['PerformanceBenchmark', 'BenchmarkResult', 'measure_time']
+__all__ = ['BenchmarkResult', 'PerformanceBenchmark', 'measure_time']

@@ -1,5 +1,5 @@
 import os
-from typing import Dict, Optional, Set, List
+from typing import Dict, List, Optional, Set
 
 
 class TraditionalChineseConverter:
@@ -7,7 +7,7 @@ class TraditionalChineseConverter:
     繁简转换类
     """
     DEFAULT_CONVERSION_PATH = os.path.join(os.path.dirname(__file__), 'data', 'zh_conversion.json')
-    
+
     def __init__(self, load_default: bool = True):
         self._simplified_to_traditional: Dict[str, str] = {}
         self._traditional_to_simplified: Dict[str, str] = {}
@@ -16,10 +16,10 @@ class TraditionalChineseConverter:
             'hk': {},  # 香港变体
             'mo': {}   # 澳门变体
         }
-        
+
         if load_default:
             self._load_default_conversion()
-    
+
     def _load_default_conversion(self) -> None:
         """
         加载默认的繁简转换映射
@@ -254,12 +254,12 @@ class TraditionalChineseConverter:
             '锯': '鋸', '俱': '俱', '句': '句', '矩': '矩',
             '拒': '拒', '炬': '炬', '巨': '巨'
         }
-        
+
         # 初始化转换映射
         for simplified, traditional in basic_conversion.items():
             self._simplified_to_traditional[simplified] = traditional
             self._traditional_to_simplified[traditional] = simplified
-        
+
         # 地区变体映射
         self._region_variants['tw'] = {
             '後': '後',  # 台湾使用「後」
@@ -274,7 +274,7 @@ class TraditionalChineseConverter:
             '那裡': '那裡',  # 台湾使用「那裡」
             '哪裡': '哪裡'   # 台湾使用「哪裡」
         }
-        
+
         self._region_variants['hk'] = {
             '後': '後',  # 香港使用「後」
             '着': '着',  # 香港使用「着」
@@ -288,7 +288,7 @@ class TraditionalChineseConverter:
             '那裡': '那裡',  # 香港使用「那裡」
             '哪裡': '哪裡'   # 香港使用「哪裡」
         }
-        
+
         self._region_variants['mo'] = {
             '後': '後',  # 澳门使用「後」
             '着': '着',  # 澳门使用「着」
@@ -302,15 +302,15 @@ class TraditionalChineseConverter:
             '那裡': '那裡',  # 澳门使用「那裡」
             '哪裡': '哪裡'   # 澳门使用「哪裡」
         }
-    
+
     def simplified_to_traditional(self, text: str, region: Optional[str] = None) -> str:
         """
         将简体中文转换为繁体中文
-        
+
         Args:
             text: 简体中文字符串
             region: 地区代码 ('tw', 'hk', 'mo')，可选
-            
+
         Returns:
             繁体中文字符串
         """
@@ -326,15 +326,15 @@ class TraditionalChineseConverter:
             else:
                 result.append(char)
         return ''.join(result)
-    
+
     def traditional_to_simplified(self, text: str, region: Optional[str] = None) -> str:
         """
         将繁体中文转换为简体中文
-        
+
         Args:
             text: 繁体中文字符串
             region: 地区代码 ('tw', 'hk', 'mo')，可选
-            
+
         Returns:
             简体中文字符串
         """
@@ -345,14 +345,14 @@ class TraditionalChineseConverter:
             else:
                 result.append(char)
         return ''.join(result)
-    
+
     def detect_language_variant(self, text: str) -> Optional[str]:
         """
         检测文本的繁体中文变体类型
-        
+
         Args:
             text: 中文文本
-            
+
         Returns:
             地区代码 ('tw', 'hk', 'mo') 或 None
         """
@@ -362,47 +362,47 @@ class TraditionalChineseConverter:
             'hk': 0,
             'mo': 0
         }
-        
+
         # 台湾特有词汇
         tw_markers = ['臺灣', '總統', '行政院', '立法院', '國民黨', '民進黨', '臺北', '高雄', '臺中', '臺南']
         # 香港特有词汇
         hk_markers = ['香港', '特首', '立法會', '行政長官', '港幣', '港督', '九龍', '新界', '港島', '尖沙咀']
         # 澳门特有词汇
         mo_markers = ['澳門', '特首', '立法會', '行政長官', '澳門幣', '氹仔', '路環', '澳門半島', '大三巴', '葡京']
-        
+
         for marker in tw_markers:
             if marker in text:
                 scores['tw'] += 1
-        
+
         for marker in hk_markers:
             if marker in text:
                 scores['hk'] += 1
-        
+
         for marker in mo_markers:
             if marker in text:
                 scores['mo'] += 1
-        
+
         # 返回得分最高的地区
         max_score = max(scores.values())
         if max_score > 0:
             return max(scores, key=scores.get)
         return None
-    
+
     def add_conversion(self, simplified: str, traditional: str) -> None:
         """
         添加自定义的繁简转换映射
-        
+
         Args:
             simplified: 简体字
             traditional: 繁体字
         """
         self._simplified_to_traditional[simplified] = traditional
         self._traditional_to_simplified[traditional] = simplified
-    
+
     def add_region_variant(self, region: str, traditional: str, variant: str) -> None:
         """
         添加地区变体
-        
+
         Args:
             region: 地区代码 ('tw', 'hk', 'mo')
             traditional: 标准繁体字
@@ -410,32 +410,32 @@ class TraditionalChineseConverter:
         """
         if region in self._region_variants:
             self._region_variants[region][traditional] = variant
-    
+
     def get_simplified_chars(self) -> Set[str]:
         """
         获取所有简体字
-        
+
         Returns:
             简体字集合
         """
         return set(self._simplified_to_traditional.keys())
-    
+
     def get_traditional_chars(self) -> Set[str]:
         """
         获取所有繁体字
-        
+
         Returns:
             繁体字集合
         """
         return set(self._traditional_to_simplified.keys())
-    
+
     def get_region_variants(self, region: str) -> Dict[str, str]:
         """
         获取指定地区的变体映射
-        
+
         Args:
             region: 地区代码 ('tw', 'hk', 'mo')
-            
+
         Returns:
             变体映射字典
         """
@@ -446,15 +446,15 @@ class TraditionalChineseDictionary:
     """
     繁体中文词典类
     """
-    
+
     def __init__(self, converter: Optional[TraditionalChineseConverter] = None):
         self._converter = converter or TraditionalChineseConverter()
         self._dictionary = set()
-    
+
     def add_word(self, word: str, traditional: Optional[str] = None) -> None:
         """
         添加词汇到词典
-        
+
         Args:
             word: 词汇（可以是简体或繁体）
             traditional: 对应的繁体形式（可选）
@@ -465,64 +465,64 @@ class TraditionalChineseDictionary:
             # 自动转换为繁体
             traditional_word = self._converter.simplified_to_traditional(word)
             self._dictionary.add(traditional_word)
-    
+
     def add_words(self, words: List[str]) -> None:
         """
         批量添加词汇
-        
+
         Args:
             words: 词汇列表
         """
         for word in words:
             self.add_word(word)
-    
+
     def contains(self, word: str) -> bool:
         """
         检查词典是否包含指定词汇
-        
+
         Args:
             word: 要检查的词汇
-            
+
         Returns:
             是否包含
         """
         # 转换为繁体后检查
         traditional_word = self._converter.simplified_to_traditional(word)
         return traditional_word in self._dictionary
-    
+
     def get_words(self) -> Set[str]:
         """
         获取所有词汇
-        
+
         Returns:
             词汇集合
         """
         return self._dictionary.copy()
-    
+
     def load_from_file(self, file_path: str) -> int:
         """
         从文件加载词典
-        
+
         Args:
             file_path: 文件路径
-            
+
         Returns:
             加载的词汇数量
         """
         count = 0
         if os.path.exists(file_path):
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(file_path, encoding='utf-8') as f:
                 for line in f:
                     word = line.strip()
                     if word:
                         self.add_word(word)
                         count += 1
         return count
-    
+
     def save_to_file(self, file_path: str) -> None:
         """
         保存词典到文件
-        
+
         Args:
             file_path: 文件路径
         """

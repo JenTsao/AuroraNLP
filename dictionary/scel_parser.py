@@ -1,7 +1,7 @@
-import struct
 import os
-from typing import Dict, List, Tuple, Optional, BinaryIO
+import struct
 from dataclasses import dataclass, field
+from typing import BinaryIO, Dict, List, Optional, Tuple
 
 
 @dataclass
