@@ -15,6 +15,7 @@ AuroraNLP 企业级功能模块 - 阶段六
 
 约束：零外部依赖，纯Python标准库实现
 """
+from __future__ import annotations
 
 import json
 import logging
