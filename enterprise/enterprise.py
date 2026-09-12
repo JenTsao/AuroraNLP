@@ -1938,8 +1938,13 @@ class CanaryDeployer:
 
     def select_version(self, request_key: str | None = None) -> str | None:
         """根据规则选择处理请求的版本"""
+        import random
+
         with self._lock:
-            rand_val = hash(request_key or str(time.time())) % 10000 / 100.0
+            if request_key is not None:
+                rand_val = hash(request_key) % 10000 / 100.0
+            else:
+                rand_val = random.uniform(0, 100)
             cumulative = 0.0
             for vid, version in self._versions.items():
                 if version.state in [DeploymentState.ACTIVE, DeploymentState.STAGING]:
