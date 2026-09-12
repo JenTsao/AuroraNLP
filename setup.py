@@ -4,10 +4,17 @@ from setuptools import setup, find_packages
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
+_found = find_packages(exclude=['tests', 'tests.*', 'examples', 'examples.*'])
+_packages = ['AuroraNLP'] + ['AuroraNLP.' + p for p in _found]
+_package_dir = {'AuroraNLP': '.'}
+for p in _found:
+    _package_dir['AuroraNLP.' + p] = p
+
 setup(
     name="auroranlp_core",
     version="1.0.0",
-    packages=find_packages(exclude=['tests', 'tests.*', 'examples', 'examples.*']),
+    packages=_packages,
+    package_dir=_package_dir,
     package_data={
         'AuroraNLP': [
             'data/*.txt',
@@ -21,7 +28,10 @@ setup(
     },
     include_package_data=True,
     python_requires=">=3.8",
-    install_requires=[],
+    install_requires=[
+        "requests>=2.20.0",
+        "numpy>=1.20.0",
+    ],
     extras_require={
         "dev": [
             "pytest>=7.0.0",

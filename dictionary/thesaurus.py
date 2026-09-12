@@ -177,7 +177,7 @@ class SemanticCategory:
 
 class Thesaurus:
     DEFAULT_THESAURUS_PATH = os.path.join(
-        os.path.dirname(__file__), 'data', 'thesaurus.txt'
+        os.path.dirname(__file__), '..', 'data', 'thesaurus.txt'
     )
     
     def __init__(self, load_default: bool = True):

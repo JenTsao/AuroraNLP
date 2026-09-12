@@ -4,7 +4,7 @@ from AuroraNLP.dictionary.dictionary import Dictionary
 
 
 class DomainDictionary(Dictionary):
-    DOMAIN_DATA_DIR = os.path.join(os.path.dirname(__file__), 'data', 'domain_dictionaries')
+    DOMAIN_DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'domain_dictionaries')
     
     # 预定义领域及其默认优先级
     DOMAINS = {
