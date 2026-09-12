@@ -29,25 +29,33 @@ class TestSimilarityMethods:
 
     def test_cosine_similarity(self, similarity, mock_segmentor):
         """测试余弦相似度"""
-        score = similarity.cosine_similarity("自然语言处理", "自然语言分析", mock_segmentor)
+        score = similarity.cosine_similarity(
+            "自然语言处理", "自然语言分析", mock_segmentor
+        )
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
 
     def test_jaccard_similarity(self, similarity, mock_segmentor):
         """测试 Jaccard 相似度"""
-        score = similarity.jaccard_similarity("自然语言处理", "自然语言分析", mock_segmentor)
+        score = similarity.jaccard_similarity(
+            "自然语言处理", "自然语言分析", mock_segmentor
+        )
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
 
     def test_dice_similarity(self, similarity, mock_segmentor):
         """测试 Dice 相似度"""
-        score = similarity.dice_similarity("自然语言处理", "自然语言分析", mock_segmentor)
+        score = similarity.dice_similarity(
+            "自然语言处理", "自然语言分析", mock_segmentor
+        )
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
 
     def test_overlap_similarity(self, similarity, mock_segmentor):
         """测试重叠相似度"""
-        score = similarity.overlap_similarity("自然语言处理", "自然语言分析", mock_segmentor)
+        score = similarity.overlap_similarity(
+            "自然语言处理", "自然语言分析", mock_segmentor
+        )
         assert isinstance(score, float)
         assert 0.0 <= score <= 1.0
 
@@ -71,7 +79,9 @@ class TestSimilarityMethods:
         """测试批量相似度"""
         query = "自然语言处理"
         documents = ["深度学习", "自然语言分析", "机器学习"]
-        results = similarity.batch_similarity(query, documents, mock_segmentor, method='cosine')
+        results = similarity.batch_similarity(
+            query, documents, mock_segmentor, method="cosine"
+        )
         assert isinstance(results, list)
         assert len(results) == 3
         # 结果应按分数降序排列
@@ -91,14 +101,22 @@ class TestSimilarityEdge:
 
     def test_identical_text(self, similarity, mock_segmentor):
         """测试相同文本相似度为1"""
-        score = similarity.jaccard_similarity("自然语言处理", "自然语言处理", mock_segmentor)
+        score = similarity.jaccard_similarity(
+            "自然语言处理", "自然语言处理", mock_segmentor
+        )
         assert score == 1.0
-        score2 = similarity.dice_similarity("自然语言处理", "自然语言处理", mock_segmentor)
+        score2 = similarity.dice_similarity(
+            "自然语言处理", "自然语言处理", mock_segmentor
+        )
         assert score2 == 1.0
-        score3 = similarity.overlap_similarity("自然语言处理", "自然语言处理", mock_segmentor)
+        score3 = similarity.overlap_similarity(
+            "自然语言处理", "自然语言处理", mock_segmentor
+        )
         assert score3 == 1.0
 
     def test_invalid_method(self, similarity, mock_segmentor):
         """测试无效方法抛异常"""
         with pytest.raises(ValueError):
-            similarity.batch_similarity("文本", ["文档"], mock_segmentor, method='invalid')
+            similarity.batch_similarity(
+                "文本", ["文档"], mock_segmentor, method="invalid"
+            )

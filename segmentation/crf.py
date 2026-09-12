@@ -11,7 +11,9 @@ class CRFFeatureTemplate:
         self.feature_names: List[str] = []
 
     def add_unigram_feature(self, name: str, position: int):
-        def feature_func(tokens: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            tokens: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             idx = pos + position
             if 0 <= idx < len(tokens):
                 token = tokens[idx]
@@ -22,7 +24,9 @@ class CRFFeatureTemplate:
         self.feature_names.append(f"unigram_{name}_{position}")
 
     def add_bigram_feature(self, name: str, position: int):
-        def feature_func(tokens: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            tokens: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             idx = pos + position
             if 0 <= idx < len(tokens) - 1:
                 token1 = tokens[idx]
@@ -34,7 +38,9 @@ class CRFFeatureTemplate:
         self.feature_names.append(f"bigram_{name}_{position}")
 
     def add_transition_feature(self):
-        def feature_func(tokens: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            tokens: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             if prev_tag:
                 return f"TRANS:{prev_tag}->{curr_tag}"
             return None
@@ -43,7 +49,9 @@ class CRFFeatureTemplate:
         self.feature_names.append("transition")
 
     def add_start_feature(self):
-        def feature_func(tokens: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            tokens: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             if pos == 0:
                 return f"START:{curr_tag}"
             return None
@@ -52,7 +60,9 @@ class CRFFeatureTemplate:
         self.feature_names.append("start")
 
     def add_end_feature(self):
-        def feature_func(tokens: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            tokens: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             if pos == len(tokens) - 1:
                 return f"END:{curr_tag}"
             return None
@@ -65,16 +75,18 @@ class CRFFeatureTemplate:
             shape = []
             for char in token:
                 if char.isupper():
-                    shape.append('X')
+                    shape.append("X")
                 elif char.islower():
-                    shape.append('x')
+                    shape.append("x")
                 elif char.isdigit():
-                    shape.append('d')
+                    shape.append("d")
                 else:
                     shape.append(char)
-            return ''.join(shape)
+            return "".join(shape)
 
-        def feature_func(tokens: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            tokens: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             idx = pos + position
             if 0 <= idx < len(tokens):
                 token = tokens[idx]
@@ -86,7 +98,9 @@ class CRFFeatureTemplate:
         self.feature_names.append(f"char_shape_{position}")
 
     def add_length_feature(self, position: int):
-        def feature_func(tokens: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            tokens: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             idx = pos + position
             if 0 <= idx < len(tokens):
                 token = tokens[idx]
@@ -98,7 +112,9 @@ class CRFFeatureTemplate:
         self.feature_names.append(f"length_{position}")
 
     def add_prefix_feature(self, prefix_len: int, position: int):
-        def feature_func(tokens: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            tokens: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             idx = pos + position
             if 0 <= idx < len(tokens):
                 token = tokens[idx]
@@ -110,7 +126,9 @@ class CRFFeatureTemplate:
         self.feature_names.append(f"prefix{prefix_len}_{position}")
 
     def add_suffix_feature(self, suffix_len: int, position: int):
-        def feature_func(tokens: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            tokens: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             idx = pos + position
             if 0 <= idx < len(tokens):
                 token = tokens[idx]
@@ -122,11 +140,7 @@ class CRFFeatureTemplate:
         self.feature_names.append(f"suffix{suffix_len}_{position}")
 
     def extract_features(
-        self,
-        tokens: List[str],
-        pos: int,
-        prev_tag: str,
-        curr_tag: str
+        self, tokens: List[str], pos: int, prev_tag: str, curr_tag: str
     ) -> List[str]:
         features = []
         for feature_func in self.feature_functions:
@@ -178,7 +192,7 @@ class CRFModel:
         l2_reg: float = 0.01,
         max_iter: int = 100,
         epsilon: float = 1e-6,
-        verbose: bool = True
+        verbose: bool = True,
     ):
         if not corpus:
             raise ValueError("Training corpus cannot be empty")
@@ -186,7 +200,9 @@ class CRFModel:
         all_tags = set()
         for tokens, tags in corpus:
             if len(tokens) != len(tags):
-                raise ValueError(f"Tokens and tags length mismatch: {len(tokens)} vs {len(tags)}")
+                raise ValueError(
+                    f"Tokens and tags length mismatch: {len(tokens)} vs {len(tags)}"
+                )
             all_tags.update(tags)
 
         self.tags = sorted(list(all_tags))
@@ -199,7 +215,7 @@ class CRFModel:
         self._max_iter = max_iter
         self._epsilon = epsilon
 
-        prev_loss = float('inf')
+        prev_loss = float("inf")
 
         for iteration in range(max_iter):
             total_loss = 0.0
@@ -215,7 +231,9 @@ class CRFModel:
 
                 for pos in range(len(tokens)):
                     for tag in self.tags:
-                        expected = math.exp(log_probs[pos][tag] + backward[pos][tag] - partition)
+                        expected = math.exp(
+                            log_probs[pos][tag] + backward[pos][tag] - partition
+                        )
 
                         for feature in seq_features[pos][tag]:
                             gradient[feature] -= expected
@@ -225,7 +243,7 @@ class CRFModel:
                     prev_tag = tags[pos - 1] if pos > 0 else None
 
                     features = self.feature_template.extract_features(
-                        tokens, pos, prev_tag or '', curr_tag
+                        tokens, pos, prev_tag or "", curr_tag
                     )
 
                     for feature in features:
@@ -234,7 +252,9 @@ class CRFModel:
                 total_loss += partition
 
             for feature, grad in gradient.items():
-                self.weights[feature] += learning_rate * (grad - l2_reg * self.weights.get(feature, 0))
+                self.weights[feature] += learning_rate * (
+                    grad - l2_reg * self.weights.get(feature, 0)
+                )
 
             for feature in list(self.weights.keys()):
                 if abs(self.weights[feature]) < epsilon:
@@ -252,15 +272,19 @@ class CRFModel:
 
         self._trained = True
 
-    def _extract_sequence_features(self, tokens: List[str]) -> List[Dict[str, List[str]]]:
+    def _extract_sequence_features(
+        self, tokens: List[str]
+    ) -> List[Dict[str, List[str]]]:
         seq_features = []
 
         for pos in range(len(tokens)):
             pos_features: Dict[str, List[str]] = {}
 
             for tag in self.tags:
-                prev_tag = ''
-                features = self.feature_template.extract_features(tokens, pos, prev_tag, tag)
+                prev_tag = ""
+                features = self.feature_template.extract_features(
+                    tokens, pos, prev_tag, tag
+                )
                 pos_features[tag] = features
 
             seq_features.append(pos_features)
@@ -273,7 +297,9 @@ class CRFModel:
             score += self.weights.get(feature, 0.0)
         return score
 
-    def _forward(self, tokens: List[str], seq_features: List[Dict[str, List[str]]]) -> List[Dict[str, float]]:
+    def _forward(
+        self, tokens: List[str], seq_features: List[Dict[str, List[str]]]
+    ) -> List[Dict[str, float]]:
         length = len(tokens)
         alpha = [{} for _ in range(length)]
 
@@ -296,7 +322,9 @@ class CRFModel:
 
         return alpha
 
-    def _backward(self, tokens: List[str], seq_features: List[Dict[str, List[str]]]) -> List[Dict[str, float]]:
+    def _backward(
+        self, tokens: List[str], seq_features: List[Dict[str, List[str]]]
+    ) -> List[Dict[str, float]]:
         length = len(tokens)
         beta = [{} for _ in range(length)]
 
@@ -320,11 +348,11 @@ class CRFModel:
 
     def _log_sum_exp(self, values: List[float]) -> float:
         if not values:
-            return float('-inf')
+            return float("-inf")
 
         max_val = max(values)
-        if max_val == float('-inf'):
-            return float('-inf')
+        if max_val == float("-inf"):
+            return float("-inf")
 
         sum_exp = sum(math.exp(v - max_val) for v in values)
         return max_val + math.log(sum_exp)
@@ -349,7 +377,7 @@ class CRFModel:
 
         for pos in range(1, length):
             for curr_tag in self.tags:
-                best_score = float('-inf')
+                best_score = float("-inf")
                 best_prev_tag = None
 
                 for prev_tag in self.tags:
@@ -366,7 +394,7 @@ class CRFModel:
                 viterbi_scores[pos][curr_tag] = best_score
                 backpointers[pos][curr_tag] = best_prev_tag
 
-        best_final_score = float('-inf')
+        best_final_score = float("-inf")
         best_final_tag = None
 
         for tag in self.tags:
@@ -375,7 +403,7 @@ class CRFModel:
                 best_final_tag = tag
 
         if best_final_tag is None:
-            return ['O'] * length
+            return ["O"] * length
 
         path = [best_final_tag]
         for pos in range(length - 1, 0, -1):
@@ -387,7 +415,9 @@ class CRFModel:
     def predict(self, tokens: List[str]) -> List[str]:
         return self.viterbi(tokens)
 
-    def predict_with_scores(self, tokens: List[str]) -> Tuple[List[str], List[Dict[str, float]]]:
+    def predict_with_scores(
+        self, tokens: List[str]
+    ) -> Tuple[List[str], List[Dict[str, float]]]:
         if not tokens:
             return [], []
 
@@ -404,37 +434,39 @@ class CRFModel:
 
     def save_model(self, filepath: str):
         if not self._trained:
-            raise RuntimeError("Model has not been trained. Call train() first before saving.")
+            raise RuntimeError(
+                "Model has not been trained. Call train() first before saving."
+            )
 
         model_data = {
-            'tags': self.tags,
-            'weights': dict(self.weights),
-            'feature_names': self.feature_template.get_feature_names(),
-            'learning_rate': self._learning_rate,
-            'l2_reg': self._l2_reg,
-            'max_iter': self._max_iter,
-            'epsilon': self._epsilon,
-            'trained': self._trained
+            "tags": self.tags,
+            "weights": dict(self.weights),
+            "feature_names": self.feature_template.get_feature_names(),
+            "learning_rate": self._learning_rate,
+            "l2_reg": self._l2_reg,
+            "max_iter": self._max_iter,
+            "epsilon": self._epsilon,
+            "trained": self._trained,
         }
 
         dir_path = os.path.dirname(filepath)
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
 
-        with open(filepath, 'wb') as f:
+        with open(filepath, "wb") as f:
             pickle.dump(model_data, f)
 
     def load_model(self, filepath: str):
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             model_data = pickle.load(f)
 
-        self.tags = model_data['tags']
-        self.weights = defaultdict(float, model_data['weights'])
-        self._learning_rate = model_data['learning_rate']
-        self._l2_reg = model_data['l2_reg']
-        self._max_iter = model_data['max_iter']
-        self._epsilon = model_data['epsilon']
-        self._trained = model_data['trained']
+        self.tags = model_data["tags"]
+        self.weights = defaultdict(float, model_data["weights"])
+        self._learning_rate = model_data["learning_rate"]
+        self._l2_reg = model_data["l2_reg"]
+        self._max_iter = model_data["max_iter"]
+        self._epsilon = model_data["epsilon"]
+        self._trained = model_data["trained"]
 
         if not self.feature_template.feature_functions:
             self._setup_default_features()
@@ -444,25 +476,25 @@ class CRFModel:
 
     def get_model_info(self) -> Dict[str, Any]:
         if not self._trained:
-            return {'trained': False}
+            return {"trained": False}
 
         return {
-            'trained': True,
-            'num_tags': len(self.tags),
-            'tags': self.tags,
-            'num_features': len(self.weights),
-            'num_feature_templates': len(self.feature_template.feature_functions),
-            'learning_rate': self._learning_rate,
-            'l2_reg': self._l2_reg,
-            'max_iter': self._max_iter
+            "trained": True,
+            "num_tags": len(self.tags),
+            "tags": self.tags,
+            "num_features": len(self.weights),
+            "num_feature_templates": len(self.feature_template.feature_functions),
+            "learning_rate": self._learning_rate,
+            "l2_reg": self._l2_reg,
+            "max_iter": self._max_iter,
         }
 
 
 class CRFSegmentor:
-    STATE_B = 'B'
-    STATE_M = 'M'
-    STATE_E = 'E'
-    STATE_S = 'S'
+    STATE_B = "B"
+    STATE_M = "M"
+    STATE_E = "E"
+    STATE_S = "S"
 
     STATES = [STATE_B, STATE_M, STATE_E, STATE_S]
 
@@ -499,7 +531,7 @@ class CRFSegmentor:
         l2_reg: float = 0.01,
         max_iter: int = 100,
         epsilon: float = 1e-6,
-        verbose: bool = True
+        verbose: bool = True,
     ):
         char_corpus = []
 
@@ -518,7 +550,7 @@ class CRFSegmentor:
             l2_reg=l2_reg,
             max_iter=max_iter,
             epsilon=epsilon,
-            verbose=verbose
+            verbose=verbose,
         )
         self._trained = True
 
@@ -543,12 +575,16 @@ class CRFSegmentor:
                 words.append(text[i])
                 word_start = i + 1
             elif state == self.STATE_E:
-                words.append(text[word_start:i + 1])
+                words.append(text[word_start : i + 1])
                 word_start = i + 1
             elif state == self.STATE_B:
                 word_start = i
 
-        if word_start < len(text) and states and states[-1] not in (self.STATE_E, self.STATE_S):
+        if (
+            word_start < len(text)
+            and states
+            and states[-1] not in (self.STATE_E, self.STATE_S)
+        ):
             words.append(text[word_start:])
 
         return words
@@ -564,7 +600,9 @@ class CRFSegmentor:
 
     def save_model(self, filepath: str):
         if not self._trained:
-            raise RuntimeError("Model has not been trained. Call train() first before saving.")
+            raise RuntimeError(
+                "Model has not been trained. Call train() first before saving."
+            )
         self.model.save_model(filepath)
 
     def load_model(self, filepath: str):
@@ -578,4 +616,4 @@ class CRFSegmentor:
         return self.model.get_model_info()
 
 
-__all__ = ['CRFFeatureTemplate', 'CRFModel', 'CRFSegmentor']
+__all__ = ["CRFFeatureTemplate", "CRFModel", "CRFSegmentor"]

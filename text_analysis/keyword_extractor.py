@@ -47,7 +47,7 @@ class KeywordExtractor:
         text: str,
         segmentor,
         top_k: int = 10,
-        stopwords: Optional[Set[str]] = None
+        stopwords: Optional[Set[str]] = None,
     ) -> List[Tuple[str, float]]:
         words = self._tokenize(text, segmentor)
 
@@ -74,7 +74,7 @@ class KeywordExtractor:
         segmentor,
         top_k: int = 10,
         stopwords: Optional[Set[str]] = None,
-        min_length: int = 1
+        min_length: int = 1,
     ) -> List[Tuple[str, int]]:
         words = self._tokenize(text, segmentor)
 
@@ -96,7 +96,7 @@ class KeywordExtractor:
         window_size: int = 4,
         damping: float = 0.85,
         max_iter: int = 100,
-        stopwords: Optional[Set[str]] = None
+        stopwords: Optional[Set[str]] = None,
     ) -> List[Tuple[str, float]]:
         words = self._tokenize(text, segmentor)
 
@@ -147,4 +147,4 @@ class KeywordExtractor:
         return len(self._document_freq)
 
 
-__all__ = ['KeywordExtractor']
+__all__ = ["KeywordExtractor"]

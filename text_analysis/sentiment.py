@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 class SentimentPolarity(Enum):
     """情感极性"""
+
     POSITIVE = "positive"
     NEGATIVE = "negative"
     NEUTRAL = "neutral"
@@ -25,6 +26,7 @@ class SentimentPolarity(Enum):
 
 class SentimentIntensity(Enum):
     """情感强度等级"""
+
     VERY_WEAK = 1
     WEAK = 2
     MEDIUM = 3
@@ -52,6 +54,7 @@ INTENSITY_MAP = {
 @dataclass
 class SentimentWord:
     """情感词条目"""
+
     word: str
     polarity: SentimentPolarity
     intensity: SentimentIntensity
@@ -70,6 +73,7 @@ class SentimentWord:
 @dataclass
 class DegreeWord:
     """程度副词条目"""
+
     word: str
     degree: float
     category: str = ""
@@ -78,6 +82,7 @@ class DegreeWord:
 @dataclass
 class NegationWord:
     """否定词条目"""
+
     word: str
     strength: float = 1.0
 
@@ -85,6 +90,7 @@ class NegationWord:
 @dataclass
 class SentimentResult:
     """情感分析结果"""
+
     text: str
     score: float
     polarity: SentimentPolarity
@@ -97,9 +103,13 @@ class SentimentResult:
 class SentimentDictionary:
     """情感词典类"""
 
-    DEFAULT_DICT_PATH = os.path.join(os.path.dirname(__file__), 'data', 'sentiment.txt')
-    DEFAULT_NEGATION_PATH = os.path.join(os.path.dirname(__file__), 'data', 'negation_words.txt')
-    DEFAULT_DEGREE_PATH = os.path.join(os.path.dirname(__file__), 'data', 'degree_words.txt')
+    DEFAULT_DICT_PATH = os.path.join(os.path.dirname(__file__), "data", "sentiment.txt")
+    DEFAULT_NEGATION_PATH = os.path.join(
+        os.path.dirname(__file__), "data", "negation_words.txt"
+    )
+    DEFAULT_DEGREE_PATH = os.path.join(
+        os.path.dirname(__file__), "data", "degree_words.txt"
+    )
 
     POSITIVE_CATEGORIES = {
         "joy": "喜悦",
@@ -149,41 +159,85 @@ class SentimentDictionary:
     def _load_builtin_sentiment_words(self) -> None:
         """加载内置情感词"""
         positive_words = [
-            ("好", 3, "joy"), ("很好", 4, "joy"), ("非常好", 5, "joy"),
-            ("开心", 3, "joy"), ("高兴", 3, "joy"), ("快乐", 3, "joy"),
-            ("愉快", 3, "joy"), ("欢乐", 4, "joy"), ("幸福", 4, "joy"),
-            ("满意", 3, "joy"), ("欣喜", 4, "joy"), ("狂喜", 5, "joy"),
-            ("喜欢", 3, "love"), ("喜爱", 4, "love"), ("热爱", 5, "love"),
-            ("棒", 4, "praise"), ("优秀", 5, "praise"), ("完美", 5, "praise"),
-            ("精彩", 4, "praise"), ("出色", 4, "praise"), ("杰出", 5, "praise"),
-            ("赞", 4, "praise"), ("信任", 4, "trust"), ("期待", 3, "anticipation"),
+            ("好", 3, "joy"),
+            ("很好", 4, "joy"),
+            ("非常好", 5, "joy"),
+            ("开心", 3, "joy"),
+            ("高兴", 3, "joy"),
+            ("快乐", 3, "joy"),
+            ("愉快", 3, "joy"),
+            ("欢乐", 4, "joy"),
+            ("幸福", 4, "joy"),
+            ("满意", 3, "joy"),
+            ("欣喜", 4, "joy"),
+            ("狂喜", 5, "joy"),
+            ("喜欢", 3, "love"),
+            ("喜爱", 4, "love"),
+            ("热爱", 5, "love"),
+            ("棒", 4, "praise"),
+            ("优秀", 5, "praise"),
+            ("完美", 5, "praise"),
+            ("精彩", 4, "praise"),
+            ("出色", 4, "praise"),
+            ("杰出", 5, "praise"),
+            ("赞", 4, "praise"),
+            ("信任", 4, "trust"),
+            ("期待", 3, "anticipation"),
             ("惊喜", 4, "surprise_good"),
         ]
 
         negative_words = [
-            ("愤怒", 4, "anger"), ("生气", 3, "anger"), ("气愤", 4, "anger"),
-            ("悲伤", 4, "sadness"), ("难过", 3, "sadness"), ("伤心", 3, "sadness"),
-            ("痛苦", 4, "sadness"), ("失望", 3, "sadness"), ("绝望", 5, "sadness"),
-            ("害怕", 3, "fear"), ("恐惧", 4, "fear"), ("担心", 3, "fear"),
-            ("焦虑", 4, "fear"), ("紧张", 3, "fear"), ("恐慌", 5, "fear"),
-            ("恶心", 4, "disgust"), ("反感", 3, "disgust"), ("厌恶", 4, "disgust"),
-            ("讨厌", 3, "disgust"), ("憎恨", 5, "disgust"),
-            ("震惊", 4, "surprise_bad"), ("糟糕", 3, "negative"),
-            ("差", 2, "negative"), ("坏", 3, "negative"), ("失败", 4, "negative"),
+            ("愤怒", 4, "anger"),
+            ("生气", 3, "anger"),
+            ("气愤", 4, "anger"),
+            ("悲伤", 4, "sadness"),
+            ("难过", 3, "sadness"),
+            ("伤心", 3, "sadness"),
+            ("痛苦", 4, "sadness"),
+            ("失望", 3, "sadness"),
+            ("绝望", 5, "sadness"),
+            ("害怕", 3, "fear"),
+            ("恐惧", 4, "fear"),
+            ("担心", 3, "fear"),
+            ("焦虑", 4, "fear"),
+            ("紧张", 3, "fear"),
+            ("恐慌", 5, "fear"),
+            ("恶心", 4, "disgust"),
+            ("反感", 3, "disgust"),
+            ("厌恶", 4, "disgust"),
+            ("讨厌", 3, "disgust"),
+            ("憎恨", 5, "disgust"),
+            ("震惊", 4, "surprise_bad"),
+            ("糟糕", 3, "negative"),
+            ("差", 2, "negative"),
+            ("坏", 3, "negative"),
+            ("失败", 4, "negative"),
         ]
 
         for word, intensity, category in positive_words:
-            self.add_positive_word(word, INTENSITY_MAP.get(intensity, SentimentIntensity.MEDIUM), category)
+            self.add_positive_word(
+                word, INTENSITY_MAP.get(intensity, SentimentIntensity.MEDIUM), category
+            )
 
         for word, intensity, category in negative_words:
-            self.add_negative_word(word, INTENSITY_MAP.get(intensity, SentimentIntensity.MEDIUM), category)
+            self.add_negative_word(
+                word, INTENSITY_MAP.get(intensity, SentimentIntensity.MEDIUM), category
+            )
 
     def _load_builtin_negation_words(self) -> None:
         """加载内置否定词"""
         negations = [
-            ("不", 1.0), ("没", 1.0), ("没有", 1.0), ("无", 1.0),
-            ("非", 1.0), ("勿", 1.0), ("别", 1.0), ("未", 1.0),
-            ("不曾", 1.0), ("未必", 0.8), ("难以", 0.8),
+            ("不", 1.0),
+            ("没", 1.0),
+            ("没有", 1.0),
+            ("无", 1.0),
+            ("非", 1.0),
+            ("勿", 1.0),
+            ("别", 1.0),
+            ("未", 1.0),
+            ("不曾", 1.0),
+            ("未必", 0.8),
+            ("难以", 0.8),
         ]
         for word, strength in negations:
             self.add_negation_word(word, strength)
@@ -191,13 +245,27 @@ class SentimentDictionary:
     def _load_builtin_degree_words(self) -> None:
         """加载内置程度副词"""
         degrees = [
-            ("很", 1.2, "很"), ("非常", 1.4, "很"), ("十分", 1.4, "很"),
-            ("特别", 1.5, "很"), ("相当", 1.4, "很"), ("挺", 1.2, "很"),
-            ("极", 1.8, "极其"), ("极其", 1.8, "极其"), ("最", 2.0, "极其"),
-            ("太", 1.6, "极其"), ("过于", 1.6, "极其"), ("超级", 1.8, "极其"),
-            ("稍微", 0.3, "轻微"), ("有点", 0.4, "轻微"), ("有些", 0.4, "轻微"),
-            ("比较", 0.6, "比较"), ("相对", 0.6, "比较"), ("更", 1.3, "更"),
-            ("更加", 1.4, "更"), ("越", 1.3, "更"), ("越来越", 1.5, "更"),
+            ("很", 1.2, "很"),
+            ("非常", 1.4, "很"),
+            ("十分", 1.4, "很"),
+            ("特别", 1.5, "很"),
+            ("相当", 1.4, "很"),
+            ("挺", 1.2, "很"),
+            ("极", 1.8, "极其"),
+            ("极其", 1.8, "极其"),
+            ("最", 2.0, "极其"),
+            ("太", 1.6, "极其"),
+            ("过于", 1.6, "极其"),
+            ("超级", 1.8, "极其"),
+            ("稍微", 0.3, "轻微"),
+            ("有点", 0.4, "轻微"),
+            ("有些", 0.4, "轻微"),
+            ("比较", 0.6, "比较"),
+            ("相对", 0.6, "比较"),
+            ("更", 1.3, "更"),
+            ("更加", 1.4, "更"),
+            ("越", 1.3, "更"),
+            ("越来越", 1.5, "更"),
         ]
         for word, degree, category in degrees:
             self.add_degree_word(word, degree, category)
@@ -207,13 +275,13 @@ class SentimentDictionary:
         if not os.path.exists(path):
             raise FileNotFoundError(f"情感词典文件不存在: {path}")
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
 
-                parts = line.split('\t')
+                parts = line.split("\t")
                 if len(parts) < 3:
                     continue
 
@@ -222,9 +290,9 @@ class SentimentDictionary:
                 intensity = int(parts[2].strip())
                 category = parts[3].strip() if len(parts) > 3 else ""
 
-                if polarity_str == 'positive':
+                if polarity_str == "positive":
                     polarity = SentimentPolarity.POSITIVE
-                elif polarity_str == 'negative':
+                elif polarity_str == "negative":
                     polarity = SentimentPolarity.NEGATIVE
                 else:
                     continue
@@ -243,13 +311,13 @@ class SentimentDictionary:
         if not os.path.exists(path):
             raise FileNotFoundError(f"否定词文件不存在: {path}")
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
 
-                parts = line.split('\t')
+                parts = line.split("\t")
                 word = parts[0].strip()
                 strength = float(parts[1]) if len(parts) > 1 else 1.0
                 self.add_negation_word(word, strength)
@@ -259,13 +327,13 @@ class SentimentDictionary:
         if not os.path.exists(path):
             raise FileNotFoundError(f"程度副词文件不存在: {path}")
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
 
-                parts = line.split('\t')
+                parts = line.split("\t")
                 if len(parts) < 2:
                     continue
 
@@ -274,24 +342,34 @@ class SentimentDictionary:
                 category = parts[2].strip() if len(parts) > 2 else ""
                 self.add_degree_word(word, degree, category)
 
-    def add_positive_word(self, word: str, intensity: SentimentIntensity = SentimentIntensity.MEDIUM, category: str = "") -> None:
+    def add_positive_word(
+        self,
+        word: str,
+        intensity: SentimentIntensity = SentimentIntensity.MEDIUM,
+        category: str = "",
+    ) -> None:
         """添加正面情感词"""
         sentiment_word = SentimentWord(
             word=word,
             polarity=SentimentPolarity.POSITIVE,
             intensity=intensity,
-            category=category
+            category=category,
         )
         self._positive_words[word] = sentiment_word
         self._word_count += 1
 
-    def add_negative_word(self, word: str, intensity: SentimentIntensity = SentimentIntensity.MEDIUM, category: str = "") -> None:
+    def add_negative_word(
+        self,
+        word: str,
+        intensity: SentimentIntensity = SentimentIntensity.MEDIUM,
+        category: str = "",
+    ) -> None:
         """添加负面情感词"""
         sentiment_word = SentimentWord(
             word=word,
             polarity=SentimentPolarity.NEGATIVE,
             intensity=intensity,
-            category=category
+            category=category,
         )
         self._negative_words[word] = sentiment_word
         self._word_count += 1
@@ -302,7 +380,9 @@ class SentimentDictionary:
 
     def add_degree_word(self, word: str, degree: float, category: str = "") -> None:
         """添加程度副词"""
-        self._degree_words[word] = DegreeWord(word=word, degree=degree, category=category)
+        self._degree_words[word] = DegreeWord(
+            word=word, degree=degree, category=category
+        )
 
     def get_sentiment_word(self, word: str) -> Optional[SentimentWord]:
         """获取情感词信息"""
@@ -470,7 +550,7 @@ class SentimentDictionary:
             positive_words=positive_words,
             negative_words=negative_words,
             intensity=intensity,
-            confidence=confidence
+            confidence=confidence,
         )
 
     def get_positive_word_count(self) -> int:
@@ -499,17 +579,21 @@ class SentimentDictionary:
 
     def save_sentiment_words(self, path: str) -> None:
         """保存情感词到文件"""
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write("# AuroraNLP 情感词典\\n")
             f.write("# 格式: 词语\\t极性\\t强度\\t类别\\n\\n")
 
             f.write("# 正面情感词\\n")
             for word, sentiment in sorted(self._positive_words.items()):
-                f.write(f"{word}\\t{sentiment.polarity.value}\\t{sentiment.intensity.value}\\t{sentiment.category}\\n")
+                f.write(
+                    f"{word}\\t{sentiment.polarity.value}\\t{sentiment.intensity.value}\\t{sentiment.category}\\n"
+                )
 
             f.write("\\n# 负面情感词\\n")
             for word, sentiment in sorted(self._negative_words.items()):
-                f.write(f"{word}\\t{sentiment.polarity.value}\\t{sentiment.intensity.value}\\t{sentiment.category}\\n")
+                f.write(
+                    f"{word}\\t{sentiment.polarity.value}\\t{sentiment.intensity.value}\\t{sentiment.category}\\n"
+                )
 
     def __len__(self) -> int:
         return self.get_total_word_count()
@@ -534,12 +618,12 @@ class SentimentAnalyzer:
 
 
 __all__ = [
-    'DegreeWord',
-    'NegationWord',
-    'SentimentAnalyzer',
-    'SentimentDictionary',
-    'SentimentIntensity',
-    'SentimentPolarity',
-    'SentimentResult',
-    'SentimentWord',
+    "DegreeWord",
+    "NegationWord",
+    "SentimentAnalyzer",
+    "SentimentDictionary",
+    "SentimentIntensity",
+    "SentimentPolarity",
+    "SentimentResult",
+    "SentimentWord",
 ]

@@ -3,6 +3,7 @@ BiLSTM-CRF 模型
 ==============
 基于 PyTorch 的 BiLSTM-CRF 模型实现
 """
+
 import importlib
 import json
 import os
@@ -20,6 +21,7 @@ class CRF:
     """
     纯 PyTorch 实现的 CRF 层，无需外部依赖
     """
+
     def __init__(self, num_tags: int):
         """
         初始化 CRF
@@ -46,12 +48,14 @@ class CRF:
         Args:
             device: 设备
         """
-        torch = importlib.import_module('torch')
-        nn = importlib.import_module('torch.nn')
+        torch = importlib.import_module("torch")
+        nn = importlib.import_module("torch.nn")
 
         # 转移矩阵
         self.start_transitions = nn.Parameter(torch.empty(self.num_tags + 2))
-        self.transitions = nn.Parameter(torch.empty(self.num_tags + 2, self.num_tags + 2))
+        self.transitions = nn.Parameter(
+            torch.empty(self.num_tags + 2, self.num_tags + 2)
+        )
         self.end_transitions = nn.Parameter(torch.empty(self.num_tags + 2))
 
         # 初始化参数
@@ -94,7 +98,7 @@ class CRF:
 
     def _validate_input(self, emissions, tags, mask):
         """验证输入"""
-        torch = importlib.import_module('torch')
+        torch = importlib.import_module("torch")
 
         if mask is None:
             mask = torch.ones_like(emissions[:, :, 0], dtype=torch.bool)
@@ -116,7 +120,7 @@ class CRF:
         Returns:
             损失值
         """
-        torch = importlib.import_module('torch')
+        torch = importlib.import_module("torch")
         mask = self._validate_input(emissions, tags, mask)
 
         batch_size, seq_len = emissions.shape[:2]
@@ -141,7 +145,7 @@ class CRF:
         Returns:
             最佳路径列表
         """
-        torch = importlib.import_module('torch')
+        torch = importlib.import_module("torch")
 
         if mask is None:
             mask = torch.ones_like(emissions[:, :, 0], dtype=torch.bool)
@@ -175,24 +179,28 @@ class CRF:
         Returns:
             log Z
         """
-        torch = importlib.import_module('torch')
+        torch = importlib.import_module("torch")
 
         batch_size, seq_len = emissions.shape[:2]
 
         # 初始化
-        alpha = self.start_transitions[:self.num_tags].unsqueeze(0) + emissions[:, 0]
+        alpha = self.start_transitions[: self.num_tags].unsqueeze(0) + emissions[:, 0]
 
         # 动态规划
         for t in range(1, seq_len):
             emit_score = emissions[:, t].unsqueeze(1)  # (batch_size, 1, num_tags)
-            trans_score = self.transitions[:self.num_tags, :self.num_tags].unsqueeze(0)  # (1, num_tags, num_tags)
-            next_tag_var = alpha.unsqueeze(2) + emit_score + trans_score  # (batch_size, num_tags, num_tags)
+            trans_score = self.transitions[: self.num_tags, : self.num_tags].unsqueeze(
+                0
+            )  # (1, num_tags, num_tags)
+            next_tag_var = (
+                alpha.unsqueeze(2) + emit_score + trans_score
+            )  # (batch_size, num_tags, num_tags)
 
             next_tag_var = self._log_sum_exp(next_tag_var, dim=1)
             alpha = torch.where(mask[:, t].unsqueeze(1), next_tag_var, alpha)
 
         # 加上 END 转移
-        alpha = alpha + self.end_transitions[:self.num_tags]
+        alpha = alpha + self.end_transitions[: self.num_tags]
 
         # log Z
         return self._log_sum_exp(alpha, dim=1)
@@ -209,7 +217,7 @@ class CRF:
         Returns:
             分数
         """
-        torch = importlib.import_module('torch')
+        torch = importlib.import_module("torch")
 
         batch_size, seq_len = emissions.shape[:2]
 
@@ -218,7 +226,7 @@ class CRF:
 
         # 累积分数
         for t in range(1, seq_len):
-            trans = self.transitions[tags[:, t-1], tags[:, t]]
+            trans = self.transitions[tags[:, t - 1], tags[:, t]]
             emit = emissions[range(batch_size), t, tags[:, t]]
             score += trans + emit
             score = torch.where(mask[:, t], score, score)
@@ -241,7 +249,7 @@ class CRF:
         Returns:
             最佳路径
         """
-        torch = importlib.import_module('torch')
+        torch = importlib.import_module("torch")
 
         seq_len = emissions.shape[0]
 
@@ -250,7 +258,7 @@ class CRF:
         backpointers = []
 
         # 第一个时间步
-        viterbi.append(self.start_transitions[:self.num_tags] + emissions[0])
+        viterbi.append(self.start_transitions[: self.num_tags] + emissions[0])
         backpointers.append(torch.zeros(self.num_tags, dtype=torch.long))
 
         # 动态规划
@@ -260,9 +268,9 @@ class CRF:
 
             for v_idx in range(self.num_tags):
                 # 计算到达 v 的所有可能路径
-                trans = self.transitions[:self.num_tags, v_idx]
+                trans = self.transitions[: self.num_tags, v_idx]
                 emit = emissions[t, v_idx]
-                next_viterbi_t = viterbi[t-1] + trans + emit
+                next_viterbi_t = viterbi[t - 1] + trans + emit
 
                 # 最佳路径和对应的前一个标签
                 best_idx = int(next_viterbi_t.argmax())
@@ -273,14 +281,14 @@ class CRF:
             backpointers.append(torch.stack(next_backpointer))
 
         # 加上 END
-        viterbi[-1] += self.end_transitions[:self.num_tags]
+        viterbi[-1] += self.end_transitions[: self.num_tags]
 
         # 找到最佳路径终点
         best_tag_id = int(viterbi[-1].argmax().item())
         best_path = [best_tag_id]
 
         # 回溯
-        for t_idx in range(len(backpointers)-1, 0, -1):
+        for t_idx in range(len(backpointers) - 1, 0, -1):
             best_tag_id = int(backpointers[t_idx][best_tag_id].item())
             best_path.append(best_tag_id)
 
@@ -299,30 +307,46 @@ class CRF:
         Returns:
             log(sum(exp(vec)))
         """
-        torch = importlib.import_module('torch')
+        torch = importlib.import_module("torch")
 
         max_val, _ = vec.max(dim=dim)
-        return max_val + torch.log(torch.sum(torch.exp(vec - max_val.unsqueeze(dim)), dim=dim))
+        return max_val + torch.log(
+            torch.sum(torch.exp(vec - max_val.unsqueeze(dim)), dim=dim)
+        )
 
 
 # 内部辅助类，不暴露在顶层
 def _create_bilstm_crf_model_class():
     """延迟创建模型类，避免导入问题"""
     try:
-        nn = importlib.import_module('torch.nn')
+        nn = importlib.import_module("torch.nn")
 
         class _BiLSTMCRFModel(nn.Module):
             """
             BiLSTM-CRF 模型内部类
             """
-            def __init__(self, vocab_size, tagset_size, embedding_dim, hidden_dim, num_layers, dropout, use_crf, use_torchcrf):
+
+            def __init__(
+                self,
+                vocab_size,
+                tagset_size,
+                embedding_dim,
+                hidden_dim,
+                num_layers,
+                dropout,
+                use_crf,
+                use_torchcrf,
+            ):
                 super().__init__()
 
                 self.embedding = nn.Embedding(vocab_size, embedding_dim)
                 self.lstm = nn.LSTM(
-                    embedding_dim, hidden_dim, num_layers=num_layers,
-                    bidirectional=True, dropout=dropout if num_layers > 1 else 0.0,
-                    batch_first=True
+                    embedding_dim,
+                    hidden_dim,
+                    num_layers=num_layers,
+                    bidirectional=True,
+                    dropout=dropout if num_layers > 1 else 0.0,
+                    batch_first=True,
                 )
                 self.hidden2tag = nn.Linear(hidden_dim * 2, tagset_size)
                 self.dropout_layer = nn.Dropout(dropout)
@@ -331,15 +355,15 @@ def _create_bilstm_crf_model_class():
 
                 if use_crf:
                     if use_torchcrf:
-                        self.crf = importlib.import_module('torchcrf').CRF(tagset_size)
+                        self.crf = importlib.import_module("torchcrf").CRF(tagset_size)
                     else:
                         self.crf = CRF(tagset_size)
                         self.crf.init_params()
 
             def forward(self, x, tags=None, mask=None):
                 """前向传播"""
-                torch = importlib.import_module('torch')
-                nn = importlib.import_module('torch.nn')
+                torch = importlib.import_module("torch")
+                nn = importlib.import_module("torch.nn")
 
                 if mask is None:
                     mask = torch.ones_like(x, dtype=torch.bool)
@@ -350,18 +374,20 @@ def _create_bilstm_crf_model_class():
 
                 if self.use_crf:
                     if self.use_torchcrf:
-                        loss = -self.crf(tag_scores, tags, mask=mask, reduction='mean')
+                        loss = -self.crf(tag_scores, tags, mask=mask, reduction="mean")
                     else:
                         loss = self.crf(tag_scores, tags, mask)
                 else:
                     loss_fn = nn.CrossEntropyLoss(ignore_index=0)
-                    loss = loss_fn(tag_scores.view(-1, tag_scores.shape[-1]), tags.view(-1))
+                    loss = loss_fn(
+                        tag_scores.view(-1, tag_scores.shape[-1]), tags.view(-1)
+                    )
 
                 return loss
 
             def decode(self, x, mask=None):
                 """解码"""
-                torch = importlib.import_module('torch')
+                torch = importlib.import_module("torch")
 
                 if mask is None:
                     mask = torch.ones_like(x, dtype=torch.bool)
@@ -384,20 +410,23 @@ def _create_bilstm_crf_model_class():
         class _BiLSTMCRFModelStub:
             def __init__(self, *args, **kwargs):
                 raise RuntimeError("PyTorch not available")
+
         return _BiLSTMCRFModelStub
 
 
 class BiLSTMCRF:
     """BiLSTM-CRF 模型"""
 
-    def __init__(self,
-                 vocab_size: int,
-                 tagset_size: int,
-                 embedding_dim: int = 128,
-                 hidden_dim: int = 256,
-                 num_layers: int = 2,
-                 dropout: float = 0.5,
-                 use_crf: bool = True):
+    def __init__(
+        self,
+        vocab_size: int,
+        tagset_size: int,
+        embedding_dim: int = 128,
+        hidden_dim: int = 256,
+        num_layers: int = 2,
+        dropout: float = 0.5,
+        use_crf: bool = True,
+    ):
         """
         初始化 BiLSTM-CRF 模型
 
@@ -430,12 +459,12 @@ class BiLSTMCRF:
     def _setup_model(self):
         """设置模型"""
         # 导入必要的库
-        self._torch = importlib.import_module('torch')
-        self._nn = importlib.import_module('torch.nn')
+        self._torch = importlib.import_module("torch")
+        self._nn = importlib.import_module("torch.nn")
 
         # 尝试导入 pytorch-crf
         try:
-            self._torchcrf = importlib.import_module('torchcrf')
+            self._torchcrf = importlib.import_module("torchcrf")
         except ImportError:
             self._torchcrf = None
 
@@ -449,21 +478,23 @@ class BiLSTMCRF:
             num_layers=self.num_layers,
             dropout=self.dropout,
             use_crf=self.use_crf,
-            use_torchcrf=(self._torchcrf is not None)
+            use_torchcrf=(self._torchcrf is not None),
         )
 
     def is_available(self) -> bool:
         """检查模型是否可用"""
         return self.framework is not None and self.model is not None
 
-    def train(self,
-              train_data: List[Tuple[List[int], List[int]]],
-              val_data: Optional[List[Tuple[List[int], List[int]]]] = None,
-              epochs: int = 10,
-              batch_size: int = 32,
-              learning_rate: float = 0.001,
-              device: Optional[str] = None,
-              verbose: bool = True) -> Dict[str, Any]:
+    def train(
+        self,
+        train_data: List[Tuple[List[int], List[int]]],
+        val_data: Optional[List[Tuple[List[int], List[int]]]] = None,
+        epochs: int = 10,
+        batch_size: int = 32,
+        learning_rate: float = 0.001,
+        device: Optional[str] = None,
+        verbose: bool = True,
+    ) -> Dict[str, Any]:
         """
         训练模型
 
@@ -486,7 +517,9 @@ class BiLSTMCRF:
         if device:
             device_obj = self._torch.device(device)
         else:
-            device_obj = self._torch.device("cuda" if self._torch.cuda.is_available() else "cpu")
+            device_obj = self._torch.device(
+                "cuda" if self._torch.cuda.is_available() else "cpu"
+            )
 
         self.model.to(device_obj)
 
@@ -503,7 +536,7 @@ class BiLSTMCRF:
 
             # 批量处理
             for i in range(0, len(train_data), batch_size):
-                batch_data = train_data[i:i+batch_size]
+                batch_data = train_data[i : i + batch_size]
                 inputs, targets = zip(*batch_data)
 
                 # 填充序列
@@ -519,9 +552,15 @@ class BiLSTMCRF:
                     masks.append([1] * len(seq) + [0] * pad_len)
 
                 # 转换为张量
-                inputs_tensor = self._torch.tensor(padded_inputs, dtype=self._torch.long, device=device_obj)
-                targets_tensor = self._torch.tensor(padded_targets, dtype=self._torch.long, device=device_obj)
-                masks_tensor = self._torch.tensor(masks, dtype=self._torch.bool, device=device_obj)
+                inputs_tensor = self._torch.tensor(
+                    padded_inputs, dtype=self._torch.long, device=device_obj
+                )
+                targets_tensor = self._torch.tensor(
+                    padded_targets, dtype=self._torch.long, device=device_obj
+                )
+                masks_tensor = self._torch.tensor(
+                    masks, dtype=self._torch.bool, device=device_obj
+                )
 
                 # 清零梯度
                 optimizer.zero_grad()
@@ -549,7 +588,7 @@ class BiLSTMCRF:
 
                 with self._torch.no_grad():
                     for i in range(0, len(val_data), batch_size):
-                        batch_data = val_data[i:i+batch_size]
+                        batch_data = val_data[i : i + batch_size]
                         inputs, targets = zip(*batch_data)
 
                         # 填充序列
@@ -565,9 +604,15 @@ class BiLSTMCRF:
                             masks.append([1] * len(seq) + [0] * pad_len)
 
                         # 转换为张量
-                        inputs_tensor = self._torch.tensor(padded_inputs, dtype=self._torch.long, device=device_obj)
-                        targets_tensor = self._torch.tensor(padded_targets, dtype=self._torch.long, device=device_obj)
-                        masks_tensor = self._torch.tensor(masks, dtype=self._torch.bool, device=device_obj)
+                        inputs_tensor = self._torch.tensor(
+                            padded_inputs, dtype=self._torch.long, device=device_obj
+                        )
+                        targets_tensor = self._torch.tensor(
+                            padded_targets, dtype=self._torch.long, device=device_obj
+                        )
+                        masks_tensor = self._torch.tensor(
+                            masks, dtype=self._torch.bool, device=device_obj
+                        )
 
                         # 计算损失
                         loss = self.model(inputs_tensor, targets_tensor, masks_tensor)
@@ -580,10 +625,10 @@ class BiLSTMCRF:
                     print(f"Validation Loss: {avg_val_loss:.4f}")
 
         return {
-            'train_losses': train_losses,
-            'val_losses': val_losses,
-            'final_train_loss': train_losses[-1] if train_losses else 0.0,
-            'final_val_loss': val_losses[-1] if val_losses else 0.0
+            "train_losses": train_losses,
+            "val_losses": val_losses,
+            "final_train_loss": train_losses[-1] if train_losses else 0.0,
+            "final_val_loss": val_losses[-1] if val_losses else 0.0,
         }
 
     def predict(self, input_data: List[List[int]]) -> List[List[int]]:
@@ -617,7 +662,9 @@ class BiLSTMCRF:
             padded_inputs.append(seq + [0] * pad_len)
             masks.append([1] * len(seq) + [0] * pad_len)
 
-        inputs_tensor = self._torch.tensor(padded_inputs, dtype=self._torch.long, device=device)
+        inputs_tensor = self._torch.tensor(
+            padded_inputs, dtype=self._torch.long, device=device
+        )
         masks_tensor = self._torch.tensor(masks, dtype=self._torch.bool, device=device)
 
         with self._torch.no_grad():
@@ -646,12 +693,12 @@ class BiLSTMCRF:
         self.model = self.framework.load_model(model_path)
 
         # 导入必要的库
-        self._torch = importlib.import_module('torch')
-        self._nn = importlib.import_module('torch.nn')
+        self._torch = importlib.import_module("torch")
+        self._nn = importlib.import_module("torch.nn")
 
         # 尝试导入 pytorch-crf
         try:
-            self._torchcrf = importlib.import_module('torchcrf')
+            self._torchcrf = importlib.import_module("torchcrf")
         except ImportError:
             self._torchcrf = None
 
@@ -666,15 +713,17 @@ class BiLSTMCRFSegmentor:
     TAG_S = 3
     TAG_PAD = 4
 
-    TAGS = ['B', 'M', 'E', 'S']
+    TAGS = ["B", "M", "E", "S"]
 
-    def __init__(self,
-                 vocab_size: int = 5000,
-                 embedding_dim: int = 128,
-                 hidden_dim: int = 256,
-                 num_layers: int = 2,
-                 dropout: float = 0.5,
-                 use_crf: bool = True):
+    def __init__(
+        self,
+        vocab_size: int = 5000,
+        embedding_dim: int = 128,
+        hidden_dim: int = 256,
+        num_layers: int = 2,
+        dropout: float = 0.5,
+        use_crf: bool = True,
+    ):
         """初始化"""
         self.vocab_size = vocab_size
         self.vocab = {}
@@ -690,7 +739,7 @@ class BiLSTMCRFSegmentor:
             hidden_dim=hidden_dim,
             num_layers=num_layers,
             dropout=dropout,
-            use_crf=use_crf
+            use_crf=use_crf,
         )
 
     @property
@@ -707,9 +756,9 @@ class BiLSTMCRFSegmentor:
         for text in texts:
             counter.update(text)
 
-        chars = sorted(counter.keys(), key=lambda x: -counter[x])[:self.vocab_size-2]
+        chars = sorted(counter.keys(), key=lambda x: -counter[x])[: self.vocab_size - 2]
 
-        self.vocab = {'<PAD>': 0, '<UNK>': 1}
+        self.vocab = {"<PAD>": 0, "<UNK>": 1}
         for i, char in enumerate(chars, 2):
             self.vocab[char] = i
 
@@ -725,34 +774,36 @@ class BiLSTMCRFSegmentor:
         for c, tag in zip(text, tags):
             if tag == self.TAG_B:
                 if word:
-                    words.append(''.join(word))
+                    words.append("".join(word))
                     word = []
                 word.append(c)
             elif tag == self.TAG_M:
                 word.append(c)
             elif tag == self.TAG_E:
                 word.append(c)
-                words.append(''.join(word))
+                words.append("".join(word))
                 word = []
             elif tag == self.TAG_S:
                 if word:
-                    words.append(''.join(word))
+                    words.append("".join(word))
                     word = []
                 words.append(c)
 
         if word:
-            words.append(''.join(word))
+            words.append("".join(word))
 
         return words
 
-    def train(self,
-              texts: List[str],
-              val_texts: Optional[List[str]] = None,
-              epochs: int = 10,
-              batch_size: int = 32,
-              learning_rate: float = 0.001,
-              device: Optional[str] = None,
-              verbose: bool = True):
+    def train(
+        self,
+        texts: List[str],
+        val_texts: Optional[List[str]] = None,
+        epochs: int = 10,
+        batch_size: int = 32,
+        learning_rate: float = 0.001,
+        device: Optional[str] = None,
+        verbose: bool = True,
+    ):
         """训练"""
         # 构建词汇表
         self._build_vocab(texts)
@@ -781,7 +832,7 @@ class BiLSTMCRFSegmentor:
             batch_size=batch_size,
             learning_rate=learning_rate,
             device=device,
-            verbose=verbose
+            verbose=verbose,
         )
 
         self._trained = True
@@ -803,19 +854,19 @@ class BiLSTMCRFSegmentor:
     def save(self, model_path: str):
         """保存模型"""
         # 保存词汇表
-        vocab_path = model_path + '.vocab'
-        with open(vocab_path, 'w', encoding='utf-8') as f:
-            json.dump({'vocab': self.vocab, 'vocab_size': self.vocab_size}, f)
+        vocab_path = model_path + ".vocab"
+        with open(vocab_path, "w", encoding="utf-8") as f:
+            json.dump({"vocab": self.vocab, "vocab_size": self.vocab_size}, f)
 
         self._model_class.save(model_path)
 
     def load(self, model_path: str):
         """加载模型"""
-        vocab_path = model_path + '.vocab'
-        with open(vocab_path, encoding='utf-8') as f:
+        vocab_path = model_path + ".vocab"
+        with open(vocab_path, encoding="utf-8") as f:
             data = json.load(f)
-            self.vocab = data['vocab']
-            self.vocab_size = data['vocab_size']
+            self.vocab = data["vocab"]
+            self.vocab_size = data["vocab_size"]
             self.inv_vocab = {v: k for k, v in self.vocab.items()}
 
         self._model_class.load(model_path)

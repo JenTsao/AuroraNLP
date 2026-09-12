@@ -23,7 +23,7 @@ class TensorFlowBackend(Framework):
     def _check_availability(self):
         """检查TensorFlow是否可用"""
         try:
-            self._tf = importlib.import_module('tensorflow')
+            self._tf = importlib.import_module("tensorflow")
             self._version = self._tf.__version__
             self._available = True
         except ImportError:
@@ -34,11 +34,11 @@ class TensorFlowBackend(Framework):
         """设置设备（CPU/GPU）"""
         if self.is_available():
             # 检查是否有可用的GPU
-            gpus = self._tf.config.list_physical_devices('GPU')
+            gpus = self._tf.config.list_physical_devices("GPU")
             if gpus:
-                self._device = '/GPU:0'
+                self._device = "/GPU:0"
             else:
-                self._device = '/CPU:0'
+                self._device = "/CPU:0"
         else:
             self._device = None
 
@@ -65,7 +65,7 @@ class TensorFlowBackend(Framework):
                 raise FileNotFoundError(f"Model path not found: {model_path}")
 
             # 检查模型文件格式
-            if not os.path.isdir(model_path) and not model_path.endswith('.h5'):
+            if not os.path.isdir(model_path) and not model_path.endswith(".h5"):
                 raise ValueError("TensorFlow model should be a directory or .h5 file")
 
             model = self._tf.keras.models.load_model(model_path, **kwargs)

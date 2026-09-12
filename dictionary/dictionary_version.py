@@ -11,12 +11,15 @@ from AuroraNLP.dictionary.trie import Trie
 
 class DictionaryVersion:
     """词典版本类"""
+
     def __init__(self, version_id: str, message: str, author: str, timestamp: float):
         self.version_id = version_id
         self.message = message
         self.author = author
         self.timestamp = timestamp
-        self.timestamp_str = datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+        self.timestamp_str = datetime.fromtimestamp(timestamp).strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
         self.changes: Dict[str, List[Tuple[str, Any, Any]]] = {}
         self.dictionary_state: Dict[str, Dict[str, Any]] = {}
 
@@ -24,19 +27,19 @@ class DictionaryVersion:
         """添加变更记录"""
         if word not in self.changes:
             self.changes[word] = []
-        self.changes[word].append(('modify', old_value, new_value))
+        self.changes[word].append(("modify", old_value, new_value))
 
     def add_addition(self, word: str, value: Any):
         """添加新增记录"""
         if word not in self.changes:
             self.changes[word] = []
-        self.changes[word].append(('add', None, value))
+        self.changes[word].append(("add", None, value))
 
     def add_deletion(self, word: str, value: Any):
         """添加删除记录"""
         if word not in self.changes:
             self.changes[word] = []
-        self.changes[word].append(('delete', value, None))
+        self.changes[word].append(("delete", value, None))
 
     def save_dictionary_state(self, dictionary):
         """保存词典状态"""
@@ -44,9 +47,9 @@ class DictionaryVersion:
             found, pos_tag, weight, priority = dictionary.search_with_info(word)
             if found:
                 self.dictionary_state[word] = {
-                    'pos_tag': pos_tag,
-                    'weight': weight,
-                    'priority': priority
+                    "pos_tag": pos_tag,
+                    "weight": weight,
+                    "priority": priority,
                 }
 
     def restore_dictionary_state(self, dictionary):
@@ -57,9 +60,9 @@ class DictionaryVersion:
             found, pos_tag, weight, priority = dictionary.search_with_info(word)
             if found:
                 backup[word] = {
-                    'pos_tag': pos_tag,
-                    'weight': weight,
-                    'priority': priority
+                    "pos_tag": pos_tag,
+                    "weight": weight,
+                    "priority": priority,
                 }
 
         try:
@@ -70,10 +73,7 @@ class DictionaryVersion:
             # 恢复词典状态
             for word, info in self.dictionary_state.items():
                 dictionary.add_word(
-                    word,
-                    info['pos_tag'],
-                    info['weight'],
-                    info['priority']
+                    word, info["pos_tag"], info["weight"], info["priority"]
                 )
 
             # 验证恢复后的状态
@@ -81,7 +81,9 @@ class DictionaryVersion:
             expected_words = set(self.dictionary_state.keys())
 
             if restored_words != expected_words:
-                raise Exception(f"词典状态恢复不完整: 期望 {len(expected_words)} 个词语，实际恢复 {len(restored_words)} 个词语")
+                raise Exception(
+                    f"词典状态恢复不完整: 期望 {len(expected_words)} 个词语，实际恢复 {len(restored_words)} 个词语"
+                )
 
             # 验证每个词语的信息
             for word in expected_words:
@@ -91,9 +93,9 @@ class DictionaryVersion:
 
                 expected_info = self.dictionary_state[word]
                 if (
-                    pos_tag != expected_info['pos_tag'] or
-                    abs(weight - expected_info['weight']) > 1e-9 or
-                    priority != expected_info['priority']
+                    pos_tag != expected_info["pos_tag"]
+                    or abs(weight - expected_info["weight"]) > 1e-9
+                    or priority != expected_info["priority"]
                 ):
                     raise Exception(f"词语 {word} 的信息恢复不正确")
 
@@ -108,10 +110,7 @@ class DictionaryVersion:
             # 恢复备份
             for word, info in backup.items():
                 dictionary.add_word(
-                    word,
-                    info['pos_tag'],
-                    info['weight'],
-                    info['priority']
+                    word, info["pos_tag"], info["weight"], info["priority"]
                 )
 
             raise  # 重新抛出异常，让调用者知道恢复失败
@@ -119,33 +118,33 @@ class DictionaryVersion:
     def to_dict(self) -> Dict[str, Any]:
         """转换为字典"""
         return {
-            'version_id': self.version_id,
-            'message': self.message,
-            'author': self.author,
-            'timestamp': self.timestamp,
-            'timestamp_str': self.timestamp_str,
-            'changes': self.changes,
-            'dictionary_state': self.dictionary_state
+            "version_id": self.version_id,
+            "message": self.message,
+            "author": self.author,
+            "timestamp": self.timestamp,
+            "timestamp_str": self.timestamp_str,
+            "changes": self.changes,
+            "dictionary_state": self.dictionary_state,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'DictionaryVersion':
+    def from_dict(cls, data: Dict[str, Any]) -> "DictionaryVersion":
         """从字典创建实例"""
         version = cls(
-            data['version_id'],
-            data['message'],
-            data['author'],
-            data['timestamp']
+            data["version_id"], data["message"], data["author"], data["timestamp"]
         )
-        version.changes = data.get('changes', {})
-        version.dictionary_state = data.get('dictionary_state', {})
+        version.changes = data.get("changes", {})
+        version.dictionary_state = data.get("dictionary_state", {})
         return version
 
 
 class DictionaryVersionManager:
     """词典版本管理器"""
+
     def __init__(self, storage_dir: str = None):
-        self.storage_dir = storage_dir or os.path.join(os.path.dirname(__file__), 'data', 'versions')
+        self.storage_dir = storage_dir or os.path.join(
+            os.path.dirname(__file__), "data", "versions"
+        )
         os.makedirs(self.storage_dir, exist_ok=True)
         self.versions: Dict[str, DictionaryVersion] = {}
         self.current_version: Optional[str] = None
@@ -154,11 +153,11 @@ class DictionaryVersionManager:
 
     def _load_versions(self):
         """加载版本记录"""
-        version_files = [f for f in os.listdir(self.storage_dir) if f.endswith('.json')]
+        version_files = [f for f in os.listdir(self.storage_dir) if f.endswith(".json")]
         for file_name in version_files:
             file_path = os.path.join(self.storage_dir, file_name)
             try:
-                with open(file_path, encoding='utf-8') as f:
+                with open(file_path, encoding="utf-8") as f:
                     data = json.load(f)
                     version = DictionaryVersion.from_dict(data)
                     self.versions[version.version_id] = version
@@ -169,23 +168,25 @@ class DictionaryVersionManager:
         if self.versions:
             sorted_versions = sorted(self.versions.values(), key=lambda v: v.timestamp)
             self._commit_order = [v.version_id for v in sorted_versions]
-            self.current_version = self._commit_order[-1] if self._commit_order else None
+            self.current_version = (
+                self._commit_order[-1] if self._commit_order else None
+            )
 
     def _save_version(self, version: DictionaryVersion):
         """保存版本记录"""
         file_path = os.path.join(self.storage_dir, f"{version.version_id}.json")
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             json.dump(version.to_dict(), f, ensure_ascii=False, indent=2)
 
     def _generate_version_id(self, dictionary) -> str:
         """生成版本ID"""
         words = sorted(dictionary.get_words())
-        content = ''.join(words)
+        content = "".join(words)
         timestamp = str(time.time())
         combined = content + timestamp
-        return hashlib.sha256(combined.encode('utf-8')).hexdigest()[:10]
+        return hashlib.sha256(combined.encode("utf-8")).hexdigest()[:10]
 
-    def commit(self, dictionary, message: str, author: str = 'anonymous') -> str:
+    def commit(self, dictionary, message: str, author: str = "anonymous") -> str:
         """提交词典变更"""
         # 生成版本ID
         version_id = self._generate_version_id(dictionary)
@@ -206,7 +207,7 @@ class DictionaryVersionManager:
             for word in added_words:
                 found, pos_tag, weight, priority = dictionary.search_with_info(word)
                 if found:
-                    value = {'pos_tag': pos_tag, 'weight': weight, 'priority': priority}
+                    value = {"pos_tag": pos_tag, "weight": weight, "priority": priority}
                     version.add_addition(word, value)
 
             # 找出删除的词语
@@ -219,9 +220,15 @@ class DictionaryVersionManager:
             # 找出修改的词语
             common_words = current_words & prev_words
             for word in common_words:
-                found_current, pos_tag_current, weight_current, priority_current = dictionary.search_with_info(word)
+                found_current, pos_tag_current, weight_current, priority_current = (
+                    dictionary.search_with_info(word)
+                )
                 if found_current:
-                    current_value = {'pos_tag': pos_tag_current, 'weight': weight_current, 'priority': priority_current}
+                    current_value = {
+                        "pos_tag": pos_tag_current,
+                        "weight": weight_current,
+                        "priority": priority_current,
+                    }
                     prev_value = prev_version.dictionary_state.get(word, {})
                     if current_value != prev_value:
                         version.add_change(word, prev_value, current_value)
@@ -255,7 +262,11 @@ class DictionaryVersionManager:
             raise ValueError("没有版本记录")
 
         # 使用提交顺序（按时间升序，最新在后）
-        current_index = self._commit_order.index(self.current_version) if self.current_version in self._commit_order else -1
+        current_index = (
+            self._commit_order.index(self.current_version)
+            if self.current_version in self._commit_order
+            else -1
+        )
 
         if current_index == -1:
             raise ValueError("当前版本未找到")
@@ -270,7 +281,9 @@ class DictionaryVersionManager:
 
     def get_version_history(self) -> List[DictionaryVersion]:
         """获取版本历史（按提交顺序，最新在后）"""
-        return [self.versions[vid] for vid in self._commit_order if vid in self.versions]
+        return [
+            self.versions[vid] for vid in self._commit_order if vid in self.versions
+        ]
 
     def get_version_info(self, version_id: str) -> Optional[DictionaryVersion]:
         """获取版本信息"""
@@ -300,25 +313,40 @@ class DictionaryVersionManager:
 
         # 构建差异结果
         changes = {
-            'added': {word: state2[word] for word in added_words},
-            'deleted': {word: state1[word] for word in deleted_words},
-            'modified': {word: {'old': state1[word], 'new': state2[word]} for word in modified_words}
+            "added": {word: state2[word] for word in added_words},
+            "deleted": {word: state1[word] for word in deleted_words},
+            "modified": {
+                word: {"old": state1[word], "new": state2[word]}
+                for word in modified_words
+            },
         }
 
         return {
-            'version1': version1.to_dict(),
-            'version2': version2.to_dict(),
-            'changes': changes
+            "version1": version1.to_dict(),
+            "version2": version2.to_dict(),
+            "changes": changes,
         }
 
 
 class VersionedDictionary(Dictionary):
     """支持版本控制的词典类"""
-    def __init__(self, load_default: bool = True, priority: int = 0, version_manager: Optional[DictionaryVersionManager] = None):
+
+    def __init__(
+        self,
+        load_default: bool = True,
+        priority: int = 0,
+        version_manager: Optional[DictionaryVersionManager] = None,
+    ):
         super().__init__(load_default, priority)
         self.version_manager = version_manager or DictionaryVersionManager()
 
-    def add_word(self, word: str, pos_tag: Optional[str] = None, weight: float = 1.0, priority: Optional[int] = None) -> None:
+    def add_word(
+        self,
+        word: str,
+        pos_tag: Optional[str] = None,
+        weight: float = 1.0,
+        priority: Optional[int] = None,
+    ) -> None:
         """添加词语并记录变更"""
         old_info = None
         if self.search_in_dict(word):
@@ -333,7 +361,7 @@ class VersionedDictionary(Dictionary):
         result = super().remove_word(word)
         return result
 
-    def commit(self, message: str, author: str = 'anonymous') -> str:
+    def commit(self, message: str, author: str = "anonymous") -> str:
         """提交变更"""
         return self.version_manager.commit(self, message, author)
 
@@ -352,17 +380,31 @@ class VersionedDictionary(Dictionary):
     def get_current_version(self) -> Optional[DictionaryVersion]:
         """获取当前版本"""
         if self.version_manager.current_version:
-            return self.version_manager.get_version_info(self.version_manager.current_version)
+            return self.version_manager.get_version_info(
+                self.version_manager.current_version
+            )
         return None
 
 
 class VersionedUserDictionary(UserDictionary):
     """支持版本控制的用户词典类"""
-    def __init__(self, name: str = "user", priority: int = 100, version_manager: Optional[DictionaryVersionManager] = None):
+
+    def __init__(
+        self,
+        name: str = "user",
+        priority: int = 100,
+        version_manager: Optional[DictionaryVersionManager] = None,
+    ):
         super().__init__(name, priority)
         self.version_manager = version_manager or DictionaryVersionManager()
 
-    def add_word(self, word: str, pos_tag: Optional[str] = None, weight: Optional[float] = None, priority: Optional[int] = None) -> None:
+    def add_word(
+        self,
+        word: str,
+        pos_tag: Optional[str] = None,
+        weight: Optional[float] = None,
+        priority: Optional[int] = None,
+    ) -> None:
         """添加词语并记录变更"""
         old_info = None
         if self.search_in_dict(word):
@@ -377,7 +419,7 @@ class VersionedUserDictionary(UserDictionary):
         result = super().remove_word(word)
         return result
 
-    def commit(self, message: str, author: str = 'anonymous') -> str:
+    def commit(self, message: str, author: str = "anonymous") -> str:
         """提交变更"""
         return self.version_manager.commit(self, message, author)
 
@@ -396,5 +438,7 @@ class VersionedUserDictionary(UserDictionary):
     def get_current_version(self) -> Optional[DictionaryVersion]:
         """获取当前版本"""
         if self.version_manager.current_version:
-            return self.version_manager.get_version_info(self.version_manager.current_version)
+            return self.version_manager.get_version_info(
+                self.version_manager.current_version
+            )
         return None

@@ -229,6 +229,7 @@ class TestFileLogHandler(unittest.TestCase):
 
     def tearDown(self):
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_write_and_read(self):
@@ -265,10 +266,12 @@ class TestFileLogHandler(unittest.TestCase):
             backup_count=3,
         )
         for i in range(50):
-            handler.emit(StructuredLogRecord(
-                level=LogLevel.INFO,
-                message=f"msg_{i:04d}_padding_data",
-            ))
+            handler.emit(
+                StructuredLogRecord(
+                    level=LogLevel.INFO,
+                    message=f"msg_{i:04d}_padding_data",
+                )
+            )
         handler.close()
 
         # 应该有轮转文件
@@ -300,6 +303,7 @@ class TestTimeRotatingFileLogHandler(unittest.TestCase):
 
     def tearDown(self):
         import shutil
+
         shutil.rmtree(self.temp_dir, ignore_errors=True)
 
     def test_write(self):
@@ -345,18 +349,38 @@ class TestLogFilters(unittest.TestCase):
 
     def test_keyword_filter_include(self):
         f = KeywordFilter(keyword="ERROR")
-        self.assertTrue(f.filter(StructuredLogRecord(level=LogLevel.INFO, message="ERROR found")))
-        self.assertFalse(f.filter(StructuredLogRecord(level=LogLevel.INFO, message="normal msg")))
+        self.assertTrue(
+            f.filter(StructuredLogRecord(level=LogLevel.INFO, message="ERROR found"))
+        )
+        self.assertFalse(
+            f.filter(StructuredLogRecord(level=LogLevel.INFO, message="normal msg"))
+        )
 
     def test_keyword_filter_exclude(self):
         f = KeywordFilter(keyword="DEBUG", exclude=True)
-        self.assertFalse(f.filter(StructuredLogRecord(level=LogLevel.INFO, message="DEBUG skip")))
-        self.assertTrue(f.filter(StructuredLogRecord(level=LogLevel.INFO, message="normal msg")))
+        self.assertFalse(
+            f.filter(StructuredLogRecord(level=LogLevel.INFO, message="DEBUG skip"))
+        )
+        self.assertTrue(
+            f.filter(StructuredLogRecord(level=LogLevel.INFO, message="normal msg"))
+        )
 
     def test_module_filter(self):
         f = ModuleFilter(module_name="my_module")
-        self.assertTrue(f.filter(StructuredLogRecord(level=LogLevel.INFO, message="test", logger_name="my_module")))
-        self.assertFalse(f.filter(StructuredLogRecord(level=LogLevel.INFO, message="test", logger_name="other")))
+        self.assertTrue(
+            f.filter(
+                StructuredLogRecord(
+                    level=LogLevel.INFO, message="test", logger_name="my_module"
+                )
+            )
+        )
+        self.assertFalse(
+            f.filter(
+                StructuredLogRecord(
+                    level=LogLevel.INFO, message="test", logger_name="other"
+                )
+            )
+        )
 
 
 class TestLogger(unittest.TestCase):
@@ -751,8 +775,10 @@ class TestConfig(unittest.TestCase):
 
     def test_config_events(self):
         events = []
+
         def callback(event, key, value):
             events.append((event, key, value))
+
         store = InMemoryConfigStore()
         store.watch.watch("key1", callback)
         store.set("key1", "new_value")
@@ -802,6 +828,7 @@ class TestBackupAndFailover(unittest.TestCase):
 
     def test_data_backup_manager(self):
         import tempfile
+
         with tempfile.TemporaryDirectory() as tmpdir:
             backup_dir = os.path.join(tmpdir, "backups")
             source_dir = os.path.join(tmpdir, "source")

@@ -1,7 +1,11 @@
 """TraditionalChinese 繁体中文测试"""
+
 import pytest
 
-from AuroraNLP.core.traditional_chinese import TraditionalChineseConverter, TraditionalChineseDictionary
+from AuroraNLP.core.traditional_chinese import (
+    TraditionalChineseConverter,
+    TraditionalChineseDictionary,
+)
 
 
 class TestTraditionalChineseConverter:
@@ -86,7 +90,7 @@ class TestTraditionalChineseDictionary:
         """从文件加载"""
         td = TraditionalChineseDictionary()
         dict_file = tmp_path / "traditional_dict.txt"
-        dict_file.write_text("自然語言處理\n機器學習\n深度學習\n", encoding='utf-8')
+        dict_file.write_text("自然語言處理\n機器學習\n深度學習\n", encoding="utf-8")
         count = td.load_from_file(str(dict_file))
         assert count == 3
         assert td.contains("自然語言處理")
@@ -100,7 +104,7 @@ class TestTraditionalChineseDictionary:
         td.add_word("机器学习")
         output_file = tmp_path / "output_dict.txt"
         td.save_to_file(str(output_file))
-        content = output_file.read_text(encoding='utf-8')
+        content = output_file.read_text(encoding="utf-8")
         assert len(content.strip()) > 0
-        lines = [line for line in content.strip().split('\n') if line]
+        lines = [line for line in content.strip().split("\n") if line]
         assert len(lines) == 2

@@ -56,6 +56,7 @@ from AuroraNLP.pipeline.pipeline import (
 # 辅助：创建简单的测试用组件
 # ============================================================
 
+
 class _EchoComponent(PipelineComponent):
     """测试用回声组件 - 直接返回原文档"""
 
@@ -94,6 +95,7 @@ class _ErrorComponent(PipelineComponent):
 # ============================================================
 # 1. StringStore 测试
 # ============================================================
+
 
 class TestStringStore:
     """StringStore - 字符串存储池测试"""
@@ -170,6 +172,7 @@ class TestStringStore:
 # 2. Doc 测试
 # ============================================================
 
+
 class TestDoc:
     """Doc - 文档对象测试"""
 
@@ -237,7 +240,9 @@ class TestDoc:
         """测试文档事件回调机制"""
         doc = Doc(text="test")
         results = []
-        doc.register_callback("test_event", lambda d, **kw: results.append(kw.get("val")))
+        doc.register_callback(
+            "test_event", lambda d, **kw: results.append(kw.get("val"))
+        )
         doc.trigger_event("test_event", val=42)
         assert results == [42]
 
@@ -245,6 +250,7 @@ class TestDoc:
 # ============================================================
 # 3. Span 测试
 # ============================================================
+
 
 class TestSpan:
     """Span - 文本片段测试"""
@@ -304,6 +310,7 @@ class TestSpan:
 # 4. Token 测试
 # ============================================================
 
+
 class TestToken:
     """Token - 词元对象测试"""
 
@@ -356,6 +363,7 @@ class TestToken:
 # ============================================================
 # 5. PipelineComponent 测试
 # ============================================================
+
 
 class TestPipelineComponent:
     """PipelineComponent - 流水线组件基类测试"""
@@ -412,6 +420,7 @@ class TestPipelineComponent:
 # 6. ConditionalBranch 测试
 # ============================================================
 
+
 class TestConditionalBranch:
     """ConditionalBranch - 条件分支测试"""
 
@@ -449,6 +458,7 @@ class TestConditionalBranch:
 # ============================================================
 # 7. Pipeline 测试
 # ============================================================
+
 
 class TestPipeline:
     """Pipeline - 流水线测试"""
@@ -532,7 +542,9 @@ class TestPipeline:
         """测试错误处理器捕获组件异常"""
         pipeline = Pipeline(name="error_test")
         pipeline.add_component(_ErrorComponent(name="fail"))
-        pipeline.add_error_handler(lambda d, e: (d.set_attr("error_handled", str(e)), d)[1])
+        pipeline.add_error_handler(
+            lambda d, e: (d.set_attr("error_handled", str(e)), d)[1]
+        )
         doc = pipeline.process("test")
         assert doc.get_attr("error_handled") == "测试异常"
 
@@ -554,6 +566,7 @@ class TestPipeline:
 # ============================================================
 # 8. ComponentRegistry 测试
 # ============================================================
+
 
 class TestComponentRegistry:
     """ComponentRegistry - 组件注册表测试"""
@@ -579,7 +592,9 @@ class TestComponentRegistry:
     def test_通过别名查找组件(self):
         """测试通过别名查找已注册组件"""
         registry = ComponentRegistry()
-        registry.register_class(_EchoComponent, name="echo", aliases=["e", "echo_alias"])
+        registry.register_class(
+            _EchoComponent, name="echo", aliases=["e", "echo_alias"]
+        )
         assert registry.get("e") is _EchoComponent
         assert registry.get("echo_alias") is _EchoComponent
 
@@ -610,6 +625,7 @@ class TestComponentRegistry:
 # ============================================================
 # 9. PipelineConfig 测试
 # ============================================================
+
 
 class TestPipelineConfig:
     """PipelineConfig - 配置管理器测试"""
@@ -696,6 +712,7 @@ class TestPipelineConfig:
 # 10. FreezableParams 测试
 # ============================================================
 
+
 class TestFreezableParams:
     """FreezableParams - 可冻结参数测试"""
 
@@ -769,6 +786,7 @@ class TestFreezableParams:
 # ============================================================
 # 11. ModelVersion 测试
 # ============================================================
+
 
 class TestModelVersion:
     """ModelVersion - 模型版本管理测试"""
@@ -852,6 +870,7 @@ class TestModelVersion:
 # 12. ModelLifecycle 测试
 # ============================================================
 
+
 class TestModelLifecycle:
     """ModelLifecycle - 模型生命周期测试"""
 
@@ -902,6 +921,7 @@ class TestModelLifecycle:
 # ============================================================
 # 13. LRUCache 测试
 # ============================================================
+
 
 class TestLRUCache:
     """LRUCache - LRU缓存测试"""
@@ -986,6 +1006,7 @@ class TestLRUCache:
 # 14. ModelCache 测试
 # ============================================================
 
+
 class TestModelCache:
     """ModelCache - 模型缓存测试"""
 
@@ -1041,6 +1062,7 @@ class TestModelCache:
 # ============================================================
 # 15. APIServer 测试
 # ============================================================
+
 
 class TestAPIServer:
     """APIServer - API服务器测试"""
@@ -1132,6 +1154,7 @@ class TestAPIServer:
 # 16. RPCServer/RPCClient 测试
 # ============================================================
 
+
 class TestRPCFramework:
     """RPC框架 - 服务端和客户端测试"""
 
@@ -1196,7 +1219,7 @@ class TestRPCFramework:
 
         request = RPCMessage(
             payload={"a": 3, "b": 5},
-            metadata={"service": "MathService", "method": "Add"}
+            metadata={"service": "MathService", "method": "Add"},
         )
         response = server._dispatch(request)
         assert response.payload["result"] == 8
@@ -1220,6 +1243,7 @@ class TestRPCFramework:
 # ============================================================
 # 17. AsyncPipeline 测试
 # ============================================================
+
 
 class TestAsyncPipeline:
     """AsyncPipeline - 异步处理测试"""
@@ -1276,6 +1300,7 @@ class TestAsyncPipeline:
 # 18. StreamProcessor 测试
 # ============================================================
 
+
 class TestStreamProcessor:
     """StreamProcessor - 流式处理测试"""
 
@@ -1305,7 +1330,9 @@ class TestStreamProcessor:
         processor = StreamProcessor(pipeline, chunk_size=2)
 
         # 创建临时文件
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8") as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".txt", delete=False, encoding="utf-8"
+        ) as f:
             f.write("第一行\n第二行\n第三行\n")
             temp_path = f.name
 
@@ -1321,14 +1348,15 @@ class TestStreamProcessor:
         pipeline.add_component(_EchoComponent())
         processor = StreamProcessor(pipeline, chunk_size=10)
 
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False, encoding="utf-8") as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".txt", delete=False, encoding="utf-8"
+        ) as f:
             f.write("keep\nskip\nkeep2\n")
             temp_path = f.name
 
         try:
             results = processor.process_file(
-                temp_path,
-                line_filter=lambda line: line.startswith("keep")
+                temp_path, line_filter=lambda line: line.startswith("keep")
             )
             assert len(results) == 2
         finally:
@@ -1338,6 +1366,7 @@ class TestStreamProcessor:
 # ============================================================
 # 19. Plugin/PluginManager 测试
 # ============================================================
+
 
 class TestPluginSystem:
     """Plugin/PluginManager - 插件系统测试"""
@@ -1510,6 +1539,7 @@ class TestPluginSystem:
 # 附加：ProgressCallback 测试
 # ============================================================
 
+
 class TestProgressCallback:
     """ProgressCallback - 进度回调测试"""
 
@@ -1526,7 +1556,7 @@ class TestProgressCallback:
         callback = ProgressCallback(
             total=100,
             callback=lambda p, t, e: reports.append((p, t)),
-            report_interval=0.0  # 立即报告
+            report_interval=0.0,  # 立即报告
         )
         callback.update(10)
         assert len(reports) >= 1
@@ -1536,6 +1566,7 @@ class TestProgressCallback:
 # ============================================================
 # 附加：Route 测试
 # ============================================================
+
 
 class TestRoute:
     """Route - 路由定义测试"""

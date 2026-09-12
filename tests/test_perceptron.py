@@ -1,7 +1,12 @@
 """感知器模型测试"""
+
 import pytest
 
-from AuroraNLP.segmentation.perceptron import PerceptronFeatureTemplate, PerceptronSegmentor, StructuredPerceptron
+from AuroraNLP.segmentation.perceptron import (
+    PerceptronFeatureTemplate,
+    PerceptronSegmentor,
+    StructuredPerceptron,
+)
 
 
 class TestPerceptronInit:
@@ -16,7 +21,7 @@ class TestPerceptronInit:
     def test_perceptron_segmentor_init(self):
         """测试 PerceptronSegmentor 初始化"""
         segmentor = PerceptronSegmentor()
-        assert segmentor.STATES == ['B', 'M', 'E', 'S']
+        assert segmentor.STATES == ["B", "M", "E", "S"]
         assert segmentor.is_trained() is False
 
     def test_perceptron_feature_template_init(self):
@@ -48,7 +53,7 @@ class TestPerceptronSegment:
         result = segmentor.segment("我爱中国")
         assert isinstance(result, list)
         assert len(result) > 0
-        assert ''.join(result) == "我爱中国"
+        assert "".join(result) == "我爱中国"
 
     @pytest.mark.slow
     def test_perceptron_segment_with_states(self, sample_corpus):
@@ -112,11 +117,11 @@ class TestPerceptronModelInfo:
         """测试模型信息"""
         segmentor = PerceptronSegmentor()
         info = segmentor.get_model_info()
-        assert info['trained'] is False
+        assert info["trained"] is False
 
         segmentor.train(sample_corpus, max_iter=5, verbose=False)
         info = segmentor.get_model_info()
-        assert info['trained'] is True
-        assert 'num_tags' in info
-        assert 'tags' in info
-        assert 'num_features' in info
+        assert info["trained"] is True
+        assert "num_tags" in info
+        assert "tags" in info
+        assert "num_features" in info

@@ -25,7 +25,7 @@ class PerformanceBenchmark:
         iterations: int,
         *args,
         operation: Optional[str] = None,
-        **kwargs
+        **kwargs,
     ) -> BenchmarkResult:
         times = []
 
@@ -50,96 +50,64 @@ class PerformanceBenchmark:
             avg_time=avg_time,
             min_time=min_time,
             max_time=max_time,
-            ops_per_second=ops_per_second
+            ops_per_second=ops_per_second,
         )
 
     def benchmark_segment(
-        self,
-        text: str,
-        mode: str = 'bidirectional',
-        iterations: int = 100
+        self, text: str, mode: str = "bidirectional", iterations: int = 100
     ) -> BenchmarkResult:
-        return self._run_benchmark(
-            self.segmentor.segment,
-            iterations,
-            text,
-            mode
-        )
+        return self._run_benchmark(self.segmentor.segment, iterations, text, mode)
 
     def benchmark_segment_with_pos(
-        self,
-        text: str,
-        mode: str = 'bidirectional',
-        iterations: int = 100
+        self, text: str, mode: str = "bidirectional", iterations: int = 100
     ) -> BenchmarkResult:
         return self._run_benchmark(
-            self.segmentor.segment_with_pos,
-            iterations,
-            text,
-            mode
+            self.segmentor.segment_with_pos, iterations, text, mode
         )
 
     def benchmark_extract_keywords(
-        self,
-        text: str,
-        method: str = 'tfidf',
-        top_k: int = 10,
-        iterations: int = 50
+        self, text: str, method: str = "tfidf", top_k: int = 10, iterations: int = 50
     ) -> BenchmarkResult:
         return self._run_benchmark(
-            self.segmentor.extract_keywords,
-            iterations,
-            text,
-            top_k,
-            method
+            self.segmentor.extract_keywords, iterations, text, top_k, method
         )
 
     def benchmark_similarity(
-        self,
-        text1: str,
-        text2: str,
-        method: str = 'cosine',
-        iterations: int = 100
+        self, text1: str, text2: str, method: str = "cosine", iterations: int = 100
     ) -> BenchmarkResult:
         return self._run_benchmark(
-            self.segmentor.compute_similarity,
-            iterations,
-            text1,
-            text2,
-            method
+            self.segmentor.compute_similarity, iterations, text1, text2, method
         )
 
     def run_full_benchmark(
-        self,
-        test_texts: List[str],
-        iterations: int = 100
+        self, test_texts: List[str], iterations: int = 100
     ) -> Dict[str, BenchmarkResult]:
         results = {}
 
         sample_text = test_texts[0] if test_texts else "今天天气很好"
 
-        results['segment_forward'] = self.benchmark_segment(
-            sample_text, 'forward', iterations
+        results["segment_forward"] = self.benchmark_segment(
+            sample_text, "forward", iterations
         )
-        results['segment_backward'] = self.benchmark_segment(
-            sample_text, 'backward', iterations
+        results["segment_backward"] = self.benchmark_segment(
+            sample_text, "backward", iterations
         )
-        results['segment_bidirectional'] = self.benchmark_segment(
-            sample_text, 'bidirectional', iterations
+        results["segment_bidirectional"] = self.benchmark_segment(
+            sample_text, "bidirectional", iterations
         )
-        results['segment_with_pos'] = self.benchmark_segment_with_pos(
-            sample_text, 'bidirectional', iterations
+        results["segment_with_pos"] = self.benchmark_segment_with_pos(
+            sample_text, "bidirectional", iterations
         )
-        results['extract_keywords_tfidf'] = self.benchmark_extract_keywords(
-            sample_text, 'tfidf', 10, iterations // 2
+        results["extract_keywords_tfidf"] = self.benchmark_extract_keywords(
+            sample_text, "tfidf", 10, iterations // 2
         )
-        results['extract_keywords_textrank'] = self.benchmark_extract_keywords(
-            sample_text, 'textrank', 10, iterations // 2
+        results["extract_keywords_textrank"] = self.benchmark_extract_keywords(
+            sample_text, "textrank", 10, iterations // 2
         )
 
         if len(test_texts) >= 2:
-            results['similarity_cosine'] = self.benchmark_similarity(
-                test_texts[0], test_texts[1], 'cosine', iterations
+            results["similarity_cosine"] = self.benchmark_similarity(
+                test_texts[0], test_texts[1], "cosine", iterations
             )
 
         return results
@@ -158,23 +126,24 @@ class PerformanceBenchmark:
 
     @staticmethod
     def compare_results(
-        baseline: BenchmarkResult,
-        optimized: BenchmarkResult
+        baseline: BenchmarkResult, optimized: BenchmarkResult
     ) -> Dict[str, Any]:
         improvement = (
             (baseline.avg_time - optimized.avg_time) / baseline.avg_time * 100
-            if baseline.avg_time > 0 else 0
+            if baseline.avg_time > 0
+            else 0
         )
         speedup = (
             baseline.avg_time / optimized.avg_time
-            if optimized.avg_time > 0 else float('inf')
+            if optimized.avg_time > 0
+            else float("inf")
         )
 
         return {
-            'baseline_avg': baseline.avg_time,
-            'optimized_avg': optimized.avg_time,
-            'improvement_percent': improvement,
-            'speedup_factor': speedup
+            "baseline_avg": baseline.avg_time,
+            "optimized_avg": optimized.avg_time,
+            "improvement_percent": improvement,
+            "speedup_factor": speedup,
         }
 
 
@@ -186,7 +155,8 @@ def measure_time(func):
         end = time.perf_counter()
         print(f"{func.__name__} 执行时间: {(end - start) * 1000:.4f}ms")
         return result
+
     return wrapper
 
 
-__all__ = ['BenchmarkResult', 'PerformanceBenchmark', 'measure_time']
+__all__ = ["BenchmarkResult", "PerformanceBenchmark", "measure_time"]

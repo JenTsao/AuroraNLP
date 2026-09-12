@@ -1,4 +1,5 @@
 """分词算法测试"""
+
 import pytest
 
 from AuroraNLP.core.tokenizer import (

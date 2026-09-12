@@ -23,7 +23,7 @@ class PyTorchBackend(Framework):
     def _check_availability(self):
         """检查PyTorch是否可用"""
         try:
-            self._torch = importlib.import_module('torch')
+            self._torch = importlib.import_module("torch")
             self._version = self._torch.__version__
             self._available = True
         except ImportError:
@@ -33,7 +33,9 @@ class PyTorchBackend(Framework):
     def _setup_device(self):
         """设置设备（CPU/GPU）"""
         if self.is_available():
-            self._device = self._torch.device("cuda" if self._torch.cuda.is_available() else "cpu")
+            self._device = self._torch.device(
+                "cuda" if self._torch.cuda.is_available() else "cpu"
+            )
         else:
             self._device = None
 
@@ -60,12 +62,12 @@ class PyTorchBackend(Framework):
                 raise FileNotFoundError(f"Model file not found: {model_path}")
 
             # 检查模型文件格式
-            if not model_path.endswith(('.pth', '.pt', '.pkl')):
+            if not model_path.endswith((".pth", ".pt", ".pkl")):
                 raise ValueError("Unsupported model file format")
 
             # 添加 weights_only=False 以兼容旧版本的模型
-            if 'weights_only' not in kwargs:
-                kwargs['weights_only'] = False
+            if "weights_only" not in kwargs:
+                kwargs["weights_only"] = False
             model = self._torch.load(model_path, **kwargs)
             return model
         except Exception as e:

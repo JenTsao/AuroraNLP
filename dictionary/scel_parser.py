@@ -22,7 +22,7 @@ class ScelMetadata:
 
 
 class ScelParser:
-    MAGIC_NUMBER = b'\x40\x15\x00\x00\x44\x43\x53\x01'
+    MAGIC_NUMBER = b"\x40\x15\x00\x00\x44\x43\x53\x01"
     HEADER_SIZE = 0x1540
     PINYIN_TABLE_OFFSET = 0x1540
     CHINESE_TABLE_OFFSET = 0x2628
@@ -44,7 +44,7 @@ class ScelParser:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"SCEL文件不存在: {file_path}")
 
-        with open(file_path, 'rb') as f:
+        with open(file_path, "rb") as f:
             data = f.read()
 
         self._validate_file(data)
@@ -66,7 +66,7 @@ class ScelParser:
             raise ValueError("文件太小，不是有效的SCEL文件")
 
         if data[:8] != self.MAGIC_NUMBER:
-            alt_magic = b'\x40\x15\x00\x00\x44\x43\x53\x01'
+            alt_magic = b"\x40\x15\x00\x00\x44\x43\x53\x01"
             if data[:8] != alt_magic:
                 raise ValueError("无效的SCEL文件格式：魔数不匹配")
 
@@ -75,7 +75,9 @@ class ScelParser:
             self._metadata.name = self._bytes_to_str(data[0x130:0x338])
             self._metadata.category = self._bytes_to_str(data[0x338:0x540])
             self._metadata.description = self._bytes_to_str(data[0x540:0xD40])
-            self._metadata.example = self._bytes_to_str(data[0xD40:self.PINYIN_TABLE_OFFSET])
+            self._metadata.example = self._bytes_to_str(
+                data[0xD40 : self.PINYIN_TABLE_OFFSET]
+            )
         except Exception:
             pass
 
@@ -83,12 +85,12 @@ class ScelParser:
         result = []
         pos = 0
         while pos < len(data) - 1:
-            char_code = struct.unpack('<H', data[pos:pos + 2])[0]
+            char_code = struct.unpack("<H", data[pos : pos + 2])[0]
             if char_code == 0:
                 break
             result.append(chr(char_code))
             pos += 2
-        return ''.join(result)
+        return "".join(result)
 
     def _parse_pinyin_table(self, data: bytes) -> None:
         self._pinyin_table = {}
@@ -102,15 +104,15 @@ class ScelParser:
 
         while pos < len(pinyin_data) - 4:
             try:
-                index = struct.unpack('<H', pinyin_data[pos:pos + 2])[0]
+                index = struct.unpack("<H", pinyin_data[pos : pos + 2])[0]
                 pos += 2
-                length = struct.unpack('<H', pinyin_data[pos:pos + 2])[0]
+                length = struct.unpack("<H", pinyin_data[pos : pos + 2])[0]
                 pos += 2
 
                 if length == 0 or pos + length > len(pinyin_data):
                     break
 
-                pinyin = self._bytes_to_str(pinyin_data[pos:pos + length])
+                pinyin = self._bytes_to_str(pinyin_data[pos : pos + length])
                 self._pinyin_table[index] = pinyin
                 pos += length
 
@@ -131,51 +133,49 @@ class ScelParser:
 
         while pos < len(chinese_data) - 6:
             try:
-                same_count = struct.unpack('<H', chinese_data[pos:pos + 2])[0]
+                same_count = struct.unpack("<H", chinese_data[pos : pos + 2])[0]
                 if same_count == 0 or same_count > 1000:
                     break
                 pos += 2
 
-                pinyin_length = struct.unpack('<H', chinese_data[pos:pos + 2])[0]
+                pinyin_length = struct.unpack("<H", chinese_data[pos : pos + 2])[0]
                 pos += 2
 
                 if pinyin_length == 0 or pos + pinyin_length > len(chinese_data):
                     break
 
-                pinyin = self._get_word_pinyin(chinese_data[pos:pos + pinyin_length])
+                pinyin = self._get_word_pinyin(chinese_data[pos : pos + pinyin_length])
                 pos += pinyin_length
 
                 for _ in range(same_count):
                     if pos + 2 > len(chinese_data):
                         break
 
-                    word_length = struct.unpack('<H', chinese_data[pos:pos + 2])[0]
+                    word_length = struct.unpack("<H", chinese_data[pos : pos + 2])[0]
                     pos += 2
 
                     if word_length == 0 or pos + word_length > len(chinese_data):
                         break
 
-                    word = self._bytes_to_str(chinese_data[pos:pos + word_length])
+                    word = self._bytes_to_str(chinese_data[pos : pos + word_length])
                     pos += word_length
 
                     if pos + 2 > len(chinese_data):
                         break
 
-                    ext_length = struct.unpack('<H', chinese_data[pos:pos + 2])[0]
+                    ext_length = struct.unpack("<H", chinese_data[pos : pos + 2])[0]
                     pos += 2
 
                     if pos + 2 > len(chinese_data):
                         break
 
-                    frequency = struct.unpack('<H', chinese_data[pos:pos + 2])[0]
+                    frequency = struct.unpack("<H", chinese_data[pos : pos + 2])[0]
                     pos += ext_length
 
                     if word:
-                        self._words.append(ScelWord(
-                            word=word,
-                            pinyin=pinyin,
-                            frequency=frequency
-                        ))
+                        self._words.append(
+                            ScelWord(word=word, pinyin=pinyin, frequency=frequency)
+                        )
 
                 if len(self._words) > 1000000:
                     break
@@ -189,7 +189,7 @@ class ScelParser:
         pinyins = []
         pos = 0
         while pos < len(data) - 1:
-            index = struct.unpack('<H', data[pos:pos + 2])[0]
+            index = struct.unpack("<H", data[pos : pos + 2])[0]
             if index in self._pinyin_table:
                 pinyins.append(self._pinyin_table[index])
             pos += 2
@@ -197,11 +197,7 @@ class ScelParser:
 
     def get_words_as_dict(self) -> List[Dict]:
         return [
-            {
-                'word': w.word,
-                'pinyin': w.pinyin,
-                'frequency': w.frequency
-            }
+            {"word": w.word, "pinyin": w.pinyin, "frequency": w.frequency}
             for w in self._words
         ]
 
@@ -211,7 +207,9 @@ class ScelBatchParser:
         self._parsers: List[ScelParser] = []
         self._all_words: List[ScelWord] = []
 
-    def parse_directory(self, directory: str, recursive: bool = False) -> List[ScelWord]:
+    def parse_directory(
+        self, directory: str, recursive: bool = False
+    ) -> List[ScelWord]:
         if not os.path.isdir(directory):
             raise NotADirectoryError(f"目录不存在: {directory}")
 
@@ -234,11 +232,11 @@ class ScelBatchParser:
         if recursive:
             for root, _, files in os.walk(directory):
                 for file in files:
-                    if file.lower().endswith('.scel'):
+                    if file.lower().endswith(".scel"):
                         scel_files.append(os.path.join(root, file))
         else:
             for file in os.listdir(directory):
-                if file.lower().endswith('.scel'):
+                if file.lower().endswith(".scel"):
                     scel_files.append(os.path.join(directory, file))
 
         return scel_files

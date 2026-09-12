@@ -15,48 +15,48 @@ class Transition(Enum):
 
 
 DEPENDENCY_RELATIONS = {
-    'root': '根节点',
-    'nsubj': '名词性主语',
-    'obj': '宾语',
-    'iobj': '间接宾语',
-    'csubj': '从句主语',
-    'ccomp': '从句补语',
-    'xcomp': '开放性从句补语',
-    'obl': '斜修饰语',
-    'vocative': '呼格',
-    'expl': '形式主语',
-    'dislocated': '移位成分',
-    'advcl': '状语从句',
-    'advmod': '状语修饰语',
-    'discourse': '话语标记',
-    'aux': '助动词',
-    'cop': '系动词',
-    'mark': '标记词',
-    'nmod': '名词修饰语',
-    'appos': '同位语',
-    'nummod': '数词修饰语',
-    'amod': '形容词修饰语',
-    'det': '限定词',
-    'clf': '量词',
-    'case': '格标记',
-    'conj': '并列连接',
-    'cc': '并列连词',
-    'fixed': '固定搭配',
-    'flat': '扁平结构',
-    'compound': '复合词',
-    'list': '列表',
-    'parataxis': '意合',
-    'orphan': '孤立项',
-    'goeswith': '连写',
-    'reparandum': '修正',
-    'punct': '标点',
-    'dep': '未指定依存',
-    'sbj': '主语',
-    'vmod': '动词修饰语',
-    'attr': '属性',
-    'coo': '并列',
-    'rad': '附加',
-    'wp': '标点符号',
+    "root": "根节点",
+    "nsubj": "名词性主语",
+    "obj": "宾语",
+    "iobj": "间接宾语",
+    "csubj": "从句主语",
+    "ccomp": "从句补语",
+    "xcomp": "开放性从句补语",
+    "obl": "斜修饰语",
+    "vocative": "呼格",
+    "expl": "形式主语",
+    "dislocated": "移位成分",
+    "advcl": "状语从句",
+    "advmod": "状语修饰语",
+    "discourse": "话语标记",
+    "aux": "助动词",
+    "cop": "系动词",
+    "mark": "标记词",
+    "nmod": "名词修饰语",
+    "appos": "同位语",
+    "nummod": "数词修饰语",
+    "amod": "形容词修饰语",
+    "det": "限定词",
+    "clf": "量词",
+    "case": "格标记",
+    "conj": "并列连接",
+    "cc": "并列连词",
+    "fixed": "固定搭配",
+    "flat": "扁平结构",
+    "compound": "复合词",
+    "list": "列表",
+    "parataxis": "意合",
+    "orphan": "孤立项",
+    "goeswith": "连写",
+    "reparandum": "修正",
+    "punct": "标点",
+    "dep": "未指定依存",
+    "sbj": "主语",
+    "vmod": "动词修饰语",
+    "attr": "属性",
+    "coo": "并列",
+    "rad": "附加",
+    "wp": "标点符号",
 }
 
 DEFAULT_RELATIONS = list(DEPENDENCY_RELATIONS.keys())
@@ -74,9 +74,11 @@ class DependencyArc:
     def __eq__(self, other) -> bool:
         if not isinstance(other, DependencyArc):
             return False
-        return (self.head == other.head and
-                self.dependent == other.dependent and
-                self.relation == other.relation)
+        return (
+            self.head == other.head
+            and self.dependent == other.dependent
+            and self.relation == other.relation
+        )
 
     def __hash__(self) -> int:
         return hash((self.head, self.dependent, self.relation))
@@ -86,14 +88,14 @@ class DependencyArc:
 class DependencyNode:
     id: int
     form: str
-    lemma: str = ''
-    pos: str = ''
-    cpos: str = ''
+    lemma: str = ""
+    pos: str = ""
+    cpos: str = ""
     feats: Dict[str, str] = field(default_factory=dict)
     head: int = -1
-    deprel: str = ''
+    deprel: str = ""
     deps: List[Tuple[int, str]] = field(default_factory=list)
-    misc: str = ''
+    misc: str = ""
 
     def __repr__(self) -> str:
         return f"DependencyNode(id={self.id}, form='{self.form}', pos='{self.pos}', head={self.head}, deprel='{self.deprel}')"
@@ -102,10 +104,25 @@ class DependencyNode:
         return self.head == 0
 
     def to_conllu(self) -> str:
-        feats_str = '|'.join(f"{k}={v}" for k, v in self.feats.items()) if self.feats else '_'
-        deps_str = '|'.join(f"{h}:{r}" for h, r in self.deps) if self.deps else '_'
-        head_str = str(self.head) if self.head >= 0 else '_'
-        return "\t".join([str(self.id), self.form, self.lemma or '_', self.cpos or self.pos or '_', self.pos or '_', feats_str, head_str, self.deprel or '_', deps_str, self.misc or '_'])
+        feats_str = (
+            "|".join(f"{k}={v}" for k, v in self.feats.items()) if self.feats else "_"
+        )
+        deps_str = "|".join(f"{h}:{r}" for h, r in self.deps) if self.deps else "_"
+        head_str = str(self.head) if self.head >= 0 else "_"
+        return "\t".join(
+            [
+                str(self.id),
+                self.form,
+                self.lemma or "_",
+                self.cpos or self.pos or "_",
+                self.pos or "_",
+                feats_str,
+                head_str,
+                self.deprel or "_",
+                deps_str,
+                self.misc or "_",
+            ]
+        )
 
 
 class DependencyTree:
@@ -205,22 +222,22 @@ class DependencyTree:
         lines = []
         for node in sorted(self.nodes, key=lambda n: n.id):
             lines.append(node.to_conllu())
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     @classmethod
-    def from_conllu(cls, conllu_str: str) -> 'DependencyTree':
+    def from_conllu(cls, conllu_str: str) -> "DependencyTree":
         nodes = []
-        for line in conllu_str.strip().split('\n'):
+        for line in conllu_str.strip().split("\n"):
             line = line.strip()
-            if not line or line.startswith('#'):
+            if not line or line.startswith("#"):
                 continue
 
-            parts = line.split('\t')
+            parts = line.split("\t")
             if len(parts) < 8:
                 continue
 
             id_str = parts[0]
-            if '-' in id_str or '.' in id_str:
+            if "-" in id_str or "." in id_str:
                 continue
 
             try:
@@ -229,28 +246,28 @@ class DependencyTree:
                 continue
 
             form = parts[1]
-            lemma = parts[2] if parts[2] != '_' else ''
-            cpos = parts[3] if parts[3] != '_' else ''
-            pos = parts[4] if parts[4] != '_' else ''
+            lemma = parts[2] if parts[2] != "_" else ""
+            cpos = parts[3] if parts[3] != "_" else ""
+            pos = parts[4] if parts[4] != "_" else ""
 
             feats = {}
-            if parts[5] != '_':
-                for feat in parts[5].split('|'):
-                    if '=' in feat:
-                        k, v = feat.split('=', 1)
+            if parts[5] != "_":
+                for feat in parts[5].split("|"):
+                    if "=" in feat:
+                        k, v = feat.split("=", 1)
                         feats[k] = v
 
-            head = int(parts[6]) if parts[6] != '_' else -1
-            deprel = parts[7] if parts[7] != '_' else ''
+            head = int(parts[6]) if parts[6] != "_" else -1
+            deprel = parts[7] if parts[7] != "_" else ""
 
             deps = []
-            if len(parts) > 8 and parts[8] != '_':
-                for dep in parts[8].split('|'):
-                    if ':' in dep:
-                        h, r = dep.split(':', 1)
+            if len(parts) > 8 and parts[8] != "_":
+                for dep in parts[8].split("|"):
+                    if ":" in dep:
+                        h, r = dep.split(":", 1)
                         deps.append((int(h), r))
 
-            misc = parts[9] if len(parts) > 9 and parts[9] != '_' else ''
+            misc = parts[9] if len(parts) > 9 and parts[9] != "_" else ""
 
             node = DependencyNode(
                 id=node_id,
@@ -262,7 +279,7 @@ class DependencyTree:
                 head=head,
                 deprel=deprel,
                 deps=deps,
-                misc=misc
+                misc=misc,
             )
             nodes.append(node)
 
@@ -286,7 +303,7 @@ class ParserState:
         self.arcs: List[DependencyArc] = []
         self._heads: Dict[int, int] = {}
 
-    def copy(self) -> 'ParserState':
+    def copy(self) -> "ParserState":
         new_state = ParserState(self.nodes)
         new_state.stack = self.stack.copy()
         new_state.buffer = self.buffer.copy()
@@ -301,10 +318,18 @@ class ParserState:
         return len(self.buffer) > 0
 
     def can_left_arc(self) -> bool:
-        return len(self.stack) > 0 and len(self.buffer) > 0 and self.stack[-1] not in self._heads
+        return (
+            len(self.stack) > 0
+            and len(self.buffer) > 0
+            and self.stack[-1] not in self._heads
+        )
 
     def can_right_arc(self) -> bool:
-        return len(self.stack) > 0 and len(self.buffer) > 0 and self.buffer[0] not in self._heads
+        return (
+            len(self.stack) > 0
+            and len(self.buffer) > 0
+            and self.buffer[0] not in self._heads
+        )
 
     def can_reduce(self) -> bool:
         return len(self.stack) > 0 and self.stack[-1] in self._heads
@@ -370,9 +395,9 @@ class ParserState:
                 cpos=node.cpos,
                 feats=node.feats.copy(),
                 head=0,
-                deprel='dep',
+                deprel="dep",
                 deps=[],
-                misc=node.misc
+                misc=node.misc,
             )
             tree.add_node(new_node)
 
@@ -389,7 +414,7 @@ class ParserState:
                     dep_node = tree.get_node(stack_item + 1)
                     if dep_node:
                         dep_node.head = root_candidate + 1
-                        dep_node.deprel = 'dep'
+                        dep_node.deprel = "dep"
 
         return tree
 
@@ -409,14 +434,14 @@ class ArcEagerOracle:
         return self._gold_heads.get(node_id)
 
     def get_gold_relation(self, node_id: int) -> str:
-        return self._gold_rels.get(node_id, 'dep')
+        return self._gold_rels.get(node_id, "dep")
 
     def has_head(self, node_id: int) -> bool:
         return node_id in self._gold_heads
 
     def get_next_action(self, state: ParserState) -> Tuple[Transition, str]:
         if len(state.stack) == 0:
-            return (Transition.SHIFT, '')
+            return (Transition.SHIFT, "")
 
         s0 = state.stack[-1]
 
@@ -437,9 +462,9 @@ class ArcEagerOracle:
                     break
 
             if not has_unprocessed_children:
-                return (Transition.REDUCE, '')
+                return (Transition.REDUCE, "")
 
-        return (Transition.SHIFT, '')
+        return (Transition.SHIFT, "")
 
     def is_valid_action(self, state: ParserState, action: Transition) -> bool:
         if action == Transition.SHIFT:
@@ -516,7 +541,9 @@ class DependencyFeatureExtractor:
 
         if s0:
             children = state.arcs
-            s0_children = [(a.dependent, a.relation) for a in children if a.head == state.stack[-1]]
+            s0_children = [
+                (a.dependent, a.relation) for a in children if a.head == state.stack[-1]
+            ]
             if s0_children:
                 leftmost = min(s0_children, key=lambda x: x[0])
                 rightmost = max(s0_children, key=lambda x: x[0])
@@ -556,10 +583,7 @@ class DependencyFeatureExtractor:
         return features
 
     def extract_features_for_action(
-        self,
-        state: ParserState,
-        action: Transition,
-        relation: str = ''
+        self, state: ParserState, action: Transition, relation: str = ""
     ) -> List[str]:
         base_features = self.extract_features(state)
 
@@ -571,11 +595,7 @@ class DependencyFeatureExtractor:
 
 
 class DependencyParser:
-    def __init__(
-        self,
-        relations: Optional[List[str]] = None,
-        use_pos: bool = True
-    ):
+    def __init__(self, relations: Optional[List[str]] = None, use_pos: bool = True):
         self.relations = relations or DEFAULT_RELATIONS.copy()
         self.use_pos = use_pos
         self.feature_extractor = DependencyFeatureExtractor()
@@ -604,24 +624,21 @@ class DependencyParser:
                 actions.append((Transition.RIGHT_ARC, rel))
 
         if state.can_reduce():
-            actions.append((Transition.REDUCE, ''))
+            actions.append((Transition.REDUCE, ""))
 
         if state.can_shift():
-            actions.append((Transition.SHIFT, ''))
+            actions.append((Transition.SHIFT, ""))
 
         return actions
 
-    def _get_best_action(
-        self,
-        state: ParserState
-    ) -> Tuple[Transition, str]:
+    def _get_best_action(self, state: ParserState) -> Tuple[Transition, str]:
         actions = self._get_possible_actions(state)
 
         if not actions:
-            return (Transition.SHIFT, '')
+            return (Transition.SHIFT, "")
 
         best_action = actions[0]
-        best_score = float('-inf')
+        best_score = float("-inf")
 
         for action, relation in actions:
             features = self.feature_extractor.extract_features_for_action(
@@ -635,11 +652,7 @@ class DependencyParser:
 
         return best_action
 
-    def _update_weights(
-        self,
-        features: List[str],
-        delta: float
-    ):
+    def _update_weights(self, features: List[str], delta: float):
         for feature in features:
             old_weight = self.weights.get(feature, 0.0)
             self.weights[feature] = old_weight + delta
@@ -655,7 +668,9 @@ class DependencyParser:
     def _finalize_averaged_weights(self):
         for feature in self.weights:
             if self._weight_updates[feature] > 0:
-                avg_update = self._averaged_weights.get(feature, 0.0) / self._total_updates
+                avg_update = (
+                    self._averaged_weights.get(feature, 0.0) / self._total_updates
+                )
                 self._averaged_weights[feature] = self.weights[feature] - avg_update
 
     def train(
@@ -663,14 +678,16 @@ class DependencyParser:
         corpus: List[DependencyTree],
         max_iter: int = 20,
         learning_rate: float = 1.0,
-        verbose: bool = True
+        verbose: bool = True,
     ):
         if not corpus:
             raise ValueError("Training corpus cannot be empty")
 
         projective_trees = [t for t in corpus if t.is_projective()]
         if not projective_trees:
-            raise ValueError("No projective trees found in corpus. Arc-eager parser requires projective trees.")
+            raise ValueError(
+                "No projective trees found in corpus. Arc-eager parser requires projective trees."
+            )
 
         if len(projective_trees) < len(corpus) and verbose:
             skipped = len(corpus) - len(projective_trees)
@@ -688,18 +705,21 @@ class DependencyParser:
             total = 0
 
             for tree in projective_trees:
-                nodes = [DependencyNode(
-                    id=i,
-                    form=n.form,
-                    lemma=n.lemma,
-                    pos=n.pos if self.use_pos else '',
-                    cpos=n.cpos,
-                    feats=n.feats,
-                    head=-1,
-                    deprel='',
-                    deps=[],
-                    misc=n.misc
-                ) for i, n in enumerate(sorted(tree.nodes, key=lambda x: x.id))]
+                nodes = [
+                    DependencyNode(
+                        id=i,
+                        form=n.form,
+                        lemma=n.lemma,
+                        pos=n.pos if self.use_pos else "",
+                        cpos=n.cpos,
+                        feats=n.feats,
+                        head=-1,
+                        deprel="",
+                        deps=[],
+                        misc=n.misc,
+                    )
+                    for i, n in enumerate(sorted(tree.nodes, key=lambda x: x.id))
+                ]
 
                 state = ParserState(nodes)
                 oracle = ArcEagerOracle(tree)
@@ -713,11 +733,15 @@ class DependencyParser:
                     pred_action, pred_relation = self._get_best_action(state)
 
                     if pred_action != gold_action or pred_relation != gold_relation:
-                        gold_features = self.feature_extractor.extract_features_for_action(
-                            state, gold_action, gold_relation
+                        gold_features = (
+                            self.feature_extractor.extract_features_for_action(
+                                state, gold_action, gold_relation
+                            )
                         )
-                        pred_features = self.feature_extractor.extract_features_for_action(
-                            state, pred_action, pred_relation
+                        pred_features = (
+                            self.feature_extractor.extract_features_for_action(
+                                state, pred_action, pred_relation
+                            )
                         )
 
                         self._update_weights(gold_features, learning_rate)
@@ -744,9 +768,7 @@ class DependencyParser:
         self._trained = True
 
     def parse(
-        self,
-        words: List[str],
-        pos_tags: Optional[List[str]] = None
+        self, words: List[str], pos_tags: Optional[List[str]] = None
     ) -> DependencyTree:
         if not words:
             return DependencyTree()
@@ -756,18 +778,18 @@ class DependencyParser:
 
         nodes = []
         for i, word in enumerate(words):
-            pos = pos_tags[i] if pos_tags and i < len(pos_tags) else ''
+            pos = pos_tags[i] if pos_tags and i < len(pos_tags) else ""
             node = DependencyNode(
                 id=i,
                 form=word,
-                lemma='',
+                lemma="",
                 pos=pos,
-                cpos='',
+                cpos="",
                 feats={},
                 head=-1,
-                deprel='',
+                deprel="",
                 deps=[],
-                misc=''
+                misc="",
             )
             nodes.append(node)
 
@@ -797,9 +819,7 @@ class DependencyParser:
         return state.to_tree()
 
     def parse_with_confidence(
-        self,
-        words: List[str],
-        pos_tags: Optional[List[str]] = None
+        self, words: List[str], pos_tags: Optional[List[str]] = None
     ) -> Tuple[DependencyTree, List[float]]:
         if not words:
             return DependencyTree(), []
@@ -809,18 +829,18 @@ class DependencyParser:
 
         nodes = []
         for i, word in enumerate(words):
-            pos = pos_tags[i] if pos_tags and i < len(pos_tags) else ''
+            pos = pos_tags[i] if pos_tags and i < len(pos_tags) else ""
             node = DependencyNode(
                 id=i,
                 form=word,
-                lemma='',
+                lemma="",
                 pos=pos,
-                cpos='',
+                cpos="",
                 feats={},
                 head=-1,
-                deprel='',
+                deprel="",
                 deps=[],
-                misc=''
+                misc="",
             )
             nodes.append(node)
 
@@ -858,34 +878,36 @@ class DependencyParser:
 
     def save_model(self, filepath: str):
         if not self._trained:
-            raise RuntimeError("Model has not been trained. Call train() first before saving.")
+            raise RuntimeError(
+                "Model has not been trained. Call train() first before saving."
+            )
 
         model_data = {
-            'relations': self.relations,
-            'use_pos': self.use_pos,
-            'weights': dict(self.weights),
-            'learning_rate': self._learning_rate,
-            'max_iter': self._max_iter,
-            'trained': self._trained
+            "relations": self.relations,
+            "use_pos": self.use_pos,
+            "weights": dict(self.weights),
+            "learning_rate": self._learning_rate,
+            "max_iter": self._max_iter,
+            "trained": self._trained,
         }
 
         dir_path = os.path.dirname(filepath)
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
 
-        with open(filepath, 'wb') as f:
+        with open(filepath, "wb") as f:
             pickle.dump(model_data, f)
 
     def load_model(self, filepath: str):
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             model_data = pickle.load(f)
 
-        self.relations = model_data['relations']
-        self.use_pos = model_data['use_pos']
-        self.weights = defaultdict(float, model_data['weights'])
-        self._learning_rate = model_data['learning_rate']
-        self._max_iter = model_data['max_iter']
-        self._trained = model_data['trained']
+        self.relations = model_data["relations"]
+        self.use_pos = model_data["use_pos"]
+        self.weights = defaultdict(float, model_data["weights"])
+        self._learning_rate = model_data["learning_rate"]
+        self._max_iter = model_data["max_iter"]
+        self._trained = model_data["trained"]
 
         self.feature_extractor.use_pos = self.use_pos
 
@@ -894,16 +916,16 @@ class DependencyParser:
 
     def get_model_info(self) -> Dict[str, Any]:
         if not self._trained:
-            return {'trained': False}
+            return {"trained": False}
 
         return {
-            'trained': True,
-            'num_relations': len(self.relations),
-            'relations': self.relations,
-            'num_features': len(self.weights),
-            'use_pos': self.use_pos,
-            'learning_rate': self._learning_rate,
-            'max_iter': self._max_iter
+            "trained": True,
+            "num_relations": len(self.relations),
+            "relations": self.relations,
+            "num_features": len(self.weights),
+            "use_pos": self.use_pos,
+            "learning_rate": self._learning_rate,
+            "max_iter": self._max_iter,
         }
 
 
@@ -911,54 +933,52 @@ def create_sample_dependency_corpus() -> List[DependencyTree]:
     corpus = []
 
     tree1 = DependencyTree()
-    tree1.add_node(DependencyNode(id=1, form='我', pos='r', head=2, deprel='nsubj'))
-    tree1.add_node(DependencyNode(id=2, form='爱', pos='v', head=0, deprel='root'))
-    tree1.add_node(DependencyNode(id=3, form='中国', pos='ns', head=2, deprel='obj'))
+    tree1.add_node(DependencyNode(id=1, form="我", pos="r", head=2, deprel="nsubj"))
+    tree1.add_node(DependencyNode(id=2, form="爱", pos="v", head=0, deprel="root"))
+    tree1.add_node(DependencyNode(id=3, form="中国", pos="ns", head=2, deprel="obj"))
     corpus.append(tree1)
 
     tree2 = DependencyTree()
-    tree2.add_node(DependencyNode(id=1, form='他', pos='r', head=2, deprel='nsubj'))
-    tree2.add_node(DependencyNode(id=2, form='吃', pos='v', head=0, deprel='root'))
-    tree2.add_node(DependencyNode(id=3, form='了', pos='u', head=2, deprel='aux'))
-    tree2.add_node(DependencyNode(id=4, form='一个', pos='m', head=5, deprel='nummod'))
-    tree2.add_node(DependencyNode(id=5, form='苹果', pos='n', head=2, deprel='obj'))
+    tree2.add_node(DependencyNode(id=1, form="他", pos="r", head=2, deprel="nsubj"))
+    tree2.add_node(DependencyNode(id=2, form="吃", pos="v", head=0, deprel="root"))
+    tree2.add_node(DependencyNode(id=3, form="了", pos="u", head=2, deprel="aux"))
+    tree2.add_node(DependencyNode(id=4, form="一个", pos="m", head=5, deprel="nummod"))
+    tree2.add_node(DependencyNode(id=5, form="苹果", pos="n", head=2, deprel="obj"))
     corpus.append(tree2)
 
     tree3 = DependencyTree()
-    tree3.add_node(DependencyNode(id=1, form='北京', pos='ns', head=2, deprel='nsubj'))
-    tree3.add_node(DependencyNode(id=2, form='是', pos='v', head=0, deprel='root'))
-    tree3.add_node(DependencyNode(id=3, form='中国', pos='ns', head=4, deprel='nmod'))
-    tree3.add_node(DependencyNode(id=4, form='首都', pos='n', head=2, deprel='attr'))
+    tree3.add_node(DependencyNode(id=1, form="北京", pos="ns", head=2, deprel="nsubj"))
+    tree3.add_node(DependencyNode(id=2, form="是", pos="v", head=0, deprel="root"))
+    tree3.add_node(DependencyNode(id=3, form="中国", pos="ns", head=4, deprel="nmod"))
+    tree3.add_node(DependencyNode(id=4, form="首都", pos="n", head=2, deprel="attr"))
     corpus.append(tree3)
 
     tree4 = DependencyTree()
-    tree4.add_node(DependencyNode(id=1, form='小明', pos='nr', head=2, deprel='nsubj'))
-    tree4.add_node(DependencyNode(id=2, form='在', pos='p', head=0, deprel='root'))
-    tree4.add_node(DependencyNode(id=3, form='学校', pos='n', head=2, deprel='obj'))
-    tree4.add_node(DependencyNode(id=4, form='读书', pos='v', head=2, deprel='vmod'))
+    tree4.add_node(DependencyNode(id=1, form="小明", pos="nr", head=2, deprel="nsubj"))
+    tree4.add_node(DependencyNode(id=2, form="在", pos="p", head=0, deprel="root"))
+    tree4.add_node(DependencyNode(id=3, form="学校", pos="n", head=2, deprel="obj"))
+    tree4.add_node(DependencyNode(id=4, form="读书", pos="v", head=2, deprel="vmod"))
     corpus.append(tree4)
 
     tree5 = DependencyTree()
-    tree5.add_node(DependencyNode(id=1, form='这', pos='r', head=2, deprel='det'))
-    tree5.add_node(DependencyNode(id=2, form='本书', pos='n', head=3, deprel='nsubj'))
-    tree5.add_node(DependencyNode(id=3, form='很', pos='d', head=0, deprel='root'))
-    tree5.add_node(DependencyNode(id=4, form='有趣', pos='a', head=3, deprel='advmod'))
+    tree5.add_node(DependencyNode(id=1, form="这", pos="r", head=2, deprel="det"))
+    tree5.add_node(DependencyNode(id=2, form="本书", pos="n", head=3, deprel="nsubj"))
+    tree5.add_node(DependencyNode(id=3, form="很", pos="d", head=0, deprel="root"))
+    tree5.add_node(DependencyNode(id=4, form="有趣", pos="a", head=3, deprel="advmod"))
     corpus.append(tree5)
 
     return corpus
 
 
 def train_dependency_parser_from_file(
-    parser: DependencyParser,
-    filepath: str,
-    encoding: str = 'utf-8'
+    parser: DependencyParser, filepath: str, encoding: str = "utf-8"
 ) -> None:
     corpus = []
 
     with open(filepath, encoding=encoding) as f:
         content = f.read()
 
-    sentences = content.strip().split('\n\n')
+    sentences = content.strip().split("\n\n")
 
     for sentence in sentences:
         if sentence.strip():
@@ -971,16 +991,16 @@ def train_dependency_parser_from_file(
 
 
 __all__ = [
-    'DEFAULT_RELATIONS',
-    'DEPENDENCY_RELATIONS',
-    'ArcEagerOracle',
-    'DependencyArc',
-    'DependencyFeatureExtractor',
-    'DependencyNode',
-    'DependencyParser',
-    'DependencyTree',
-    'ParserState',
-    'Transition',
-    'create_sample_dependency_corpus',
-    'train_dependency_parser_from_file',
+    "DEFAULT_RELATIONS",
+    "DEPENDENCY_RELATIONS",
+    "ArcEagerOracle",
+    "DependencyArc",
+    "DependencyFeatureExtractor",
+    "DependencyNode",
+    "DependencyParser",
+    "DependencyTree",
+    "ParserState",
+    "Transition",
+    "create_sample_dependency_corpus",
+    "train_dependency_parser_from_file",
 ]

@@ -1,11 +1,12 @@
 """AuroraNLP 测试套件 - 公共 fixtures"""
+
 import os
 import sys
 
 import pytest
 
 # 确保项目根目录在 sys.path 中
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 from AuroraNLP.dictionary.dictionary import Dictionary, UserDictionary
 from AuroraNLP.dictionary.stopwords import StopWords
@@ -104,21 +105,25 @@ def sample_stopwords():
 @pytest.fixture
 def sample_segmentor(sample_dictionary):
     """创建使用示例词典的分词器"""
-    return Segmentor(dictionary=sample_dictionary, load_default_dict=False, load_default_stopwords=False)
+    return Segmentor(
+        dictionary=sample_dictionary,
+        load_default_dict=False,
+        load_default_stopwords=False,
+    )
 
 
 @pytest.fixture
 def sample_corpus():
     """示例训练语料"""
     return [
-        ['我', '爱', '中国'],
-        ['中国', '是', '伟大', '的', '国家'],
-        ['北京', '是', '中国', '的', '首都'],
-        ['我', '在', '北京', '大学', '学习'],
-        ['自然语言', '处理', '是', '人工智能', '的', '方向'],
-        ['我', '爱', '自然语言', '处理'],
-        ['中国', '人', '很', '好'],
-        ['研究', '生', '在', '研究', '生命'],
+        ["我", "爱", "中国"],
+        ["中国", "是", "伟大", "的", "国家"],
+        ["北京", "是", "中国", "的", "首都"],
+        ["我", "在", "北京", "大学", "学习"],
+        ["自然语言", "处理", "是", "人工智能", "的", "方向"],
+        ["我", "爱", "自然语言", "处理"],
+        ["中国", "人", "很", "好"],
+        ["研究", "生", "在", "研究", "生命"],
     ]
 
 
@@ -126,7 +131,10 @@ def sample_corpus():
 def tmp_dict_file(tmp_path):
     """创建临时词典文件"""
     dict_file = tmp_path / "test_dict.txt"
-    dict_file.write_text("人工智能 n 1.5 0\n深度学习 n 1.5 0\n机器学习 n 1.5 0\n神经网络 n 1.0 0\n", encoding='utf-8')
+    dict_file.write_text(
+        "人工智能 n 1.5 0\n深度学习 n 1.5 0\n机器学习 n 1.5 0\n神经网络 n 1.0 0\n",
+        encoding="utf-8",
+    )
     return str(dict_file)
 
 
@@ -134,5 +142,5 @@ def tmp_dict_file(tmp_path):
 def tmp_stopwords_file(tmp_path):
     """创建临时停用词文件"""
     sw_file = tmp_path / "test_stopwords.txt"
-    sw_file.write_text("的\n了\n在\n是\n我\n", encoding='utf-8')
+    sw_file.write_text("的\n了\n在\n是\n我\n", encoding="utf-8")
     return str(sw_file)

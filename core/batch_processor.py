@@ -9,33 +9,25 @@ class BatchProcessor:
         self.batch_size = batch_size
 
     def segment_batch(
-        self,
-        texts: List[str],
-        mode: Optional[str] = None
+        self, texts: List[str], mode: Optional[str] = None
     ) -> List[List[str]]:
         return [self.segmentor.segment(text, mode) for text in texts]
 
     def segment_batch_iter(
-        self,
-        texts: List[str],
-        mode: Optional[str] = None
+        self, texts: List[str], mode: Optional[str] = None
     ) -> Iterator[List[str]]:
         for i in range(0, len(texts), self.batch_size):
-            batch = texts[i:i + self.batch_size]
+            batch = texts[i : i + self.batch_size]
             for text in batch:
                 yield self.segmentor.segment(text, mode)
 
     def segment_with_pos_batch(
-        self,
-        texts: List[str],
-        mode: Optional[str] = None
+        self, texts: List[str], mode: Optional[str] = None
     ) -> List[List[Tuple[str, str]]]:
         return [self.segmentor.segment_with_pos(text, mode) for text in texts]
 
     def segment_without_stopwords_batch(
-        self,
-        texts: List[str],
-        mode: Optional[str] = None
+        self, texts: List[str], mode: Optional[str] = None
     ) -> List[List[str]]:
         return [self.segmentor.segment_without_stopwords(text, mode) for text in texts]
 
@@ -43,8 +35,8 @@ class BatchProcessor:
         self,
         texts: List[str],
         top_k: int = 10,
-        method: str = 'tfidf',
-        use_stopwords: bool = True
+        method: str = "tfidf",
+        use_stopwords: bool = True,
     ) -> List[List[Tuple[str, float]]]:
         return [
             self.segmentor.extract_keywords(text, top_k, method, use_stopwords)
@@ -52,10 +44,7 @@ class BatchProcessor:
         ]
 
     def compute_similarity_matrix(
-        self,
-        texts: List[str],
-        method: str = 'cosine',
-        use_stopwords: bool = True
+        self, texts: List[str], method: str = "cosine", use_stopwords: bool = True
     ) -> List[List[float]]:
         n = len(texts)
         matrix = [[0.0] * n for _ in range(n)]
@@ -78,8 +67,8 @@ class BatchProcessor:
         query: str,
         texts: List[str],
         threshold: float = 0.5,
-        method: str = 'cosine',
-        use_stopwords: bool = True
+        method: str = "cosine",
+        use_stopwords: bool = True,
     ) -> List[Tuple[int, str, float]]:
         results = []
         similarities = self.segmentor.batch_similarity(
@@ -97,7 +86,7 @@ class BatchProcessor:
         text: str,
         chunk_size: int = 10000,
         mode: Optional[str] = None,
-        overlap: int = 50
+        overlap: int = 50,
     ) -> List[str]:
         """对长文本分词，避免跨越 chunk 边界的词被错误切分。
 
@@ -112,7 +101,7 @@ class BatchProcessor:
         if len(text) <= chunk_size:
             return self.segmentor.segment(text, mode)
 
-        BREAK_CHARS = frozenset('，。！？；：、\n\t\r ')
+        BREAK_CHARS = frozenset("，。！？；：、\n\t\r ")
         results: List[str] = []
         i = 0
         text_len = len(text)
@@ -161,9 +150,9 @@ class BatchProcessor:
     def segment_file(
         self,
         file_path: str,
-        encoding: str = 'utf-8',
+        encoding: str = "utf-8",
         mode: Optional[str] = None,
-        line_by_line: bool = True
+        line_by_line: bool = True,
     ) -> List[List[str]]:
         results = []
 
@@ -180,4 +169,4 @@ class BatchProcessor:
         return results
 
 
-__all__ = ['BatchProcessor']
+__all__ = ["BatchProcessor"]

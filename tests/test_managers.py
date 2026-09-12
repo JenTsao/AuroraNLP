@@ -1,4 +1,5 @@
 """Managers 管理器测试"""
+
 import pytest
 
 from AuroraNLP.dictionary.dictionary import Dictionary

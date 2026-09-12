@@ -48,11 +48,7 @@ class Similarity:
             for word in words:
                 self._document_freq[word] = self._document_freq.get(word, 0) + 1
 
-    def _get_tfidf_vector(
-        self,
-        words: List[str],
-        vocab: Set[str]
-    ) -> Dict[str, float]:
+    def _get_tfidf_vector(self, words: List[str], vocab: Set[str]) -> Dict[str, float]:
         tf = self._compute_tf(words)
         vector = {}
         for word in vocab:
@@ -62,11 +58,7 @@ class Similarity:
         return vector
 
     def cosine_similarity(
-        self,
-        text1: str,
-        text2: str,
-        segmentor,
-        stopwords: Optional[Set[str]] = None
+        self, text1: str, text2: str, segmentor, stopwords: Optional[Set[str]] = None
     ) -> float:
         words1 = self._tokenize(text1, segmentor)
         words2 = self._tokenize(text2, segmentor)
@@ -85,8 +77,8 @@ class Similarity:
 
         dot_product = sum(vec1.get(w, 0.0) * vec2.get(w, 0.0) for w in vocab)
 
-        norm1 = math.sqrt(sum(v ** 2 for v in vec1.values()))
-        norm2 = math.sqrt(sum(v ** 2 for v in vec2.values()))
+        norm1 = math.sqrt(sum(v**2 for v in vec1.values()))
+        norm2 = math.sqrt(sum(v**2 for v in vec2.values()))
 
         if norm1 == 0 or norm2 == 0:
             return 0.0
@@ -94,11 +86,7 @@ class Similarity:
         return dot_product / (norm1 * norm2)
 
     def jaccard_similarity(
-        self,
-        text1: str,
-        text2: str,
-        segmentor,
-        stopwords: Optional[Set[str]] = None
+        self, text1: str, text2: str, segmentor, stopwords: Optional[Set[str]] = None
     ) -> float:
         words1 = self._tokenize(text1, segmentor)
         words2 = self._tokenize(text2, segmentor)
@@ -122,11 +110,7 @@ class Similarity:
         return intersection / union
 
     def dice_similarity(
-        self,
-        text1: str,
-        text2: str,
-        segmentor,
-        stopwords: Optional[Set[str]] = None
+        self, text1: str, text2: str, segmentor, stopwords: Optional[Set[str]] = None
     ) -> float:
         words1 = self._tokenize(text1, segmentor)
         words2 = self._tokenize(text2, segmentor)
@@ -150,11 +134,7 @@ class Similarity:
         return 2 * intersection / total
 
     def overlap_similarity(
-        self,
-        text1: str,
-        text2: str,
-        segmentor,
-        stopwords: Optional[Set[str]] = None
+        self, text1: str, text2: str, segmentor, stopwords: Optional[Set[str]] = None
     ) -> float:
         words1 = self._tokenize(text1, segmentor)
         words2 = self._tokenize(text2, segmentor)
@@ -177,11 +157,7 @@ class Similarity:
 
         return intersection / min_size
 
-    def edit_distance(
-        self,
-        text1: str,
-        text2: str
-    ) -> int:
+    def edit_distance(self, text1: str, text2: str) -> int:
         m, n = len(text1), len(text2)
 
         if m == 0:
@@ -202,9 +178,7 @@ class Similarity:
                     dp[i][j] = dp[i - 1][j - 1]
                 else:
                     dp[i][j] = min(
-                        dp[i - 1][j] + 1,
-                        dp[i][j - 1] + 1,
-                        dp[i - 1][j - 1] + 1
+                        dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + 1
                     )
 
         return dp[m][n]
@@ -214,7 +188,7 @@ class Similarity:
         text1: str,
         text2: str,
         segmentor=None,
-        stopwords: Optional[Set[str]] = None
+        stopwords: Optional[Set[str]] = None,
     ) -> float:
         """
         计算两个文本之间的编辑距离相似度。
@@ -244,19 +218,19 @@ class Similarity:
         query: str,
         documents: List[str],
         segmentor,
-        method: str = 'cosine',
-        stopwords: Optional[Set[str]] = None
+        method: str = "cosine",
+        stopwords: Optional[Set[str]] = None,
     ) -> List[Tuple[str, float]]:
-        valid_methods = ['cosine', 'jaccard', 'dice', 'overlap', 'edit']
+        valid_methods = ["cosine", "jaccard", "dice", "overlap", "edit"]
         if method not in valid_methods:
             raise ValueError(f"Unknown method: {method}. Use one of {valid_methods}.")
 
         method_func = {
-            'cosine': self.cosine_similarity,
-            'jaccard': self.jaccard_similarity,
-            'dice': self.dice_similarity,
-            'overlap': self.overlap_similarity,
-            'edit': self.edit_similarity
+            "cosine": self.cosine_similarity,
+            "jaccard": self.jaccard_similarity,
+            "dice": self.dice_similarity,
+            "overlap": self.overlap_similarity,
+            "edit": self.edit_similarity,
         }[method]
 
         results = []
@@ -268,4 +242,4 @@ class Similarity:
         return results
 
 
-__all__ = ['Similarity']
+__all__ = ["Similarity"]

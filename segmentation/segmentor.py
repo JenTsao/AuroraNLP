@@ -14,8 +14,15 @@ from AuroraNLP.core.tokenizer import (
     forward_max_match_weighted_with_pos,
     forward_max_match_with_pos,
 )
-from AuroraNLP.core.traditional_chinese import TraditionalChineseConverter, TraditionalChineseDictionary
-from AuroraNLP.dictionary.dictionary import Dictionary, DictionaryManager, UserDictionary
+from AuroraNLP.core.traditional_chinese import (
+    TraditionalChineseConverter,
+    TraditionalChineseDictionary,
+)
+from AuroraNLP.dictionary.dictionary import (
+    Dictionary,
+    DictionaryManager,
+    UserDictionary,
+)
 from AuroraNLP.managers.managers import (
     AmbiguityDetectorManager,
     DictionaryService,
@@ -27,35 +34,39 @@ from AuroraNLP.managers.managers import (
     SimilarityManager,
     StopWordsManager,
 )
-from AuroraNLP.segmentation.ambiguity import AmbiguityRegion, AmbiguityResult, AmbiguityType
+from AuroraNLP.segmentation.ambiguity import (
+    AmbiguityRegion,
+    AmbiguityResult,
+    AmbiguityType,
+)
 from AuroraNLP.segmentation.hybrid import HybridConfig, HybridStrategy
 from AuroraNLP.segmentation.lattice import Lattice
 
 POS_TAG_NAMES = {
-    'n': '名词',
-    'v': '动词',
-    'a': '形容词',
-    'd': '副词',
-    't': '时间词',
-    'r': '代词',
-    'p': '介词',
-    'c': '连词',
-    'm': '数词',
-    'q': '量词',
-    'u': '助词',
-    'w': '标点',
-    'nr': '人名',
-    'ns': '地名',
-    'nt': '机构名',
-    'nz': '其他专名',
-    'vn': '动名词',
-    'x': '未知',
+    "n": "名词",
+    "v": "动词",
+    "a": "形容词",
+    "d": "副词",
+    "t": "时间词",
+    "r": "代词",
+    "p": "介词",
+    "c": "连词",
+    "m": "数词",
+    "q": "量词",
+    "u": "助词",
+    "w": "标点",
+    "nr": "人名",
+    "ns": "地名",
+    "nt": "机构名",
+    "nz": "其他专名",
+    "vn": "动名词",
+    "x": "未知",
 }
 
 NER_TAG_MAP = {
-    'nr': 'PERSON',
-    'ns': 'LOCATION',
-    'nt': 'ORGANIZATION',
+    "nr": "PERSON",
+    "ns": "LOCATION",
+    "nt": "ORGANIZATION",
 }
 
 
@@ -63,7 +74,7 @@ class Segmentor:
     """分词器类"""
 
     # 有效的地区代码列表
-    VALID_REGIONS = ['tw', 'hk', 'mo']
+    VALID_REGIONS = ["tw", "hk", "mo"]
 
     def __init__(
         self,
@@ -76,7 +87,7 @@ class Segmentor:
         use_lattice: bool = False,
         use_weighted: bool = False,
         use_hybrid: bool = False,
-        hybrid_config: Optional[HybridConfig] = None
+        hybrid_config: Optional[HybridConfig] = None,
     ):
         self.dict_manager = DictionaryService(dictionary, load_default_dict)
 
@@ -85,16 +96,22 @@ class Segmentor:
         self.similarity_manager = SimilarityManager()
 
         self.ml_segmentor_manager = MLSegmentorManager(use_hmm, use_crf, use_perceptron)
-        self.lattice_manager = LatticeSegmentorManager(self.dict_manager.dictionary, use_lattice)
+        self.lattice_manager = LatticeSegmentorManager(
+            self.dict_manager.dictionary, use_lattice
+        )
         self.ambiguity_manager = AmbiguityDetectorManager(self.dict_manager.dictionary)
         self.new_word_manager = NewWordDetectorManager()
 
         # 繁体中文支持
         self.traditional_converter = TraditionalChineseConverter()
-        self.traditional_dictionary = TraditionalChineseDictionary(self.traditional_converter)
-        self._traditional_chars_cache = self.traditional_converter.get_traditional_chars()
+        self.traditional_dictionary = TraditionalChineseDictionary(
+            self.traditional_converter
+        )
+        self._traditional_chars_cache = (
+            self.traditional_converter.get_traditional_chars()
+        )
 
-        self.mode: str = 'bidirectional'
+        self.mode: str = "bidirectional"
         self.use_weighted = use_weighted
         self.use_hybrid = use_hybrid
 
@@ -109,7 +126,7 @@ class Segmentor:
             self.ml_segmentor_manager.hmm_segmentor,
             self.ml_segmentor_manager.crf_segmentor,
             self.ml_segmentor_manager.perceptron_segmentor,
-            lattice_segmentor_provider=lambda: self.lattice_manager.lattice_segmentor
+            lattice_segmentor_provider=lambda: self.lattice_manager.lattice_segmentor,
         )
 
     @property
@@ -153,10 +170,7 @@ class Segmentor:
         return self.new_word_manager.new_word_detector
 
     def create_user_dictionary(
-        self,
-        name: str,
-        priority: int = 100,
-        default_weight: float = 10.0
+        self, name: str, priority: int = 100, default_weight: float = 10.0
     ) -> UserDictionary:
         return self.dict_manager.create_user_dictionary(name, priority, default_weight)
 
@@ -171,9 +185,11 @@ class Segmentor:
         path: str,
         name: Optional[str] = None,
         priority: int = 100,
-        default_weight: float = 10.0
+        default_weight: float = 10.0,
     ) -> UserDictionary:
-        return self.dict_manager.load_user_dictionary(path, name, priority, default_weight)
+        return self.dict_manager.load_user_dictionary(
+            path, name, priority, default_weight
+        )
 
     def add_user_word(
         self,
@@ -181,23 +197,17 @@ class Segmentor:
         pos_tag: Optional[str] = None,
         weight: Optional[float] = None,
         priority: Optional[int] = None,
-        dict_name: Optional[str] = None
+        dict_name: Optional[str] = None,
     ) -> None:
         self.dict_manager.add_user_word(word, pos_tag, weight, priority, dict_name)
 
     def set_word_weight(
-        self,
-        word: str,
-        weight: float,
-        dict_name: Optional[str] = None
+        self, word: str, weight: float, dict_name: Optional[str] = None
     ) -> bool:
         return self.dict_manager.set_word_weight(word, weight, dict_name)
 
     def set_word_priority(
-        self,
-        word: str,
-        priority: int,
-        dict_name: Optional[str] = None
+        self, word: str, priority: int, dict_name: Optional[str] = None
     ) -> bool:
         return self.dict_manager.set_word_priority(word, priority, dict_name)
 
@@ -218,74 +228,96 @@ class Segmentor:
 
         active_dict = self.dict_manager._get_active_dictionary()
 
-        if mode == 'hybrid':
+        if mode == "hybrid":
             if self.use_weighted:
                 return bidirectional_max_match_weighted(text, active_dict)
             return self.hybrid_manager.segment(text)
 
-        if mode == 'hmm':
+        if mode == "hmm":
             return self.ml_segmentor_manager.segment_hmm(text)
-        elif mode == 'crf':
+        elif mode == "crf":
             return self.ml_segmentor_manager.segment_crf(text)
-        elif mode == 'perceptron':
+        elif mode == "perceptron":
             return self.ml_segmentor_manager.segment_perceptron(text)
-        elif mode == 'lattice':
+        elif mode == "lattice":
             return self.lattice_manager.segment(text)
-        elif mode == 'forward':
+        elif mode == "forward":
             if self.use_weighted:
                 return forward_max_match_weighted(text, active_dict)
             return forward_max_match(text, active_dict)
-        elif mode == 'backward':
+        elif mode == "backward":
             if self.use_weighted:
                 return backward_max_match_weighted(text, active_dict)
             return backward_max_match(text, active_dict)
-        elif mode == 'bidirectional':
+        elif mode == "bidirectional":
             if self.use_weighted:
                 return bidirectional_max_match_weighted(text, active_dict)
             return bidirectional_max_match(text, active_dict)
         else:
-            raise ValueError(f"Unknown mode: {mode}. Use 'forward', 'backward', 'bidirectional', 'hmm', 'crf', 'perceptron', 'lattice', or 'hybrid'.")
+            raise ValueError(
+                f"Unknown mode: {mode}. Use 'forward', 'backward', 'bidirectional', 'hmm', 'crf', 'perceptron', 'lattice', or 'hybrid'."
+            )
 
-    def segment_without_stopwords(self, text: str, mode: Optional[str] = None) -> List[str]:
+    def segment_without_stopwords(
+        self, text: str, mode: Optional[str] = None
+    ) -> List[str]:
         words = self.segment(text, mode)
         return self.stopwords_manager.filter(words)
 
-    def segment_with_pos(self, text: str, mode: Optional[str] = None) -> List[Tuple[str, str]]:
+    def segment_with_pos(
+        self, text: str, mode: Optional[str] = None
+    ) -> List[Tuple[str, str]]:
         if mode is None:
             mode = self.mode
 
         active_dict = self.dict_manager._get_active_dictionary()
 
-        if mode == 'hmm':
-            raise ValueError("HMM mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging.")
-        elif mode == 'crf':
-            raise ValueError("CRF mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging.")
-        elif mode == 'perceptron':
-            raise ValueError("Perceptron mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging.")
-        elif mode == 'lattice':
-            raise ValueError("Lattice mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging.")
-        elif mode == 'hybrid':
-            raise ValueError("Hybrid mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging.")
-        elif mode == 'forward':
+        if mode == "hmm":
+            raise ValueError(
+                "HMM mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging."
+            )
+        elif mode == "crf":
+            raise ValueError(
+                "CRF mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging."
+            )
+        elif mode == "perceptron":
+            raise ValueError(
+                "Perceptron mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging."
+            )
+        elif mode == "lattice":
+            raise ValueError(
+                "Lattice mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging."
+            )
+        elif mode == "hybrid":
+            raise ValueError(
+                "Hybrid mode does not support POS tagging. Use 'forward', 'backward', or 'bidirectional' mode for POS tagging."
+            )
+        elif mode == "forward":
             if self.use_weighted:
                 return forward_max_match_weighted_with_pos(text, active_dict)
             return forward_max_match_with_pos(text, active_dict)
-        elif mode == 'backward':
+        elif mode == "backward":
             if self.use_weighted:
                 return backward_max_match_weighted_with_pos(text, active_dict)
             return backward_max_match_with_pos(text, active_dict)
-        elif mode == 'bidirectional':
+        elif mode == "bidirectional":
             if self.use_weighted:
                 return bidirectional_max_match_weighted_with_pos(text, active_dict)
             return bidirectional_max_match_with_pos(text, active_dict)
         else:
-            raise ValueError(f"Unknown mode: {mode}. Use 'forward', 'backward', 'bidirectional', 'hmm', 'crf', 'perceptron', 'lattice', or 'hybrid'.")
+            raise ValueError(
+                f"Unknown mode: {mode}. Use 'forward', 'backward', 'bidirectional', 'hmm', 'crf', 'perceptron', 'lattice', or 'hybrid'."
+            )
 
-    def segment_without_stopwords_with_pos(self, text: str, mode: Optional[str] = None) -> List[Tuple[str, str]]:
+    def segment_without_stopwords_with_pos(
+        self, text: str, mode: Optional[str] = None
+    ) -> List[Tuple[str, str]]:
         words_with_pos = self.segment_with_pos(text, mode)
         return self.stopwords_manager.filter_with_pos(words_with_pos)
 
-    def recognize_entities(self, text: str, mode: Optional[str] = None) -> List[Tuple[str, str]]:
+    def recognize_entities(
+        self, text: str, mode: Optional[str] = None
+    ) -> List[Tuple[str, str]]:
         pos_result = self.segment_with_pos(text, mode)
         entities = []
 
@@ -295,12 +327,14 @@ class Segmentor:
 
         return entities
 
-    def segment_with_entities(self, text: str, mode: Optional[str] = None) -> List[Tuple[str, str, str]]:
+    def segment_with_entities(
+        self, text: str, mode: Optional[str] = None
+    ) -> List[Tuple[str, str, str]]:
         pos_result = self.segment_with_pos(text, mode)
         result = []
 
         for word, pos_tag in pos_result:
-            entity_type = NER_TAG_MAP.get(pos_tag, 'O')
+            entity_type = NER_TAG_MAP.get(pos_tag, "O")
             result.append((word, pos_tag, entity_type))
 
         return result
@@ -309,25 +343,25 @@ class Segmentor:
         self,
         text: str,
         top_k: int = 10,
-        method: str = 'tfidf',
+        method: str = "tfidf",
         use_stopwords: bool = True,
-        min_length: int = 1
+        min_length: int = 1,
     ) -> List[Tuple[str, float]]:
         stopwords = self.stopwords_manager.get_stopwords() if use_stopwords else None
-        return self.keyword_extractor_manager.extract_keywords(text, self, top_k, method, stopwords, min_length)
+        return self.keyword_extractor_manager.extract_keywords(
+            text, self, top_k, method, stopwords, min_length
+        )
 
     def build_keyword_corpus(self, documents: List[str]) -> None:
         self.keyword_extractor_manager.build_idf_corpus(documents, self)
 
     def compute_similarity(
-        self,
-        text1: str,
-        text2: str,
-        method: str = 'cosine',
-        use_stopwords: bool = True
+        self, text1: str, text2: str, method: str = "cosine", use_stopwords: bool = True
     ) -> float:
         stopwords = self.stopwords_manager.get_stopwords() if use_stopwords else None
-        return self.similarity_manager.compute_similarity(text1, text2, self, method, stopwords)
+        return self.similarity_manager.compute_similarity(
+            text1, text2, self, method, stopwords
+        )
 
     def build_similarity_corpus(self, documents: List[str]) -> None:
         self.similarity_manager.build_idf_corpus(documents, self)
@@ -336,15 +370,28 @@ class Segmentor:
         self,
         query: str,
         documents: List[str],
-        method: str = 'cosine',
-        use_stopwords: bool = True
+        method: str = "cosine",
+        use_stopwords: bool = True,
     ) -> List[Tuple[str, float]]:
         stopwords = self.stopwords_manager.get_stopwords() if use_stopwords else None
-        return self.similarity_manager.batch_similarity(query, documents, self, method, stopwords)
+        return self.similarity_manager.batch_similarity(
+            query, documents, self, method, stopwords
+        )
 
     def set_mode(self, mode: str) -> None:
-        if mode not in ('forward', 'backward', 'bidirectional', 'hmm', 'crf', 'perceptron', 'lattice', 'hybrid'):
-            raise ValueError(f"Unknown mode: {mode}. Use 'forward', 'backward', 'bidirectional', 'hmm', 'crf', 'perceptron', 'lattice', or 'hybrid'.")
+        if mode not in (
+            "forward",
+            "backward",
+            "bidirectional",
+            "hmm",
+            "crf",
+            "perceptron",
+            "lattice",
+            "hybrid",
+        ):
+            raise ValueError(
+                f"Unknown mode: {mode}. Use 'forward', 'backward', 'bidirectional', 'hmm', 'crf', 'perceptron', 'lattice', or 'hybrid'."
+            )
         self.mode = mode
 
     def load_dictionary(self, path: str) -> None:
@@ -358,7 +405,7 @@ class Segmentor:
         word: str,
         pos_tag: Optional[str] = None,
         weight: float = 1.0,
-        priority: Optional[int] = None
+        priority: Optional[int] = None,
     ) -> None:
         self.dict_manager.add_word(word, pos_tag, weight, priority)
 
@@ -387,7 +434,7 @@ class Segmentor:
         self.stopwords_manager.save_stopwords(path)
 
     def get_pos_tag_name(self, pos_tag: str) -> str:
-        return POS_TAG_NAMES.get(pos_tag, '未知')
+        return POS_TAG_NAMES.get(pos_tag, "未知")
 
     def get_pos_tags(self) -> dict:
         return POS_TAG_NAMES.copy()
@@ -395,10 +442,12 @@ class Segmentor:
     def train_hmm(self, corpus: List[List[str]], smooth: float = 1.0) -> None:
         self.ml_segmentor_manager.train_hmm(corpus, smooth)
 
-    def train_hmm_from_file(self, filepath: str, encoding: str = 'utf-8') -> None:
+    def train_hmm_from_file(self, filepath: str, encoding: str = "utf-8") -> None:
         self.ml_segmentor_manager.train_hmm_from_file(filepath, encoding)
 
-    def load_hmm_model(self, filepath: str, key: Optional[str] = None, verify: bool = True) -> None:
+    def load_hmm_model(
+        self, filepath: str, key: Optional[str] = None, verify: bool = True
+    ) -> None:
         self.ml_segmentor_manager.load_hmm_model(filepath, key, verify)
 
     def save_hmm_model(self, filepath: str, key: Optional[str] = None) -> None:
@@ -423,11 +472,13 @@ class Segmentor:
         l2_reg: float = 0.01,
         max_iter: int = 100,
         epsilon: float = 1e-6,
-        verbose: bool = True
+        verbose: bool = True,
     ) -> None:
-        self.ml_segmentor_manager.train_crf(corpus, learning_rate, l2_reg, max_iter, epsilon, verbose)
+        self.ml_segmentor_manager.train_crf(
+            corpus, learning_rate, l2_reg, max_iter, epsilon, verbose
+        )
 
-    def train_crf_from_file(self, filepath: str, encoding: str = 'utf-8') -> None:
+    def train_crf_from_file(self, filepath: str, encoding: str = "utf-8") -> None:
         self.ml_segmentor_manager.train_crf_from_file(filepath, encoding)
 
     def load_crf_model(self, filepath: str) -> None:
@@ -454,22 +505,28 @@ class Segmentor:
         learning_rate: float = 1.0,
         max_iter: int = 10,
         averaged: bool = True,
-        verbose: bool = True
+        verbose: bool = True,
     ) -> None:
-        self.ml_segmentor_manager.train_perceptron(corpus, learning_rate, max_iter, averaged, verbose)
+        self.ml_segmentor_manager.train_perceptron(
+            corpus, learning_rate, max_iter, averaged, verbose
+        )
 
-    def train_perceptron_online(self, tokens: List[str], update_weights: bool = True) -> Tuple[bool, float]:
+    def train_perceptron_online(
+        self, tokens: List[str], update_weights: bool = True
+    ) -> Tuple[bool, float]:
         return self.ml_segmentor_manager.train_perceptron_online(tokens, update_weights)
 
     def partial_fit_perceptron(
         self,
         corpus: List[List[str]],
         learning_rate: Optional[float] = None,
-        verbose: bool = False
+        verbose: bool = False,
     ) -> None:
         self.ml_segmentor_manager.partial_fit_perceptron(corpus, learning_rate, verbose)
 
-    def train_perceptron_from_file(self, filepath: str, encoding: str = 'utf-8') -> None:
+    def train_perceptron_from_file(
+        self, filepath: str, encoding: str = "utf-8"
+    ) -> None:
         self.ml_segmentor_manager.train_perceptron_from_file(filepath, encoding)
 
     def load_perceptron_model(self, filepath: str) -> None:
@@ -505,7 +562,9 @@ class Segmentor:
     def segment_with_lattice_pos(self, text: str) -> List[Tuple[str, Optional[str]]]:
         return self.lattice_manager.segment_with_pos(text)
 
-    def get_all_lattice_segmentations(self, text: str, max_results: int = 10) -> List[List[str]]:
+    def get_all_lattice_segmentations(
+        self, text: str, max_results: int = 10
+    ) -> List[List[str]]:
         return self.lattice_manager.get_all_segmentations(text, max_results)
 
     def detect_lattice_ambiguity(self, text: str) -> List[Dict]:
@@ -542,55 +601,53 @@ class Segmentor:
     def get_overlap_ambiguities(self, text: str) -> List[AmbiguityRegion]:
         return self.ambiguity_manager.get_overlap_ambiguities(text)
 
-    def resolve_ambiguity(
-        self,
-        text: str,
-        method: str = 'shortest'
-    ) -> List[str]:
-        if method == 'shortest':
-            return self.segment(text, mode='lattice')
-        elif method == 'ngram':
+    def resolve_ambiguity(self, text: str, method: str = "shortest") -> List[str]:
+        if method == "shortest":
+            return self.segment(text, mode="lattice")
+        elif method == "ngram":
             original_method = self.lattice_manager.get_scoring_method()
-            self.lattice_manager.set_scoring_method('ngram')
+            self.lattice_manager.set_scoring_method("ngram")
             try:
                 return self.lattice_manager.segment(text)
             finally:
                 self.lattice_manager.set_scoring_method(original_method)
-        elif method == 'frequency':
+        elif method == "frequency":
             original_method = self.lattice_manager.get_scoring_method()
-            self.lattice_manager.set_scoring_method('frequency')
+            self.lattice_manager.set_scoring_method("frequency")
             try:
                 return self.lattice_manager.segment(text)
             finally:
                 self.lattice_manager.set_scoring_method(original_method)
         else:
-            return self.segment(text, mode='lattice')
+            return self.segment(text, mode="lattice")
 
     def train_new_word_detector(
         self,
         corpus: List[str],
         min_freq: int = 5,
         min_pmi: float = 1.0,
-        min_entropy: float = 0.5
+        min_entropy: float = 0.5,
     ) -> None:
         self.new_word_manager.train(corpus, min_freq, min_pmi, min_entropy)
 
     def train_new_word_detector_from_file(
         self,
         filepath: str,
-        encoding: str = 'utf-8',
+        encoding: str = "utf-8",
         min_freq: int = 5,
         min_pmi: float = 1.0,
-        min_entropy: float = 0.5
+        min_entropy: float = 0.5,
     ) -> None:
-        self.new_word_manager.train_from_file(filepath, encoding, min_freq, min_pmi, min_entropy)
+        self.new_word_manager.train_from_file(
+            filepath, encoding, min_freq, min_pmi, min_entropy
+        )
 
     def detect_new_words(
         self,
         top_k: int = 100,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> List[Tuple[str, Dict[str, float]]]:
         return self.new_word_manager.detect(top_k, min_freq, min_pmi, min_entropy)
 
@@ -600,9 +657,11 @@ class Segmentor:
         top_k: int = 20,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> List[Tuple[str, Dict[str, float]]]:
-        return self.new_word_manager.detect_from_text(text, top_k, min_freq, min_pmi, min_entropy)
+        return self.new_word_manager.detect_from_text(
+            text, top_k, min_freq, min_pmi, min_entropy
+        )
 
     def get_new_word_score(self, word: str) -> Dict[str, float]:
         return self.new_word_manager.get_word_score(word)
@@ -620,7 +679,7 @@ class Segmentor:
         min_pmi: Optional[float] = None,
         min_entropy: Optional[float] = None,
         pos_tag: Optional[str] = None,
-        weight: float = 1.0
+        weight: float = 1.0,
     ) -> List[Tuple[str, Dict[str, float]]]:
         return self.new_word_manager.auto_extend_dictionary(
             self.dict_manager.dictionary,
@@ -629,7 +688,7 @@ class Segmentor:
             min_pmi=min_pmi,
             min_entropy=min_entropy,
             pos_tag=pos_tag,
-            weight=weight
+            weight=weight,
         )
 
     def is_new_word_detector_trained(self) -> bool:
@@ -642,7 +701,7 @@ class Segmentor:
         self,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> None:
         self.new_word_manager.set_thresholds(min_freq, min_pmi, min_entropy)
 
@@ -669,7 +728,9 @@ class Segmentor:
     def segment_hybrid(self, text: str) -> List[str]:
         return self.hybrid_manager.segment(text)
 
-    def segment_hybrid_with_details(self, text: str) -> Tuple[List[str], Dict[str, Any]]:
+    def segment_hybrid_with_details(
+        self, text: str
+    ) -> Tuple[List[str], Dict[str, Any]]:
         return self.hybrid_manager.segment_with_details(text)
 
     def get_hybrid_available_segmenters(self) -> List[str]:
@@ -678,7 +739,7 @@ class Segmentor:
     def get_hybrid_config(self) -> Optional[HybridConfig]:
         return self.hybrid_manager.get_config()
 
-    def load_hybrid_dl_model(self, model_path: str, model_type: str = 'bert') -> bool:
+    def load_hybrid_dl_model(self, model_path: str, model_type: str = "bert") -> bool:
         return self.hybrid_manager.load_dl_model(model_path, model_type)
 
     def sync_hybrid_segmentors(self) -> None:
@@ -686,13 +747,15 @@ class Segmentor:
             self.ml_segmentor_manager.hmm_segmentor,
             self.ml_segmentor_manager.crf_segmentor,
             self.ml_segmentor_manager.perceptron_segmentor,
-            self.lattice_manager.lattice_segmentor
+            self.lattice_manager.lattice_segmentor,
         )
 
     def is_hybrid_enabled(self) -> bool:
         return self.hybrid_manager.is_enabled()
 
-    def add_traditional_word(self, word: str, traditional: Optional[str] = None) -> None:
+    def add_traditional_word(
+        self, word: str, traditional: Optional[str] = None
+    ) -> None:
         """
         添加繁体中文词汇
 
@@ -745,7 +808,9 @@ class Segmentor:
         if region is not None and region not in self.VALID_REGIONS:
             raise ValueError(f"无效的地区代码: {region}")
 
-    def segment_traditional(self, text: str, mode: Optional[str] = None, region: Optional[str] = None) -> List[str]:
+    def segment_traditional(
+        self, text: str, mode: Optional[str] = None, region: Optional[str] = None
+    ) -> List[str]:
         """
         分词繁体中文文本
 
@@ -760,10 +825,14 @@ class Segmentor:
         # 验证region参数
         self._validate_region(region)
         # 转换为简体中文后分词
-        simplified_text = self.traditional_converter.traditional_to_simplified(text, region)
+        simplified_text = self.traditional_converter.traditional_to_simplified(
+            text, region
+        )
         return self.segment(simplified_text, mode)
 
-    def segment_with_traditional(self, text: str, mode: Optional[str] = None, region: Optional[str] = None) -> List[str]:
+    def segment_with_traditional(
+        self, text: str, mode: Optional[str] = None, region: Optional[str] = None
+    ) -> List[str]:
         """
         处理包含繁体中文的文本
 
@@ -782,7 +851,9 @@ class Segmentor:
 
         if has_traditional:
             # 转换为简体中文后分词
-            simplified_text = self.traditional_converter.traditional_to_simplified(text, region)
+            simplified_text = self.traditional_converter.traditional_to_simplified(
+                text, region
+            )
             return self.segment(simplified_text, mode)
         else:
             # 直接分词

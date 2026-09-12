@@ -62,13 +62,15 @@ class SegmenterResult:
 @dataclass
 class HybridConfig:
     strategy: HybridStrategy = HybridStrategy.WEIGHTED
-    weights: Dict[str, float] = field(default_factory=lambda: {
-        'dict': 0.3,
-        'hmm': 0.25,
-        'crf': 0.25,
-        'perceptron': 0.2
-    })
-    cascade_order: List[str] = field(default_factory=lambda: ['dict', 'hmm', 'crf'])
+    weights: Dict[str, float] = field(
+        default_factory=lambda: {
+            "dict": 0.3,
+            "hmm": 0.25,
+            "crf": 0.25,
+            "perceptron": 0.2,
+        }
+    )
+    cascade_order: List[str] = field(default_factory=lambda: ["dict", "hmm", "crf"])
     confidence_threshold: float = 0.7
     min_confidence: float = 0.3
     use_dict_fallback: bool = True
@@ -91,9 +93,10 @@ class HybridConfig:
 @dataclass
 class FusionContext:
     """融合上下文，包含融合所需的所有信息"""
+
     text: str
     results: List[SegmenterResult]
-    dictionary: Optional['Dictionary'] = None
+    dictionary: Optional["Dictionary"] = None
     config: Optional[HybridConfig] = None
     word_frequency: Optional[Dict[str, int]] = None
 
@@ -142,7 +145,9 @@ class VoteFusionStrategy(FusionStrategy):
         boundaries = self._collect_boundaries(position_votes, text_length)
         return self._reconstruct_words(boundaries, text)
 
-    def _collect_boundaries(self, position_votes: Dict[int, Counter], text_length: int) -> List[int]:
+    def _collect_boundaries(
+        self, position_votes: Dict[int, Counter], text_length: int
+    ) -> List[int]:
         boundaries = []
         pos = 0
 
@@ -179,7 +184,9 @@ class WeightedFusionStrategy(FusionStrategy):
     """加权融合策略"""
 
     def __init__(self):
-        self._position_scores: Dict[int, Dict[int, float]] = defaultdict(lambda: defaultdict(float))
+        self._position_scores: Dict[int, Dict[int, float]] = defaultdict(
+            lambda: defaultdict(float)
+        )
 
     def fuse(self, context: FusionContext) -> List[str]:
         results = context.results
@@ -214,8 +221,7 @@ class WeightedFusionStrategy(FusionStrategy):
         while pos < text_length:
             if pos in self._position_scores:
                 best_boundary = max(
-                    self._position_scores[pos].items(),
-                    key=lambda x: x[1]
+                    self._position_scores[pos].items(), key=lambda x: x[1]
                 )[0]
                 final_words.append(text[pos:best_boundary])
                 pos = best_boundary
@@ -290,12 +296,14 @@ class AdaptiveFusionStrategy(FusionStrategy):
 
         selected_strategy = self._strategy_selector.select(features, results)
 
-        if selected_strategy == 'dict':
-            dict_results = [r for r in results if r.segmenter_name == 'dict']
+        if selected_strategy == "dict":
+            dict_results = [r for r in results if r.segmenter_name == "dict"]
             if dict_results:
                 return dict_results[0].words
-        elif selected_strategy == 'statistical':
-            stat_results = [r for r in results if r.segmenter_type == SegmenterType.STATISTICAL]
+        elif selected_strategy == "statistical":
+            stat_results = [
+                r for r in results if r.segmenter_type == SegmenterType.STATISTICAL
+            ]
             if stat_results:
                 best_stat = max(stat_results, key=lambda r: r.confidence)
                 return best_stat.words
@@ -306,9 +314,6 @@ class AdaptiveFusionStrategy(FusionStrategy):
 
     def get_name(self) -> str:
         return "adaptive"
-
-
-
 
 
 class ConfidenceFusionStrategy(FusionStrategy):
@@ -335,11 +340,11 @@ class FusionStrategyFactory:
 
     def _register_default_strategies(self):
         """注册默认的融合策略"""
-        self.register_strategy('vote', VoteFusionStrategy())
-        self.register_strategy('weighted', WeightedFusionStrategy())
-        self.register_strategy('cascade', CascadeFusionStrategy())
-        self.register_strategy('adaptive', AdaptiveFusionStrategy())
-        self.register_strategy('confidence', ConfidenceFusionStrategy())
+        self.register_strategy("vote", VoteFusionStrategy())
+        self.register_strategy("weighted", WeightedFusionStrategy())
+        self.register_strategy("cascade", CascadeFusionStrategy())
+        self.register_strategy("adaptive", AdaptiveFusionStrategy())
+        self.register_strategy("confidence", ConfidenceFusionStrategy())
 
     def register_strategy(self, name: str, strategy: FusionStrategy):
         """注册新的融合策略"""
@@ -353,7 +358,9 @@ class FusionStrategyFactory:
         """获取所有可用的融合策略名称"""
         return list(self._strategies.keys())
 
-    def create_strategy(self, name: str, config: Optional[HybridConfig] = None) -> Optional[FusionStrategy]:
+    def create_strategy(
+        self, name: str, config: Optional[HybridConfig] = None
+    ) -> Optional[FusionStrategy]:
         """创建融合策略实例（支持配置）"""
         strategy = self.get_strategy(name)
         if strategy and config:
@@ -367,7 +374,9 @@ class ConfidenceEstimator(ABC):
     """置信度估计器抽象基类"""
 
     @abstractmethod
-    def estimate(self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None) -> float:
+    def estimate(
+        self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None
+    ) -> float:
         """估计分词结果的置信度"""
         pass
 
@@ -380,11 +389,13 @@ class ConfidenceEstimator(ABC):
 class CoverageConfidenceEstimator(ConfidenceEstimator):
     """基于覆盖率的置信度估计器"""
 
-    def estimate(self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None) -> float:
+    def estimate(
+        self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None
+    ) -> float:
         if not result.words:
             return 0.0
 
-        dictionary = context.get('dictionary') if context else None
+        dictionary = context.get("dictionary") if context else None
         if dictionary is None:
             return 0.5
 
@@ -416,7 +427,9 @@ class WordQualityConfidenceEstimator(ConfidenceEstimator):
         self._word_freq = freq_dict
         self._total_words = sum(freq_dict.values())
 
-    def estimate(self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None) -> float:
+    def estimate(
+        self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None
+    ) -> float:
         if not result.words:
             return 0.0
 
@@ -446,7 +459,9 @@ class WordQualityConfidenceEstimator(ConfidenceEstimator):
 class SegmentationQualityConfidenceEstimator(ConfidenceEstimator):
     """基于分词质量的置信度估计器"""
 
-    def estimate(self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None) -> float:
+    def estimate(
+        self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None
+    ) -> float:
         if not result.words:
             return 0.0
 
@@ -454,7 +469,7 @@ class SegmentationQualityConfidenceEstimator(ConfidenceEstimator):
 
         single_ratio = result.single_char_ratio
         if single_ratio > 0.5:
-            score *= (1.0 - single_ratio * 0.5)
+            score *= 1.0 - single_ratio * 0.5
 
         avg_len = result.avg_word_length
         if avg_len < 1.5:
@@ -475,7 +490,7 @@ class CompositeConfidenceEstimator(ConfidenceEstimator):
         self.estimators = estimators or [
             CoverageConfidenceEstimator(),
             WordQualityConfidenceEstimator(),
-            SegmentationQualityConfidenceEstimator()
+            SegmentationQualityConfidenceEstimator(),
         ]
 
     def add_estimator(self, estimator: ConfidenceEstimator):
@@ -486,7 +501,9 @@ class CompositeConfidenceEstimator(ConfidenceEstimator):
         """移除指定名称的置信度估计器"""
         self.estimators = [e for e in self.estimators if e.get_name() != name]
 
-    def estimate(self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None) -> float:
+    def estimate(
+        self, result: SegmenterResult, context: Optional[Dict[str, Any]] = None
+    ) -> float:
         if not result.words:
             return 0.0
 
@@ -510,7 +527,9 @@ class LegacyConfidenceEstimator:
         self._word_freq = freq_dict
         self._total_words = sum(freq_dict.values())
 
-    def estimate_from_result(self, result: SegmenterResult, dictionary: Optional['Dictionary'] = None) -> float:
+    def estimate_from_result(
+        self, result: SegmenterResult, dictionary: Optional["Dictionary"] = None
+    ) -> float:
         if not result.words:
             return 0.0
 
@@ -522,7 +541,9 @@ class LegacyConfidenceEstimator:
 
         return sum(scores) / len(scores)
 
-    def _estimate_by_coverage(self, result: SegmenterResult, dictionary: Optional['Dictionary']) -> float:
+    def _estimate_by_coverage(
+        self, result: SegmenterResult, dictionary: Optional["Dictionary"]
+    ) -> float:
         if dictionary is None:
             return 0.5
 
@@ -570,7 +591,7 @@ class LegacyConfidenceEstimator:
 
         single_ratio = result.single_char_ratio
         if single_ratio > 0.5:
-            score *= (1.0 - single_ratio * 0.5)
+            score *= 1.0 - single_ratio * 0.5
 
         avg_len = result.avg_word_length
         if avg_len < 1.5:
@@ -585,20 +606,20 @@ class TextClassifier:
     def extract_features(self, text: str) -> Dict[str, float]:
         features = {}
 
-        features['length'] = len(text)
-        features['avg_char_per_word_estimate'] = self._estimate_avg_word_length(text)
-        features['digit_ratio'] = self._calc_digit_ratio(text)
-        features['punct_ratio'] = self._calc_punct_ratio(text)
-        features['english_ratio'] = self._calc_english_ratio(text)
-        features['chinese_ratio'] = self._calc_chinese_ratio(text)
+        features["length"] = len(text)
+        features["avg_char_per_word_estimate"] = self._estimate_avg_word_length(text)
+        features["digit_ratio"] = self._calc_digit_ratio(text)
+        features["punct_ratio"] = self._calc_punct_ratio(text)
+        features["english_ratio"] = self._calc_english_ratio(text)
+        features["chinese_ratio"] = self._calc_chinese_ratio(text)
 
         return features
 
     def _estimate_avg_word_length(self, text: str) -> float:
-        chinese_chars = sum(1 for c in text if '\u4e00' <= c <= '\u9fff')
+        chinese_chars = sum(1 for c in text if "\u4e00" <= c <= "\u9fff")
         if chinese_chars == 0:
             return 1.0
-        return min(4.0, max(1.5, chinese_chars / max(1, text.count(' ') + 1)))
+        return min(4.0, max(1.5, chinese_chars / max(1, text.count(" ") + 1)))
 
     def _calc_digit_ratio(self, text: str) -> float:
         if not text:
@@ -608,8 +629,8 @@ class TextClassifier:
     def _calc_punct_ratio(self, text: str) -> float:
         if not text:
             return 0.0
-        puncts = set('，。！？、；：""''（）【】《》—…·')
-        return sum(1 for c in text if c in puncts or c in '.,!?;:\"\'()[]<>') / len(text)
+        puncts = set('，。！？、；：""' "（）【】《》—…·")
+        return sum(1 for c in text if c in puncts or c in ".,!?;:\"'()[]<>") / len(text)
 
     def _calc_english_ratio(self, text: str) -> float:
         if not text:
@@ -619,27 +640,29 @@ class TextClassifier:
     def _calc_chinese_ratio(self, text: str) -> float:
         if not text:
             return 0.0
-        return sum(1 for c in text if '\u4e00' <= c <= '\u9fff') / len(text)
+        return sum(1 for c in text if "\u4e00" <= c <= "\u9fff") / len(text)
 
 
 class StrategySelector:
     def select(self, features: Dict[str, float], results: List[SegmenterResult]) -> str:
-        chinese_ratio = features.get('chinese_ratio', 0)
-        english_ratio = features.get('english_ratio', 0)
-        digit_ratio = features.get('digit_ratio', 0)
+        chinese_ratio = features.get("chinese_ratio", 0)
+        english_ratio = features.get("english_ratio", 0)
+        digit_ratio = features.get("digit_ratio", 0)
 
         if english_ratio > 0.5:
-            return 'dict'
+            return "dict"
 
         if digit_ratio > 0.3:
-            return 'dict'
+            return "dict"
 
         if chinese_ratio > 0.7:
-            stat_results = [r for r in results if r.segmenter_type == SegmenterType.STATISTICAL]
+            stat_results = [
+                r for r in results if r.segmenter_type == SegmenterType.STATISTICAL
+            ]
             if stat_results:
-                return 'statistical'
+                return "statistical"
 
-        return 'best_confidence'
+        return "best_confidence"
 
 
 class DeepLearningInterface:
@@ -648,7 +671,7 @@ class DeepLearningInterface:
         self._model_loaded = False
         self._model_path: Optional[str] = None
 
-    def load_model(self, model_path: str, model_type: str = 'bert') -> bool:
+    def load_model(self, model_path: str, model_type: str = "bert") -> bool:
         try:
             self._model_path = model_path
             self._model_loaded = True
@@ -665,7 +688,7 @@ class DeepLearningInterface:
                 words=list(text),
                 confidence=0.0,
                 segmenter_type=SegmenterType.DEEP_LEARNING,
-                segmenter_name='dl_unloaded'
+                segmenter_name="dl_unloaded",
             )
 
         words = self._predict(text)
@@ -673,7 +696,7 @@ class DeepLearningInterface:
             words=words,
             confidence=0.9,
             segmenter_type=SegmenterType.DEEP_LEARNING,
-            segmenter_name='bert'
+            segmenter_name="bert",
         )
 
     def _predict(self, text: str) -> List[str]:
@@ -681,9 +704,9 @@ class DeepLearningInterface:
 
     def get_model_info(self) -> Dict[str, Any]:
         return {
-            'loaded': self._model_loaded,
-            'model_path': self._model_path,
-            'model_type': 'bert' if self._model_loaded else None
+            "loaded": self._model_loaded,
+            "model_path": self._model_path,
+            "model_type": "bert" if self._model_loaded else None,
         }
 
 
@@ -692,8 +715,8 @@ class HybridSegmentor:
 
     def __init__(
         self,
-        dictionary: Optional['Dictionary'] = None,
-        config: Optional[HybridConfig] = None
+        dictionary: Optional["Dictionary"] = None,
+        config: Optional[HybridConfig] = None,
     ):
         self._dictionary = dictionary
         self._config = config or HybridConfig()
@@ -712,19 +735,19 @@ class HybridSegmentor:
         # 缓存组件
         self._result_cache: Dict[str, List[str]] = {}
 
-    def set_dictionary(self, dictionary: 'Dictionary') -> None:
+    def set_dictionary(self, dictionary: "Dictionary") -> None:
         self._dictionary = dictionary
 
-    def set_hmm_segmentor(self, segmentor: 'HMMSegmentor') -> None:
+    def set_hmm_segmentor(self, segmentor: "HMMSegmentor") -> None:
         self._hmm_segmentor = segmentor
 
-    def set_crf_segmentor(self, segmentor: 'CRFSegmentor') -> None:
+    def set_crf_segmentor(self, segmentor: "CRFSegmentor") -> None:
         self._crf_segmentor = segmentor
 
-    def set_perceptron_segmentor(self, segmentor: 'PerceptronSegmentor') -> None:
+    def set_perceptron_segmentor(self, segmentor: "PerceptronSegmentor") -> None:
         self._perceptron_segmentor = segmentor
 
-    def set_lattice_segmentor(self, segmentor: 'LatticeSegmentor') -> None:
+    def set_lattice_segmentor(self, segmentor: "LatticeSegmentor") -> None:
         self._lattice_segmentor = segmentor
 
     def set_word_frequency(self, freq_dict: Dict[str, int]) -> None:
@@ -736,7 +759,7 @@ class HybridSegmentor:
     def set_config(self, config: HybridConfig) -> None:
         self._config = config
 
-    def load_dl_model(self, model_path: str, model_type: str = 'bert') -> bool:
+    def load_dl_model(self, model_path: str, model_type: str = "bert") -> bool:
         return self._dl_interface.load_model(model_path, model_type)
 
     def register_fusion_strategy(self, name: str, strategy: FusionStrategy):
@@ -765,7 +788,7 @@ class HybridSegmentor:
         strategy = self._strategy_factory.create_strategy(strategy_name, self._config)
 
         if strategy is None:
-            strategy = self._strategy_factory.get_strategy('weighted')
+            strategy = self._strategy_factory.get_strategy("weighted")
 
         final_words = strategy.fuse(context)
 
@@ -780,12 +803,12 @@ class HybridSegmentor:
     def segment_with_details(self, text: str) -> Tuple[List[str], Dict[str, Any]]:
         """带详情的分词方法"""
         if not text:
-            return [], {'results': [], 'strategy': None}
+            return [], {"results": [], "strategy": None}
 
         results = self._get_all_segmenter_results(text)
 
         if not results:
-            return list(text), {'results': [], 'strategy': self._config.strategy.value}
+            return list(text), {"results": [], "strategy": self._config.strategy.value}
 
         context = self._build_fusion_context(text, results)
 
@@ -793,33 +816,32 @@ class HybridSegmentor:
         strategy = self._strategy_factory.create_strategy(strategy_name, self._config)
 
         if strategy is None:
-            strategy = self._strategy_factory.get_strategy('weighted')
+            strategy = self._strategy_factory.get_strategy("weighted")
 
         final_words = strategy.fuse(context)
 
         details = {
-            'strategy': strategy_name,
-            'results': [
+            "strategy": strategy_name,
+            "results": [
                 {
-                    'segmenter': r.segmenter_name,
-                    'words': r.words,
-                    'confidence': r.confidence,
-                    'type': r.segmenter_type.value
+                    "segmenter": r.segmenter_name,
+                    "words": r.words,
+                    "confidence": r.confidence,
+                    "type": r.segmenter_type.value,
                 }
                 for r in results
             ],
-            'final_confidence': self._calculate_final_confidence(final_words)
+            "final_confidence": self._calculate_final_confidence(final_words),
         }
 
         return final_words, details
 
-    def _build_fusion_context(self, text: str, results: List[SegmenterResult]) -> FusionContext:
+    def _build_fusion_context(
+        self, text: str, results: List[SegmenterResult]
+    ) -> FusionContext:
         """构建融合上下文"""
         return FusionContext(
-            text=text,
-            results=results,
-            dictionary=self._dictionary,
-            config=self._config
+            text=text, results=results, dictionary=self._dictionary, config=self._config
         )
 
     def _get_all_segmenter_results(self, text: str) -> List[SegmenterResult]:
@@ -871,11 +893,11 @@ class HybridSegmentor:
             words=words,
             confidence=0.0,
             segmenter_type=SegmenterType.RULE_BASED,
-            segmenter_name='dict'
+            segmenter_name="dict",
         )
 
         # 使用置信度估计器
-        context = {'dictionary': self._dictionary}
+        context = {"dictionary": self._dictionary}
         result.confidence = self._confidence_estimator.estimate(result, context)
 
         return result
@@ -891,10 +913,10 @@ class HybridSegmentor:
             words=words,
             confidence=0.0,
             segmenter_type=SegmenterType.STATISTICAL,
-            segmenter_name='hmm'
+            segmenter_name="hmm",
         )
 
-        context = {'dictionary': self._dictionary}
+        context = {"dictionary": self._dictionary}
         result.confidence = self._confidence_estimator.estimate(result, context)
 
         return result
@@ -910,17 +932,20 @@ class HybridSegmentor:
             words=words,
             confidence=0.0,
             segmenter_type=SegmenterType.STATISTICAL,
-            segmenter_name='crf'
+            segmenter_name="crf",
         )
 
-        context = {'dictionary': self._dictionary}
+        context = {"dictionary": self._dictionary}
         result.confidence = self._confidence_estimator.estimate(result, context)
 
         return result
 
     def _segment_with_perceptron(self, text: str) -> Optional[SegmenterResult]:
         """感知机分词"""
-        if self._perceptron_segmentor is None or not self._perceptron_segmentor.is_trained():
+        if (
+            self._perceptron_segmentor is None
+            or not self._perceptron_segmentor.is_trained()
+        ):
             return None
 
         words = self._perceptron_segmentor.segment(text)
@@ -929,10 +954,10 @@ class HybridSegmentor:
             words=words,
             confidence=0.0,
             segmenter_type=SegmenterType.STATISTICAL,
-            segmenter_name='perceptron'
+            segmenter_name="perceptron",
         )
 
-        context = {'dictionary': self._dictionary}
+        context = {"dictionary": self._dictionary}
         result.confidence = self._confidence_estimator.estimate(result, context)
 
         return result
@@ -948,10 +973,10 @@ class HybridSegmentor:
             words=words,
             confidence=0.0,
             segmenter_type=SegmenterType.HYBRID,
-            segmenter_name='lattice'
+            segmenter_name="lattice",
         )
 
-        context = {'dictionary': self._dictionary}
+        context = {"dictionary": self._dictionary}
         result.confidence = self._confidence_estimator.estimate(result, context)
 
         return result
@@ -971,10 +996,10 @@ class HybridSegmentor:
         result = SegmenterResult(
             words=final_words,
             segmenter_type=SegmenterType.HYBRID,
-            segmenter_name='hybrid'
+            segmenter_name="hybrid",
         )
 
-        context = {'dictionary': self._dictionary}
+        context = {"dictionary": self._dictionary}
         return self._confidence_estimator.estimate(result, context)
 
     def get_available_segmenters(self) -> List[str]:
@@ -982,17 +1007,20 @@ class HybridSegmentor:
         available = []
 
         if self._dictionary is not None:
-            available.append('dict')
+            available.append("dict")
         if self._hmm_segmentor is not None and self._hmm_segmentor.is_trained():
-            available.append('hmm')
+            available.append("hmm")
         if self._crf_segmentor is not None and self._crf_segmentor.is_trained():
-            available.append('crf')
-        if self._perceptron_segmentor is not None and self._perceptron_segmentor.is_trained():
-            available.append('perceptron')
+            available.append("crf")
+        if (
+            self._perceptron_segmentor is not None
+            and self._perceptron_segmentor.is_trained()
+        ):
+            available.append("perceptron")
         if self._lattice_segmentor is not None:
-            available.append('lattice')
+            available.append("lattice")
         if self._dl_interface.is_loaded():
-            available.append('dl')
+            available.append("dl")
 
         return available
 
@@ -1010,25 +1038,25 @@ class HybridSegmentor:
 
 
 __all__ = [
-    'AdaptiveFusionStrategy',
-    'CascadeFusionStrategy',
-    'CompositeConfidenceEstimator',
-    'ConfidenceEstimator',
-    'ConfidenceFusionStrategy',
-    'CoverageConfidenceEstimator',
-    'DeepLearningInterface',
-    'FusionContext',
-    'FusionStrategy',
-    'FusionStrategyFactory',
-    'HybridConfig',
-    'HybridSegmentor',
-    'HybridStrategy',
-    'SegmentationQualityConfidenceEstimator',
-    'SegmenterResult',
-    'SegmenterType',
-    'StrategySelector',
-    'TextClassifier',
-    'VoteFusionStrategy',
-    'WeightedFusionStrategy',
-    'WordQualityConfidenceEstimator',
+    "AdaptiveFusionStrategy",
+    "CascadeFusionStrategy",
+    "CompositeConfidenceEstimator",
+    "ConfidenceEstimator",
+    "ConfidenceFusionStrategy",
+    "CoverageConfidenceEstimator",
+    "DeepLearningInterface",
+    "FusionContext",
+    "FusionStrategy",
+    "FusionStrategyFactory",
+    "HybridConfig",
+    "HybridSegmentor",
+    "HybridStrategy",
+    "SegmentationQualityConfidenceEstimator",
+    "SegmenterResult",
+    "SegmenterType",
+    "StrategySelector",
+    "TextClassifier",
+    "VoteFusionStrategy",
+    "WeightedFusionStrategy",
+    "WordQualityConfidenceEstimator",
 ]

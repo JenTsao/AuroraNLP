@@ -66,6 +66,7 @@ from urllib.parse import parse_qs, urlparse
 # 步骤58: 词汇表共享 - StringStore实现
 # ============================================================
 
+
 class StringStore:
     """
     字符串存储池 - 实现字符串的内存优化和ID映射
@@ -182,7 +183,7 @@ class StringStore:
         return json.dumps(self._str_to_id, ensure_ascii=False)
 
     @classmethod
-    def from_json(cls, json_str: str) -> 'StringStore':
+    def from_json(cls, json_str: str) -> "StringStore":
         """
         从JSON字符串反序列化存储池
 
@@ -235,6 +236,7 @@ def get_string_store() -> StringStore:
 # 步骤55: Doc对象设计 - 统一数据结构
 # ============================================================
 
+
 class Doc:
     """
     文档对象 - NLP处理流水线的统一数据容器
@@ -253,7 +255,7 @@ class Doc:
         self,
         text: str,
         string_store: Optional[StringStore] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         """
         初始化文档对象
@@ -275,7 +277,7 @@ class Doc:
 
     def __repr__(self) -> str:
         preview = self._text[:50] + "..." if len(self._text) > 50 else self._text
-        return f"Doc(text=\"{preview}\", tokens={len(self._tokens)})"
+        return f'Doc(text="{preview}", tokens={len(self._tokens)})'
 
     def __len__(self) -> int:
         """返回文档的字符长度"""
@@ -283,13 +285,13 @@ class Doc:
 
     def __getitem__(self, key: str) -> Any:
         """获取文档属性"""
-        if key == 'text':
+        if key == "text":
             return self._text
-        if key == 'tokens':
+        if key == "tokens":
             return self._tokens
-        if key == 'spans':
+        if key == "spans":
             return self._spans
-        if key == 'entities':
+        if key == "entities":
             return self._entities
         return self._attrs.get(key)
 
@@ -299,7 +301,7 @@ class Doc:
 
     def __contains__(self, key: str) -> bool:
         """检查属性是否存在"""
-        if key in ('text', 'tokens', 'spans', 'entities'):
+        if key in ("text", "tokens", "spans", "entities"):
             return True
         return key in self._attrs
 
@@ -309,17 +311,17 @@ class Doc:
         return self._text
 
     @property
-    def tokens(self) -> List['Token']:
+    def tokens(self) -> List["Token"]:
         """获取词元列表"""
         return self._tokens
 
     @property
-    def spans(self) -> List['Span']:
+    def spans(self) -> List["Span"]:
         """获取文本片段列表"""
         return self._spans
 
     @property
-    def entities(self) -> List['Span']:
+    def entities(self) -> List["Span"]:
         """获取命名实体列表"""
         return self._entities
 
@@ -338,7 +340,7 @@ class Doc:
         """获取用户自定义数据"""
         return self._user_data
 
-    def set_token(self, index: int, token: 'Token') -> None:
+    def set_token(self, index: int, token: "Token") -> None:
         """
         设置指定位置的词元
 
@@ -353,7 +355,7 @@ class Doc:
                 self._tokens.append(None)  # type: ignore
             self._tokens[index] = token
 
-    def add_token(self, token: 'Token') -> int:
+    def add_token(self, token: "Token") -> int:
         """
         添加词元到文档
 
@@ -367,7 +369,7 @@ class Doc:
         self._tokens.append(token)
         return idx
 
-    def add_span(self, span: 'Span') -> None:
+    def add_span(self, span: "Span") -> None:
         """
         添加文本片段到文档
 
@@ -376,7 +378,7 @@ class Doc:
         """
         self._spans.append(span)
 
-    def add_entity(self, entity: 'Span') -> None:
+    def add_entity(self, entity: "Span") -> None:
         """
         添加命名实体到文档
 
@@ -412,7 +414,7 @@ class Doc:
         """检查属性是否存在"""
         return key in self._attrs
 
-    def char_span(self, start: int, end: int, label: str = "", **kwargs) -> 'Span':
+    def char_span(self, start: int, end: int, label: str = "", **kwargs) -> "Span":
         """
         创建基于字符偏移的文本片段
 
@@ -431,7 +433,7 @@ class Doc:
             end=end,
             label=label,
             string_store=self._string_store,
-            **kwargs
+            **kwargs,
         )
         return span
 
@@ -461,7 +463,7 @@ class Doc:
             except Exception:
                 pass  # 回调异常不影响主流程
 
-    def copy(self) -> 'Doc':
+    def copy(self) -> "Doc":
         """
         创建文档的深拷贝
 
@@ -471,7 +473,7 @@ class Doc:
         new_doc = Doc(
             text=self._text,
             string_store=self._string_store,
-            metadata=dict(self._metadata)
+            metadata=dict(self._metadata),
         )
         new_doc._attrs = dict(self._attrs)
         new_doc._user_data = dict(self._user_data)
@@ -483,7 +485,7 @@ class Doc:
                 start=token._start,
                 end=token._end,
                 text=token._text,
-                string_store=token._string_store
+                string_store=token._string_store,
             )
             new_token._pos = token._pos
             new_token._lemma = token._lemma
@@ -508,7 +510,7 @@ class Doc:
                 end=span._end,
                 label=span._label,
                 string_store=span._string_store,
-                **dict(span._attrs)
+                **dict(span._attrs),
             )
             new_span._relations = {k: list(v) for k, v in span._relations.items()}
             new_doc._spans.append(new_span)
@@ -521,7 +523,7 @@ class Doc:
                 end=entity._end,
                 label=entity._label,
                 string_store=entity._string_store,
-                **dict(entity._attrs)
+                **dict(entity._attrs),
             )
             new_entity._relations = {k: list(v) for k, v in entity._relations.items()}
             new_doc._entities.append(new_entity)
@@ -532,6 +534,7 @@ class Doc:
 # ============================================================
 # 步骤56: Span对象实现 - 文本片段抽象
 # ============================================================
+
 
 class Span:
     """
@@ -554,7 +557,7 @@ class Span:
         end: int,
         label: str = "",
         string_store: Optional[StringStore] = None,
-        **kwargs
+        **kwargs,
     ):
         """
         初始化文本片段
@@ -578,16 +581,18 @@ class Span:
     def __repr__(self) -> str:
         text = self.text
         preview = text[:20] + "..." if len(text) > 20 else text
-        label_str = f", label=\"{self._label}\"" if self._label else ""
-        return f"Span(\"{preview}\"{label_str}, {self._start}:{self._end})"
+        label_str = f', label="{self._label}"' if self._label else ""
+        return f'Span("{preview}"{label_str}, {self._start}:{self._end})'
 
     def __eq__(self, other) -> bool:
         """判断两个Span是否相等（同一文档、相同偏移）"""
         if not isinstance(other, Span):
             return NotImplemented
-        return (self._doc() is other._doc() and
-                self._start == other._start and
-                self._end == other._end)
+        return (
+            self._doc() is other._doc()
+            and self._start == other._start
+            and self._end == other._end
+        )
 
     def __hash__(self) -> int:
         """Span的哈希值"""
@@ -636,7 +641,7 @@ class Span:
         doc = self._doc()
         if doc is None:
             return ""
-        return doc.text[self._start:self._end]
+        return doc.text[self._start : self._end]
 
     @property
     def start_char(self) -> int:
@@ -675,11 +680,11 @@ class Span:
         """检查属性是否存在"""
         return key in self._attrs
 
-    def as_span(self) -> 'Span':
+    def as_span(self) -> "Span":
         """返回自身（兼容接口）"""
         return self
 
-    def add_relation(self, rel_type: str, target: 'Span') -> None:
+    def add_relation(self, rel_type: str, target: "Span") -> None:
         """
         添加与其他Span的关系
 
@@ -691,7 +696,7 @@ class Span:
             self._relations[rel_type] = []
         self._relations[rel_type].append(target)
 
-    def get_relations(self, rel_type: Optional[str] = None) -> List['Span']:
+    def get_relations(self, rel_type: Optional[str] = None) -> List["Span"]:
         """
         获取关系
 
@@ -708,7 +713,7 @@ class Span:
             return result
         return self._relations.get(rel_type, [])
 
-    def overlaps(self, other: 'Span') -> bool:
+    def overlaps(self, other: "Span") -> bool:
         """
         检查是否与另一个Span重叠
 
@@ -720,7 +725,7 @@ class Span:
         """
         return self._start < other._end and other._start < self._end
 
-    def contains(self, other: 'Span') -> bool:
+    def contains(self, other: "Span") -> bool:
         """
         检查是否包含另一个Span
 
@@ -732,7 +737,7 @@ class Span:
         """
         return self._start <= other._start and self._end >= other._end
 
-    def similarity(self, other: 'Span') -> float:
+    def similarity(self, other: "Span") -> float:
         """
         计算与另一个Span的相似度（基于字符重叠）
 
@@ -750,7 +755,7 @@ class Span:
         total = (self._end - self._start) + (other._end - other._start) - overlap
         return overlap / total if total > 0 else 0.0
 
-    def slice(self, start: int, end: int) -> 'Span':
+    def slice(self, start: int, end: int) -> "Span":
         """
         在当前Span内创建子Span
 
@@ -771,13 +776,14 @@ class Span:
             start=abs_start,
             end=abs_end,
             label=self._label,
-            string_store=self._string_store
+            string_store=self._string_store,
         )
 
 
 # ============================================================
 # 步骤57: Token对象实现 - 词元级别操作
 # ============================================================
+
 
 class Token:
     """
@@ -799,7 +805,7 @@ class Token:
         start: int,
         end: int,
         text: Optional[str] = None,
-        string_store: Optional[StringStore] = None
+        string_store: Optional[StringStore] = None,
     ):
         """
         初始化词元
@@ -826,15 +832,17 @@ class Token:
         self._relations: Dict[str, List[Union[Token, Span]]] = {}
 
     def __repr__(self) -> str:
-        return f"Token(\"{self.text}\", pos=\"{self._pos}\")"
+        return f'Token("{self.text}", pos="{self._pos}")'
 
     def __eq__(self, other) -> bool:
         """判断两个Token是否相等"""
         if not isinstance(other, Token):
             return NotImplemented
-        return (self._doc() is other._doc() and
-                self._start == other._start and
-                self._end == other._end)
+        return (
+            self._doc() is other._doc()
+            and self._start == other._start
+            and self._end == other._end
+        )
 
     def __hash__(self) -> int:
         """Token的哈希值"""
@@ -847,11 +855,11 @@ class Token:
     def __getitem__(self, key: str) -> Any:
         """获取Token属性"""
         attr_map = {
-            'pos': self._pos,
-            'lemma': self._lemma,
-            'tag': self._tag,
-            'dep': self._dep,
-            'ner': self._ner_label,
+            "pos": self._pos,
+            "lemma": self._lemma,
+            "tag": self._tag,
+            "dep": self._dep,
+            "ner": self._ner_label,
         }
         if key in attr_map:
             return attr_map[key]
@@ -859,15 +867,15 @@ class Token:
 
     def __setitem__(self, key: str, value: Any) -> None:
         """设置Token属性"""
-        if key == 'pos':
+        if key == "pos":
             self._pos = value
-        elif key == 'lemma':
+        elif key == "lemma":
             self._lemma = value
-        elif key == 'tag':
+        elif key == "tag":
             self._tag = value
-        elif key == 'dep':
+        elif key == "dep":
             self._dep = value
-        elif key == 'ner':
+        elif key == "ner":
             self._ner_label = value
         else:
             self._attrs[key] = value
@@ -885,7 +893,7 @@ class Token:
         doc = self._doc()
         if doc is None:
             return ""
-        return doc.text[self._start:self._end]
+        return doc.text[self._start : self._end]
 
     @property
     def start(self) -> int:
@@ -948,12 +956,12 @@ class Token:
         self._dep = value
 
     @property
-    def head(self) -> Optional['Token']:
+    def head(self) -> Optional["Token"]:
         """获取依存关系中的中心词"""
         return self._head
 
     @head.setter
-    def head(self, value: Optional['Token']) -> None:
+    def head(self, value: Optional["Token"]) -> None:
         """设置依存关系中的中心词"""
         self._head = value
 
@@ -994,7 +1002,7 @@ class Token:
         """检查自定义属性是否存在"""
         return key in self._attrs
 
-    def add_relation(self, rel_type: str, target: Union['Token', 'Span']) -> None:
+    def add_relation(self, rel_type: str, target: Union["Token", "Span"]) -> None:
         """
         添加与其他Token/Span的关系
 
@@ -1006,7 +1014,9 @@ class Token:
             self._relations[rel_type] = []
         self._relations[rel_type].append(target)
 
-    def get_relations(self, rel_type: Optional[str] = None) -> List[Union['Token', 'Span']]:
+    def get_relations(
+        self, rel_type: Optional[str] = None
+    ) -> List[Union["Token", "Span"]]:
         """
         获取关系
 
@@ -1023,7 +1033,7 @@ class Token:
             return result
         return self._relations.get(rel_type, [])
 
-    def is_ancestor(self, other: 'Token') -> bool:
+    def is_ancestor(self, other: "Token") -> bool:
         """
         检查当前Token是否是另一个Token的祖先（依存树中）
 
@@ -1045,7 +1055,7 @@ class Token:
             current = current.head
         return False
 
-    def get_ancestors(self) -> List['Token']:
+    def get_ancestors(self) -> List["Token"]:
         """
         获取依存树中的所有祖先节点
 
@@ -1064,7 +1074,7 @@ class Token:
             current = current.head
         return ancestors
 
-    def get_descendants(self) -> List['Token']:
+    def get_descendants(self) -> List["Token"]:
         """
         获取依存树中的所有后代节点
 
@@ -1080,7 +1090,7 @@ class Token:
                 descendants.append(token)
         return descendants
 
-    def left_edge(self) -> 'Token':
+    def left_edge(self) -> "Token":
         """获取依存子树的最左边界Token"""
         doc = self._doc()
         if doc is None:
@@ -1094,7 +1104,7 @@ class Token:
                 leftmost = t
         return leftmost
 
-    def right_edge(self) -> 'Token':
+    def right_edge(self) -> "Token":
         """获取依存子树的最右边界Token"""
         doc = self._doc()
         if doc is None:
@@ -1118,7 +1128,7 @@ class Token:
             start=self._start,
             end=self._end,
             label=self._ner_label,
-            string_store=self._string_store
+            string_store=self._string_store,
         )
 
     def subtree_text(self) -> str:
@@ -1128,20 +1138,22 @@ class Token:
             return ""
         left = self.left_edge()
         right = self.right_edge()
-        return doc.text[left.start:right.end]
+        return doc.text[left.start : right.end]
 
 
 # ============================================================
 # 步骤51: Pipeline架构设计 - 模块化组件流水线
 # ============================================================
 
+
 class ComponentState(Enum):
     """组件状态枚举"""
-    UNINITIALIZED = "uninitialized"   # 未初始化
-    INITIALIZED = "initialized"       # 已初始化
-    FROZEN = "frozen"                 # 已冻结
-    TRAINING = "training"             # 训练中
-    ERROR = "error"                   # 错误状态
+
+    UNINITIALIZED = "uninitialized"  # 未初始化
+    INITIALIZED = "initialized"  # 已初始化
+    FROZEN = "frozen"  # 已冻结
+    TRAINING = "training"  # 训练中
+    ERROR = "error"  # 错误状态
 
 
 class PipelineComponent(ABC):
@@ -1171,7 +1183,9 @@ class PipelineComponent(ABC):
         self._lock = threading.RLock()
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(name=\"{self._name}\", state={self._state.value})"
+        return (
+            f'{self.__class__.__name__}(name="{self._name}", state={self._state.value})'
+        )
 
     @property
     def name(self) -> str:
@@ -1194,11 +1208,13 @@ class PipelineComponent(ABC):
         return self._frozen
 
     @property
-    def pipeline(self) -> Optional['Pipeline']:
+    def pipeline(self) -> Optional["Pipeline"]:
         """获取所属Pipeline"""
         return self._pipeline
 
-    def initialize(self, pipeline: 'Pipeline', config: Optional[Dict[str, Any]] = None) -> None:
+    def initialize(
+        self, pipeline: "Pipeline", config: Optional[Dict[str, Any]] = None
+    ) -> None:
         """
         初始化组件
 
@@ -1285,15 +1301,15 @@ class PipelineComponent(ABC):
     def to_config(self) -> Dict[str, Any]:
         """将组件序列化为配置字典"""
         return {
-            'name': self._name,
-            'class': self.__class__.__module__ + '.' + self.__class__.__name__,
-            'disabled': self._disabled,
-            'frozen': self._frozen,
-            'config': self._config,
+            "name": self._name,
+            "class": self.__class__.__module__ + "." + self.__class__.__name__,
+            "disabled": self._disabled,
+            "frozen": self._frozen,
+            "config": self._config,
         }
 
     @classmethod
-    def from_config(cls, config: Dict[str, Any]) -> 'PipelineComponent':
+    def from_config(cls, config: Dict[str, Any]) -> "PipelineComponent":
         """
         从配置字典创建组件
 
@@ -1303,18 +1319,18 @@ class PipelineComponent(ABC):
         Returns:
             组件实例
         """
-        class_path = config.get('class', '')
+        class_path = config.get("class", "")
         if class_path:
-            parts = class_path.rsplit('.', 1)
+            parts = class_path.rsplit(".", 1)
             if len(parts) == 2:
                 module_path, class_name = parts
                 try:
                     module = importlib.import_module(module_path)
                     component_cls = getattr(module, class_name)
-                    return component_cls(name=config.get('name', ''))
+                    return component_cls(name=config.get("name", ""))
                 except (ImportError, AttributeError):
                     pass
-        return cls(name=config.get('name', ''))
+        return cls(name=config.get("name", ""))
 
 
 class ConditionalBranch:
@@ -1328,7 +1344,7 @@ class ConditionalBranch:
         self,
         condition: Callable[[Doc], bool],
         true_components: Optional[List[PipelineComponent]] = None,
-        false_components: Optional[List[PipelineComponent]] = None
+        false_components: Optional[List[PipelineComponent]] = None,
     ):
         """
         初始化条件分支
@@ -1404,7 +1420,7 @@ class Pipeline:
         name: str = "default",
         string_store: Optional[StringStore] = None,
         disable: Optional[List[str]] = None,
-        enable: Optional[List[str]] = None
+        enable: Optional[List[str]] = None,
     ):
         """
         初始化流水线
@@ -1428,7 +1444,7 @@ class Pipeline:
         self._error_handlers: List[Callable[[Doc, Exception], Doc]] = []
 
     def __repr__(self) -> str:
-        return f"Pipeline(name=\"{self._name}\", components={len(self._components)})"
+        return f'Pipeline(name="{self._name}", components={len(self._components)})'
 
     @property
     def name(self) -> str:
@@ -1445,7 +1461,12 @@ class Pipeline:
         """获取所有组件名称"""
         return [c.name for c in self._components if isinstance(c, PipelineComponent)]
 
-    def add_component(self, component: PipelineComponent, after: Optional[str] = None, before: Optional[str] = None) -> None:
+    def add_component(
+        self,
+        component: PipelineComponent,
+        after: Optional[str] = None,
+        before: Optional[str] = None,
+    ) -> None:
         """
         添加组件到流水线
 
@@ -1476,7 +1497,9 @@ class Pipeline:
 
             self._component_map[component.name] = component
 
-    def add_branch(self, branch: ConditionalBranch, after: Optional[str] = None) -> None:
+    def add_branch(
+        self, branch: ConditionalBranch, after: Optional[str] = None
+    ) -> None:
         """
         添加条件分支到流水线
 
@@ -1670,7 +1693,7 @@ class Pipeline:
         self,
         texts: List[str],
         metadata_list: Optional[List[Optional[Dict[str, Any]]]] = None,
-        batch_size: int = 32
+        batch_size: int = 32,
     ) -> List[Doc]:
         """
         批量处理文本
@@ -1685,10 +1708,10 @@ class Pipeline:
         """
         results = []
         for i in range(0, len(texts), batch_size):
-            batch = texts[i:i + batch_size]
+            batch = texts[i : i + batch_size]
             batch_meta = None
             if metadata_list:
-                batch_meta = metadata_list[i:i + batch_size]
+                batch_meta = metadata_list[i : i + batch_size]
             for j, text in enumerate(batch):
                 meta = batch_meta[j] if batch_meta else None
                 results.append(self.process(text, meta))
@@ -1711,19 +1734,24 @@ class Pipeline:
         components_config = []
         for item in self._components:
             if isinstance(item, PipelineComponent):
-                components_config.append({
-                    'type': 'component',
-                    'config': item.to_config()
-                })
+                components_config.append(
+                    {"type": "component", "config": item.to_config()}
+                )
             elif isinstance(item, ConditionalBranch):
-                components_config.append({
-                    'type': 'branch',
-                    'true_components': [c.to_config() for c in item._true_components],
-                    'false_components': [c.to_config() for c in item._false_components],
-                })
+                components_config.append(
+                    {
+                        "type": "branch",
+                        "true_components": [
+                            c.to_config() for c in item._true_components
+                        ],
+                        "false_components": [
+                            c.to_config() for c in item._false_components
+                        ],
+                    }
+                )
         return {
-            'name': self._name,
-            'components': components_config,
+            "name": self._name,
+            "components": components_config,
         }
 
     def get_execution_order(self) -> List[str]:
@@ -1734,6 +1762,7 @@ class Pipeline:
 # ============================================================
 # 步骤52: 组件注册机制 - 插件化扩展
 # ============================================================
+
 
 class ComponentRegistry:
     """
@@ -1760,7 +1789,7 @@ class ComponentRegistry:
         self,
         name: Optional[str] = None,
         category: str = "default",
-        aliases: Optional[List[str]] = None
+        aliases: Optional[List[str]] = None,
     ) -> Callable:
         """
         装饰器：注册组件类
@@ -1778,6 +1807,7 @@ class ComponentRegistry:
         Returns:
             装饰器函数
         """
+
         def decorator(cls: Type[PipelineComponent]) -> Type[PipelineComponent]:
             comp_name = name or cls.__name__
             with self._lock:
@@ -1789,6 +1819,7 @@ class ComponentRegistry:
                     for alias in aliases:
                         self._aliases[alias] = comp_name
             return cls
+
         return decorator
 
     def register_class(
@@ -1796,7 +1827,7 @@ class ComponentRegistry:
         cls: Type[PipelineComponent],
         name: Optional[str] = None,
         category: str = "default",
-        aliases: Optional[List[str]] = None
+        aliases: Optional[List[str]] = None,
     ) -> None:
         """
         直接注册组件类
@@ -1903,11 +1934,11 @@ class ComponentRegistry:
         for pkg_path in paths:
             try:
                 package = importlib.import_module(pkg_path)
-                pkg_dir = os.path.dirname(getattr(package, '__file__', ''))
+                pkg_dir = os.path.dirname(getattr(package, "__file__", ""))
                 if not pkg_dir or not os.path.isdir(pkg_dir):
                     continue
                 for filename in os.listdir(pkg_dir):
-                    if filename.endswith('.py') and not filename.startswith('_'):
+                    if filename.endswith(".py") and not filename.startswith("_"):
                         module_name = f"{pkg_path}.{filename[:-3]}"
                         try:
                             importlib.import_module(module_name)
@@ -1930,7 +1961,7 @@ def get_registry() -> ComponentRegistry:
 def register_component(
     name: Optional[str] = None,
     category: str = "default",
-    aliases: Optional[List[str]] = None
+    aliases: Optional[List[str]] = None,
 ) -> Callable:
     """
     便捷装饰器：注册组件到全局注册表
@@ -1947,8 +1978,10 @@ def register_component(
 # 步骤53: 组件配置系统 - JSON配置支持
 # ============================================================
 
+
 class ConfigValidationError(Exception):
     """配置验证错误"""
+
     pass
 
 
@@ -1972,7 +2005,7 @@ class ConfigSchema:
         choices: Optional[List[Any]] = None,
         min_value: Optional[Union[int, float]] = None,
         max_value: Optional[Union[int, float]] = None,
-        description: str = ""
+        description: str = "",
     ) -> None:
         """
         添加配置字段定义
@@ -1988,13 +2021,13 @@ class ConfigSchema:
             description: 字段描述
         """
         self._fields[name] = {
-            'type': field_type,
-            'required': required,
-            'default': default,
-            'choices': choices,
-            'min_value': min_value,
-            'max_value': max_value,
-            'description': description,
+            "type": field_type,
+            "required": required,
+            "default": default,
+            "choices": choices,
+            "min_value": min_value,
+            "max_value": max_value,
+            "description": description,
         }
 
     def validate(self, config: Dict[str, Any]) -> Tuple[bool, List[str]]:
@@ -2010,12 +2043,12 @@ class ConfigSchema:
         errors = []
         for name, field_def in self._fields.items():
             if name not in config:
-                if field_def['required']:
+                if field_def["required"]:
                     errors.append(f"缺少必填字段: {name}")
                 continue
 
             value = config[name]
-            expected_type = field_def['type']
+            expected_type = field_def["type"]
 
             # 类型检查
             if not isinstance(value, expected_type):
@@ -2029,18 +2062,17 @@ class ConfigSchema:
                     continue
 
             # 枚举检查
-            if field_def['choices'] and value not in field_def['choices']:
+            if field_def["choices"] and value not in field_def["choices"]:
                 errors.append(
-                    f"字段 '{name}' 值无效: {value}, "
-                    f"可选值: {field_def['choices']}"
+                    f"字段 '{name}' 值无效: {value}, " f"可选值: {field_def['choices']}"
                 )
 
             # 范围检查
-            if field_def['min_value'] is not None and value < field_def['min_value']:
+            if field_def["min_value"] is not None and value < field_def["min_value"]:
                 errors.append(
                     f"字段 '{name}' 值过小: {value} < {field_def['min_value']}"
                 )
-            if field_def['max_value'] is not None and value > field_def['max_value']:
+            if field_def["max_value"] is not None and value > field_def["max_value"]:
                 errors.append(
                     f"字段 '{name}' 值过大: {value} > {field_def['max_value']}"
                 )
@@ -2059,21 +2091,21 @@ class ConfigSchema:
         """
         result = dict(config)
         for name, field_def in self._fields.items():
-            if name not in result and field_def['default'] is not None:
-                result[name] = field_def['default']
+            if name not in result and field_def["default"] is not None:
+                result[name] = field_def["default"]
         return result
 
     def to_dict(self) -> Dict[str, Any]:
         """将模式导出为字典"""
         return {
             name: {
-                'type': fdef['type'].__name__,
-                'required': fdef['required'],
-                'default': fdef['default'],
-                'choices': fdef['choices'],
-                'min_value': fdef['min_value'],
-                'max_value': fdef['max_value'],
-                'description': fdef['description'],
+                "type": fdef["type"].__name__,
+                "required": fdef["required"],
+                "default": fdef["default"],
+                "choices": fdef["choices"],
+                "min_value": fdef["min_value"],
+                "max_value": fdef["max_value"],
+                "description": fdef["description"],
             }
             for name, fdef in self._fields.items()
         }
@@ -2106,7 +2138,7 @@ class PipelineConfig:
 
     def __getitem__(self, key: str) -> Any:
         """获取配置值（支持点号分隔的嵌套键）"""
-        keys = key.split('.')
+        keys = key.split(".")
         value = self._config
         for k in keys:
             if isinstance(value, dict):
@@ -2119,7 +2151,7 @@ class PipelineConfig:
 
     def __setitem__(self, key: str, value: Any) -> None:
         """设置配置值（支持点号分隔的嵌套键）"""
-        keys = key.split('.')
+        keys = key.split(".")
         config = self._config
         for k in keys[:-1]:
             if k not in config:
@@ -2192,7 +2224,9 @@ class PipelineConfig:
         if schema_name and schema_name in self._schemas:
             self._config = self._schemas[schema_name].apply_defaults(self._config)
 
-    def merge(self, other: Union[Dict[str, Any], 'PipelineConfig'], overwrite: bool = True) -> None:
+    def merge(
+        self, other: Union[Dict[str, Any], "PipelineConfig"], overwrite: bool = True
+    ) -> None:
         """
         合并配置
 
@@ -2209,7 +2243,11 @@ class PipelineConfig:
         """深度合并字典"""
         result = dict(base)
         for key, value in override.items():
-            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+            if (
+                key in result
+                and isinstance(result[key], dict)
+                and isinstance(value, dict)
+            ):
                 result[key] = PipelineConfig._deep_merge(result[key], value, overwrite)
             elif overwrite or key not in result:
                 result[key] = value
@@ -2222,7 +2260,7 @@ class PipelineConfig:
     def _replace_env_recursive(self, obj: Any) -> Any:
         """递归替换环境变量"""
         if isinstance(obj, str):
-            if obj.startswith('${') and obj.endswith('}'):
+            if obj.startswith("${") and obj.endswith("}"):
                 env_name = obj[2:-1]
                 full_name = self._env_prefix + env_name
                 return os.environ.get(full_name, os.environ.get(env_name, obj))
@@ -2234,7 +2272,7 @@ class PipelineConfig:
         return obj
 
     @classmethod
-    def from_json(cls, json_str: str) -> 'PipelineConfig':
+    def from_json(cls, json_str: str) -> "PipelineConfig":
         """
         从JSON字符串加载配置
 
@@ -2248,7 +2286,7 @@ class PipelineConfig:
         return cls(config=config)
 
     @classmethod
-    def from_json_file(cls, file_path: str) -> 'PipelineConfig':
+    def from_json_file(cls, file_path: str) -> "PipelineConfig":
         """
         从JSON文件加载配置
 
@@ -2258,7 +2296,7 @@ class PipelineConfig:
         Returns:
             PipelineConfig实例
         """
-        with open(file_path, encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             config = json.load(f)
         return cls(config=config)
 
@@ -2282,13 +2320,14 @@ class PipelineConfig:
             file_path: 文件路径
             indent: 缩进空格数
         """
-        with open(file_path, 'w', encoding='utf-8') as f:
+        with open(file_path, "w", encoding="utf-8") as f:
             f.write(self.to_json(indent))
 
 
 # ============================================================
 # 步骤54: 组件冻结机制 - 参数锁定
 # ============================================================
+
 
 class FreezableParams:
     """
@@ -2488,8 +2527,10 @@ class FreezableParams:
 # 步骤59: 模型版本管理
 # ============================================================
 
+
 class VersionInfo(NamedTuple):
     """版本信息命名元组"""
+
     major: int
     minor: int
     patch: int
@@ -2515,7 +2556,7 @@ class ModelVersion:
         patch: int = 0,
         prerelease: str = "",
         build: str = "",
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         """
         初始化模型版本
@@ -2538,7 +2579,7 @@ class ModelVersion:
         self._description = ""
 
     def __repr__(self) -> str:
-        return f"ModelVersion(\"{self.version_string}\")"
+        return f'ModelVersion("{self.version_string}")'
 
     def __str__(self) -> str:
         """版本字符串"""
@@ -2622,7 +2663,7 @@ class ModelVersion:
             minor=self._minor,
             patch=self._patch,
             prerelease=self._prerelease,
-            build=self._build
+            build=self._build,
         )
 
     @property
@@ -2645,7 +2686,7 @@ class ModelVersion:
         """设置描述"""
         self._description = value
 
-    def is_compatible(self, other: 'ModelVersion') -> bool:
+    def is_compatible(self, other: "ModelVersion") -> bool:
         """
         检查与另一个版本的兼容性
 
@@ -2659,7 +2700,7 @@ class ModelVersion:
         """
         return self._major == other._major
 
-    def is_breaking_change(self, other: 'ModelVersion') -> bool:
+    def is_breaking_change(self, other: "ModelVersion") -> bool:
         """
         检查是否是破坏性变更
 
@@ -2671,43 +2712,46 @@ class ModelVersion:
         """
         return self._major != other._major
 
-    def bump_major(self) -> 'ModelVersion':
+    def bump_major(self) -> "ModelVersion":
         """升级主版本号"""
         return ModelVersion(
-            major=self._major + 1, minor=0, patch=0,
-            metadata=dict(self._metadata)
+            major=self._major + 1, minor=0, patch=0, metadata=dict(self._metadata)
         )
 
-    def bump_minor(self) -> 'ModelVersion':
+    def bump_minor(self) -> "ModelVersion":
         """升级次版本号"""
         return ModelVersion(
-            major=self._major, minor=self._minor + 1, patch=0,
-            metadata=dict(self._metadata)
+            major=self._major,
+            minor=self._minor + 1,
+            patch=0,
+            metadata=dict(self._metadata),
         )
 
-    def bump_patch(self) -> 'ModelVersion':
+    def bump_patch(self) -> "ModelVersion":
         """升级修订号"""
         return ModelVersion(
-            major=self._major, minor=self._minor, patch=self._patch + 1,
-            metadata=dict(self._metadata)
+            major=self._major,
+            minor=self._minor,
+            patch=self._patch + 1,
+            metadata=dict(self._metadata),
         )
 
     def to_dict(self) -> Dict[str, Any]:
         """导出为字典"""
         return {
-            'version': self.version_string,
-            'major': self._major,
-            'minor': self._minor,
-            'patch': self._patch,
-            'prerelease': self._prerelease,
-            'build': self._build,
-            'description': self._description,
-            'metadata': self._metadata,
-            'created_at': self._created_at,
+            "version": self.version_string,
+            "major": self._major,
+            "minor": self._minor,
+            "patch": self._patch,
+            "prerelease": self._prerelease,
+            "build": self._build,
+            "description": self._description,
+            "metadata": self._metadata,
+            "created_at": self._created_at,
         }
 
     @classmethod
-    def parse(cls, version_str: str) -> 'ModelVersion':
+    def parse(cls, version_str: str) -> "ModelVersion":
         """
         从版本字符串解析
 
@@ -2723,14 +2767,14 @@ class ModelVersion:
             ValueError: 版本字符串格式无效
         """
         build = ""
-        if '+' in version_str:
-            version_str, build = version_str.split('+', 1)
+        if "+" in version_str:
+            version_str, build = version_str.split("+", 1)
 
         prerelease = ""
-        if '-' in version_str:
-            version_str, prerelease = version_str.split('-', 1)
+        if "-" in version_str:
+            version_str, prerelease = version_str.split("-", 1)
 
-        parts = version_str.split('.')
+        parts = version_str.split(".")
         if len(parts) != 3:
             raise ValueError(f"无效的版本字符串: {version_str}")
 
@@ -2745,8 +2789,7 @@ class ModelVersion:
             raise ValueError(f"版本号不能为负数: {version_str}")
 
         return cls(
-            major=major, minor=minor, patch=patch,
-            prerelease=prerelease, build=build
+            major=major, minor=minor, patch=patch, prerelease=prerelease, build=build
         )
 
 
@@ -2759,18 +2802,16 @@ class ModelLifecycle:
 
     class Stage(Enum):
         """模型生命周期阶段"""
-        DEVELOPMENT = "development"     # 开发中
-        ALPHA = "alpha"                 # 内测
-        BETA = "beta"                   # 公测
-        STABLE = "stable"               # 稳定
-        DEPRECATED = "deprecated"       # 已废弃
-        ARCHIVED = "archived"           # 已归档
+
+        DEVELOPMENT = "development"  # 开发中
+        ALPHA = "alpha"  # 内测
+        BETA = "beta"  # 公测
+        STABLE = "stable"  # 稳定
+        DEPRECATED = "deprecated"  # 已废弃
+        ARCHIVED = "archived"  # 已归档
 
     def __init__(
-        self,
-        model_name: str,
-        version: ModelVersion,
-        stage: Optional[Stage] = None
+        self, model_name: str, version: ModelVersion, stage: Optional[Stage] = None
     ):
         """
         初始化模型生命周期
@@ -2794,7 +2835,7 @@ class ModelLifecycle:
 
     def __repr__(self) -> str:
         return (
-            f"ModelLifecycle(name=\"{self._model_name}\", "
+            f'ModelLifecycle(name="{self._model_name}", '
             f"version={self._version}, stage={self._stage.value})"
         )
 
@@ -2866,8 +2907,8 @@ class ModelLifecycle:
             SHA256校验和
         """
         sha256 = hashlib.sha256()
-        with open(file_path, 'rb') as f:
-            for chunk in iter(lambda: f.read(8192), b''):
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
                 sha256.update(chunk)
         self._checksum = sha256.hexdigest()
         return self._checksum
@@ -2875,21 +2916,22 @@ class ModelLifecycle:
     def to_dict(self) -> Dict[str, Any]:
         """导出为字典"""
         return {
-            'model_name': self._model_name,
-            'version': self._version.to_dict(),
-            'stage': self._stage.value,
-            'created_at': self._created_at,
-            'updated_at': self._updated_at,
-            'stage_history': self._stage_history,
-            'checksum': self._checksum,
-            'file_path': self._file_path,
-            'size_bytes': self._size_bytes,
+            "model_name": self._model_name,
+            "version": self._version.to_dict(),
+            "stage": self._stage.value,
+            "created_at": self._created_at,
+            "updated_at": self._updated_at,
+            "stage_history": self._stage_history,
+            "checksum": self._checksum,
+            "file_path": self._file_path,
+            "size_bytes": self._size_bytes,
         }
 
 
 # ============================================================
 # 步骤60: 模型缓存机制 - LRU缓存策略
 # ============================================================
+
 
 class LRUCache:
     """
@@ -3053,12 +3095,12 @@ class LRUCache:
     def stats(self) -> Dict[str, Any]:
         """获取缓存统计信息"""
         return {
-            'capacity': self._capacity,
-            'size': len(self._cache),
-            'hits': self._hits,
-            'misses': self._misses,
-            'evictions': self._evictions,
-            'hit_rate': self.hit_rate,
+            "capacity": self._capacity,
+            "size": len(self._cache),
+            "hits": self._hits,
+            "misses": self._misses,
+            "evictions": self._evictions,
+            "hit_rate": self.hit_rate,
         }
 
 
@@ -3098,7 +3140,9 @@ class ModelCache:
         """计算总内存使用（MB）"""
         return sum(self._memory_usage.values()) / (1024 * 1024)
 
-    def get(self, model_name: str, version: Optional[ModelVersion] = None) -> Optional[Any]:
+    def get(
+        self, model_name: str, version: Optional[ModelVersion] = None
+    ) -> Optional[Any]:
         """
         获取缓存的模型
 
@@ -3119,7 +3163,7 @@ class ModelCache:
         model_name: str,
         model: Any,
         version: Optional[ModelVersion] = None,
-        memory_mb: float = 0
+        memory_mb: float = 0,
     ) -> Optional[Any]:
         """
         放入模型到缓存
@@ -3152,8 +3196,10 @@ class ModelCache:
     def _evict_for_memory(self, needed_mb: float) -> None:
         """淘汰模型以释放内存"""
         with self._lock:
-            while (self._total_memory_mb + needed_mb > self._max_memory_mb
-                   and self._cache.size > 0):
+            while (
+                self._total_memory_mb + needed_mb > self._max_memory_mb
+                and self._cache.size > 0
+            ):
                 oldest_key = self._cache.keys()[0]
                 self._cache.delete(oldest_key)
                 self._memory_usage.pop(oldest_key, None)
@@ -3165,7 +3211,9 @@ class ModelCache:
         for key in stale_keys:
             del self._memory_usage[key]
 
-    def invalidate(self, model_name: str, version: Optional[ModelVersion] = None) -> bool:
+    def invalidate(
+        self, model_name: str, version: Optional[ModelVersion] = None
+    ) -> bool:
         """
         使缓存失效
 
@@ -3198,16 +3246,17 @@ class ModelCache:
     def stats(self) -> Dict[str, Any]:
         """获取缓存统计信息"""
         return {
-            'cache_stats': self._cache.stats(),
-            'memory_usage_mb': self._total_memory_mb,
-            'max_memory_mb': self._max_memory_mb,
-            'load_times': dict(self._load_times),
+            "cache_stats": self._cache.stats(),
+            "memory_usage_mb": self._total_memory_mb,
+            "max_memory_mb": self._max_memory_mb,
+            "load_times": dict(self._load_times),
         }
 
 
 # ============================================================
 # 步骤61: RESTful API设计 - HTTP服务接口
 # ============================================================
+
 
 class APIRequest:
     """API请求对象 - 封装HTTP请求信息"""
@@ -3218,7 +3267,7 @@ class APIRequest:
         path: str = "/",
         headers: Optional[Dict[str, str]] = None,
         body: Optional[str] = None,
-        query_params: Optional[Dict[str, str]] = None
+        query_params: Optional[Dict[str, str]] = None,
     ):
         """
         初始化API请求
@@ -3264,7 +3313,7 @@ class APIResponse:
         status_code: int = 200,
         body: Optional[Any] = None,
         headers: Optional[Dict[str, str]] = None,
-        content_type: str = "application/json"
+        content_type: str = "application/json",
     ):
         """
         初始化API响应
@@ -3281,29 +3330,31 @@ class APIResponse:
         self.content_type = content_type
 
     @classmethod
-    def ok(cls, data: Any = None, message: str = "success") -> 'APIResponse':
+    def ok(cls, data: Any = None, message: str = "success") -> "APIResponse":
         """创建成功响应"""
-        return cls(status_code=200, body={'status': 'ok', 'message': message, 'data': data})
+        return cls(
+            status_code=200, body={"status": "ok", "message": message, "data": data}
+        )
 
     @classmethod
-    def created(cls, data: Any = None) -> 'APIResponse':
+    def created(cls, data: Any = None) -> "APIResponse":
         """创建资源创建响应"""
-        return cls(status_code=201, body={'status': 'created', 'data': data})
+        return cls(status_code=201, body={"status": "created", "data": data})
 
     @classmethod
-    def bad_request(cls, message: str = "Bad Request") -> 'APIResponse':
+    def bad_request(cls, message: str = "Bad Request") -> "APIResponse":
         """创建请求错误响应"""
-        return cls(status_code=400, body={'status': 'error', 'message': message})
+        return cls(status_code=400, body={"status": "error", "message": message})
 
     @classmethod
-    def not_found(cls, message: str = "Not Found") -> 'APIResponse':
+    def not_found(cls, message: str = "Not Found") -> "APIResponse":
         """创建未找到响应"""
-        return cls(status_code=404, body={'status': 'error', 'message': message})
+        return cls(status_code=404, body={"status": "error", "message": message})
 
     @classmethod
-    def server_error(cls, message: str = "Internal Server Error") -> 'APIResponse':
+    def server_error(cls, message: str = "Internal Server Error") -> "APIResponse":
         """创建服务器错误响应"""
-        return cls(status_code=500, body={'status': 'error', 'message': message})
+        return cls(status_code=500, body={"status": "error", "message": message})
 
     def to_json(self) -> str:
         """将响应序列化为JSON字符串"""
@@ -3327,7 +3378,7 @@ class RequestValidator:
         min_length: Optional[int] = None,
         max_length: Optional[int] = None,
         pattern: Optional[str] = None,
-        choices: Optional[List[Any]] = None
+        choices: Optional[List[Any]] = None,
     ) -> None:
         """
         添加验证规则
@@ -3342,12 +3393,12 @@ class RequestValidator:
             choices: 可选值列表
         """
         self._rules[field_name] = {
-            'type': field_type,
-            'required': required,
-            'min_length': min_length,
-            'max_length': max_length,
-            'pattern': pattern,
-            'choices': choices,
+            "type": field_type,
+            "required": required,
+            "min_length": min_length,
+            "max_length": max_length,
+            "pattern": pattern,
+            "choices": choices,
         }
 
     def validate(self, data: Dict[str, Any]) -> Tuple[bool, List[str]]:
@@ -3365,26 +3416,30 @@ class RequestValidator:
             value = data.get(field_name)
 
             if value is None:
-                if rule['required']:
+                if rule["required"]:
                     errors.append(f"字段 '{field_name}' 为必填项")
                 continue
 
-            if not isinstance(value, rule['type']):
+            if not isinstance(value, rule["type"]):
                 errors.append(
                     f"字段 '{field_name}' 类型错误: 期望 {rule['type'].__name__}"
                 )
                 continue
 
             if isinstance(value, str):
-                if rule['min_length'] is not None and len(value) < rule['min_length']:
-                    errors.append(f"字段 '{field_name}' 长度过短: 最少 {rule['min_length']} 个字符")
-                if rule['max_length'] is not None and len(value) > rule['max_length']:
-                    errors.append(f"字段 '{field_name}' 长度过长: 最多 {rule['max_length']} 个字符")
-                if rule['pattern'] is not None:
-                    if not re.match(rule['pattern'], value):
+                if rule["min_length"] is not None and len(value) < rule["min_length"]:
+                    errors.append(
+                        f"字段 '{field_name}' 长度过短: 最少 {rule['min_length']} 个字符"
+                    )
+                if rule["max_length"] is not None and len(value) > rule["max_length"]:
+                    errors.append(
+                        f"字段 '{field_name}' 长度过长: 最多 {rule['max_length']} 个字符"
+                    )
+                if rule["pattern"] is not None:
+                    if not re.match(rule["pattern"], value):
                         errors.append(f"字段 '{field_name}' 格式不匹配")
 
-            if rule['choices'] is not None and value not in rule['choices']:
+            if rule["choices"] is not None and value not in rule["choices"]:
                 errors.append(f"字段 '{field_name}' 值无效: 可选值 {rule['choices']}")
 
         return len(errors) == 0, errors
@@ -3399,7 +3454,7 @@ class Route:
         path_pattern: str,
         handler: Callable[[APIRequest], APIResponse],
         validator: Optional[RequestValidator] = None,
-        description: str = ""
+        description: str = "",
     ):
         """
         初始化路由
@@ -3420,7 +3475,7 @@ class Route:
 
     def _extract_params(self, pattern: str) -> List[str]:
         """从路径模式中提取参数名"""
-        return re.findall(r'\{(\w+)\}', pattern)
+        return re.findall(r"\{(\w+)\}", pattern)
 
     def match(self, method: str, path: str) -> Optional[Dict[str, str]]:
         """
@@ -3438,8 +3493,8 @@ class Route:
 
         regex_pattern = self.path_pattern
         for param in self._param_names:
-            regex_pattern = regex_pattern.replace(f'{{{param}}}', f'(?P<{param}>[^/]+)')
-        regex_pattern = f'^{regex_pattern}$'
+            regex_pattern = regex_pattern.replace(f"{{{param}}}", f"(?P<{param}>[^/]+)")
+        regex_pattern = f"^{regex_pattern}$"
 
         match = re.match(regex_pattern, path)
         if match:
@@ -3493,7 +3548,7 @@ class APIServer:
         path: str,
         handler: Callable[[APIRequest], APIResponse],
         validator: Optional[RequestValidator] = None,
-        description: str = ""
+        description: str = "",
     ) -> None:
         """添加路由"""
         route = Route(method, path, handler, validator, description)
@@ -3503,7 +3558,9 @@ class APIServer:
         """添加中间件"""
         self._middleware.append(middleware)
 
-    def _find_route(self, method: str, path: str) -> Optional[Tuple[Route, Dict[str, str]]]:
+    def _find_route(
+        self, method: str, path: str
+    ) -> Optional[Tuple[Route, Dict[str, str]]]:
         """查找匹配的路由"""
         for route in self._routes:
             params = route.match(method, path)
@@ -3548,52 +3605,68 @@ class APIServer:
 
     def setup_default_routes(self) -> None:
         """设置默认路由"""
+
         def health_check(req: APIRequest) -> APIResponse:
-            return APIResponse.ok({
-                'status': 'healthy',
-                'version': '1.0.0',
-                'components': self._pipeline.component_names if self._pipeline else [],
-            })
+            return APIResponse.ok(
+                {
+                    "status": "healthy",
+                    "version": "1.0.0",
+                    "components": (
+                        self._pipeline.component_names if self._pipeline else []
+                    ),
+                }
+            )
+
         self.add_route("GET", "/health", health_check, description="健康检查")
 
         def tokenize(req: APIRequest) -> APIResponse:
             if not self._pipeline:
                 return APIResponse.server_error("Pipeline未初始化")
             data = req.json
-            if not data or 'text' not in data:
+            if not data or "text" not in data:
                 return APIResponse.bad_request("缺少 'text' 字段")
-            doc = self._pipeline.process(data['text'])
+            doc = self._pipeline.process(data["text"])
             tokens = [t.text for t in doc.tokens]
-            return APIResponse.ok({'tokens': tokens, 'text': doc.text})
+            return APIResponse.ok({"tokens": tokens, "text": doc.text})
 
         validator = RequestValidator()
-        validator.add_rule('text', str, required=True, min_length=1, max_length=10000)
+        validator.add_rule("text", str, required=True, min_length=1, max_length=10000)
         self.add_route("POST", "/tokenize", tokenize, validator, description="分词处理")
 
         def batch_tokenize(req: APIRequest) -> APIResponse:
             if not self._pipeline:
                 return APIResponse.server_error("Pipeline未初始化")
             data = req.json
-            if not data or 'texts' not in data:
+            if not data or "texts" not in data:
                 return APIResponse.bad_request("缺少 'texts' 字段")
-            texts = data['texts']
+            texts = data["texts"]
             if not isinstance(texts, list):
                 return APIResponse.bad_request("'texts' 必须是数组")
             docs = self._pipeline.process_batch(texts)
-            results = [{'tokens': [t.text for t in doc.tokens], 'text': doc.text} for doc in docs]
-            return APIResponse.ok({'results': results, 'count': len(results)})
+            results = [
+                {"tokens": [t.text for t in doc.tokens], "text": doc.text}
+                for doc in docs
+            ]
+            return APIResponse.ok({"results": results, "count": len(results)})
 
-        self.add_route("POST", "/batch/tokenize", batch_tokenize, description="批量分词处理")
+        self.add_route(
+            "POST", "/batch/tokenize", batch_tokenize, description="批量分词处理"
+        )
 
         def pipeline_info(req: APIRequest) -> APIResponse:
             if not self._pipeline:
                 return APIResponse.server_error("Pipeline未初始化")
-            return APIResponse.ok({
-                'name': self._pipeline.name,
-                'components': self._pipeline.get_execution_order(),
-                'component_count': len(self._pipeline.component_names),
-            })
-        self.add_route("GET", "/pipeline/info", pipeline_info, description="获取Pipeline信息")
+            return APIResponse.ok(
+                {
+                    "name": self._pipeline.name,
+                    "components": self._pipeline.get_execution_order(),
+                    "component_count": len(self._pipeline.component_names),
+                }
+            )
+
+        self.add_route(
+            "GET", "/pipeline/info", pipeline_info, description="获取Pipeline信息"
+        )
 
     def create_http_handler(self):
         """创建HTTP请求处理器类"""
@@ -3617,8 +3690,12 @@ class APIServer:
             def _handle_any(self):
                 parsed = urlparse(self.path)
                 query_params = {k: v[0] for k, v in parse_qs(parsed.query).items()}
-                content_length = int(self.headers.get('Content-Length', 0))
-                body = self.rfile.read(content_length).decode('utf-8') if content_length > 0 else ""
+                content_length = int(self.headers.get("Content-Length", 0))
+                body = (
+                    self.rfile.read(content_length).decode("utf-8")
+                    if content_length > 0
+                    else ""
+                )
                 headers = {k: v for k, v in self.headers.items()}
 
                 request = APIRequest(
@@ -3631,11 +3708,11 @@ class APIServer:
                 response = api_server.handle_request(request)
 
                 self.send_response(response.status_code)
-                self.send_header('Content-Type', response.content_type)
+                self.send_header("Content-Type", response.content_type)
                 for key, value in response.headers.items():
                     self.send_header(key, value)
                 self.end_headers()
-                self.wfile.write(response.to_json().encode('utf-8'))
+                self.wfile.write(response.to_json().encode("utf-8"))
 
             def log_message(self, format, *args):
                 pass
@@ -3672,10 +3749,15 @@ class APIServer:
 # 步骤62: gRPC接口实现 - 高性能RPC调用框架
 # ============================================================
 
+
 class RPCMessage:
     """RPC消息 - 封装RPC调用中的消息数据"""
 
-    def __init__(self, payload: Optional[Dict[str, Any]] = None, metadata: Optional[Dict[str, str]] = None):
+    def __init__(
+        self,
+        payload: Optional[Dict[str, Any]] = None,
+        metadata: Optional[Dict[str, str]] = None,
+    ):
         """
         初始化RPC消息
 
@@ -3694,18 +3776,21 @@ class RPCMessage:
 
     def to_json(self) -> str:
         """序列化为JSON"""
-        return json.dumps({
-            'payload': self.payload,
-            'metadata': self.metadata,
-            'timestamp': self._timestamp,
-        }, ensure_ascii=False)
+        return json.dumps(
+            {
+                "payload": self.payload,
+                "metadata": self.metadata,
+                "timestamp": self._timestamp,
+            },
+            ensure_ascii=False,
+        )
 
     @classmethod
-    def from_json(cls, json_str: str) -> 'RPCMessage':
+    def from_json(cls, json_str: str) -> "RPCMessage":
         """从JSON反序列化"""
         data = json.loads(json_str)
-        msg = cls(payload=data.get('payload', {}), metadata=data.get('metadata', {}))
-        msg._timestamp = data.get('timestamp', time.time())
+        msg = cls(payload=data.get("payload", {}), metadata=data.get("metadata", {}))
+        msg._timestamp = data.get("timestamp", time.time())
         return msg
 
 
@@ -3729,6 +3814,7 @@ class RPCError(Exception):
 
 class RPCStatusCode(IntEnum):
     """RPC状态码"""
+
     OK = 0
     CANCELLED = 1
     UNKNOWN = 2
@@ -3770,15 +3856,15 @@ class RPCServiceDescriptor:
         output_type: str = "RPCMessage",
         server_streaming: bool = False,
         client_streaming: bool = False,
-        description: str = ""
+        description: str = "",
     ) -> None:
         """添加方法定义"""
         self._methods[method_name] = {
-            'input_type': input_type,
-            'output_type': output_type,
-            'server_streaming': server_streaming,
-            'client_streaming': client_streaming,
-            'description': description,
+            "input_type": input_type,
+            "output_type": output_type,
+            "server_streaming": server_streaming,
+            "client_streaming": client_streaming,
+            "description": description,
         }
 
     def get_methods(self) -> Dict[str, Dict[str, Any]]:
@@ -3794,7 +3880,7 @@ class RPCMethodHandler:
         name: str,
         handler: Callable[[RPCMessage], RPCMessage],
         input_validator: Optional[Callable[[RPCMessage], Tuple[bool, str]]] = None,
-        description: str = ""
+        description: str = "",
     ):
         """
         初始化方法处理器
@@ -3849,17 +3935,21 @@ class RPCService:
         input_validator: Optional[Callable[[RPCMessage], Tuple[bool, str]]] = None,
         description: str = "",
         server_streaming: bool = False,
-        client_streaming: bool = False
+        client_streaming: bool = False,
     ) -> None:
         """注册RPC方法"""
         method_handler = RPCMethodHandler(
-            name=method_name, handler=handler,
-            input_validator=input_validator, description=description
+            name=method_name,
+            handler=handler,
+            input_validator=input_validator,
+            description=description,
         )
         self._handlers[method_name] = method_handler
         self._descriptor.add_method(
-            method_name=method_name, server_streaming=server_streaming,
-            client_streaming=client_streaming, description=description
+            method_name=method_name,
+            server_streaming=server_streaming,
+            client_streaming=client_streaming,
+            description=description,
         )
 
     def add_interceptor(self, interceptor: Callable) -> None:
@@ -3884,7 +3974,7 @@ class RPCService:
             raise RPCError(
                 code=RPCStatusCode.UNIMPLEMENTED,
                 message=f"方法 '{method_name}' 不存在",
-                details=f"服务 '{self._name}' 可用方法: {list(self._handlers.keys())}"
+                details=f"服务 '{self._name}' 可用方法: {list(self._handlers.keys())}",
             )
 
         method_handler = self._handlers[method_name]
@@ -3984,21 +4074,21 @@ class RPCServer:
                     if len(header) < 4:
                         buffer.seek(start_pos)
                         break
-                    msg_len = struct.unpack('!I', header)[0]
+                    msg_len = struct.unpack("!I", header)[0]
                     msg_data = buffer.read(msg_len)
                     if len(msg_data) < msg_len:
                         buffer.seek(start_pos)
                         break
 
                     try:
-                        request = RPCMessage.from_json(msg_data.decode('utf-8'))
+                        request = RPCMessage.from_json(msg_data.decode("utf-8"))
                         response = self._dispatch(request)
-                        resp_data = response.to_json().encode('utf-8')
-                        conn.sendall(struct.pack('!I', len(resp_data)) + resp_data)
+                        resp_data = response.to_json().encode("utf-8")
+                        conn.sendall(struct.pack("!I", len(resp_data)) + resp_data)
                     except Exception as e:
-                        error_msg = RPCMessage(payload={'error': str(e)})
-                        resp_data = error_msg.to_json().encode('utf-8')
-                        conn.sendall(struct.pack('!I', len(resp_data)) + resp_data)
+                        error_msg = RPCMessage(payload={"error": str(e)})
+                        resp_data = error_msg.to_json().encode("utf-8")
+                        conn.sendall(struct.pack("!I", len(resp_data)) + resp_data)
 
                 remaining = buffer.read()
                 buffer = BytesIO()
@@ -4010,30 +4100,30 @@ class RPCServer:
 
     def _dispatch(self, request: RPCMessage) -> RPCMessage:
         """分发RPC请求"""
-        service_name = request.metadata.get('service', '')
-        method_name = request.metadata.get('method', '')
+        service_name = request.metadata.get("service", "")
+        method_name = request.metadata.get("method", "")
 
         if not service_name or not method_name:
             return RPCMessage(
-                payload={'error': '缺少 service 或 method'},
-                metadata={'status': str(RPCStatusCode.INVALID_ARGUMENT)}
+                payload={"error": "缺少 service 或 method"},
+                metadata={"status": str(RPCStatusCode.INVALID_ARGUMENT)},
             )
 
         service = self._services.get(service_name)
         if not service:
             return RPCMessage(
-                payload={'error': f"服务 '{service_name}' 不存在"},
-                metadata={'status': str(RPCStatusCode.NOT_FOUND)}
+                payload={"error": f"服务 '{service_name}' 不存在"},
+                metadata={"status": str(RPCStatusCode.NOT_FOUND)},
             )
 
         try:
             response = service.call_method(method_name, request)
-            response.metadata['status'] = str(RPCStatusCode.OK)
+            response.metadata["status"] = str(RPCStatusCode.OK)
             return response
         except RPCError as e:
             return RPCMessage(
-                payload={'error': e.message, 'code': e.code},
-                metadata={'status': str(e.code)}
+                payload={"error": e.message, "code": e.code},
+                metadata={"status": str(e.code)},
             )
 
     def setup_nlp_service(self) -> RPCService:
@@ -4043,25 +4133,27 @@ class RPCServer:
         def tokenize_handler(request: RPCMessage) -> RPCMessage:
             if not self._pipeline:
                 raise RPCError(RPCStatusCode.INTERNAL, "Pipeline未初始化")
-            text = request.payload.get('text', '')
+            text = request.payload.get("text", "")
             if not text:
                 raise RPCError(RPCStatusCode.INVALID_ARGUMENT, "缺少 'text' 字段")
             doc = self._pipeline.process(text)
             tokens = [t.text for t in doc.tokens]
-            return RPCMessage(payload={'tokens': tokens, 'text': doc.text})
+            return RPCMessage(payload={"tokens": tokens, "text": doc.text})
 
         def segment_handler(request: RPCMessage) -> RPCMessage:
             if not self._pipeline:
                 raise RPCError(RPCStatusCode.INTERNAL, "Pipeline未初始化")
-            text = request.payload.get('text', '')
+            text = request.payload.get("text", "")
             doc = self._pipeline.process(text)
-            return RPCMessage(payload={'segments': [t.text for t in doc.tokens]})
+            return RPCMessage(payload={"segments": [t.text for t in doc.tokens]})
 
         def health_handler(request: RPCMessage) -> RPCMessage:
-            return RPCMessage(payload={
-                'status': 'healthy',
-                'services': list(self._services.keys()),
-            })
+            return RPCMessage(
+                payload={
+                    "status": "healthy",
+                    "services": list(self._services.keys()),
+                }
+            )
 
         service.register_method("Tokenize", tokenize_handler, description="分词处理")
         service.register_method("Segment", segment_handler, description="文本分段")
@@ -4086,7 +4178,9 @@ class RPCServer:
                     try:
                         conn, addr = self._socket.accept()
                         thread = threading.Thread(
-                            target=self._handle_connection, args=(conn, addr), daemon=True
+                            target=self._handle_connection,
+                            args=(conn, addr),
+                            daemon=True,
                         )
                         thread.start()
                     except socket.timeout:
@@ -4132,7 +4226,9 @@ class RPCClient:
     注意：此为接口设计框架，不依赖grpc库。
     """
 
-    def __init__(self, host: str = "127.0.0.1", port: int = 50051, timeout: float = 30.0):
+    def __init__(
+        self, host: str = "127.0.0.1", port: int = 50051, timeout: float = 30.0
+    ):
         """
         初始化RPC客户端
 
@@ -4174,7 +4270,7 @@ class RPCClient:
         service: str,
         method: str,
         payload: Optional[Dict[str, Any]] = None,
-        metadata: Optional[Dict[str, str]] = None
+        metadata: Optional[Dict[str, str]] = None,
     ) -> RPCMessage:
         """
         调用RPC方法
@@ -4195,28 +4291,28 @@ class RPCClient:
             self.connect()
 
         meta = metadata or {}
-        meta['service'] = service
-        meta['method'] = method
+        meta["service"] = service
+        meta["method"] = method
 
         request = RPCMessage(payload=payload or {}, metadata=meta)
-        request_data = request.to_json().encode('utf-8')
+        request_data = request.to_json().encode("utf-8")
 
         try:
-            self._socket.sendall(struct.pack('!I', len(request_data)) + request_data)
+            self._socket.sendall(struct.pack("!I", len(request_data)) + request_data)
 
             header = self._recv_exact(4)
             if not header:
                 raise RPCError(RPCStatusCode.UNAVAILABLE, "连接已断开")
-            resp_len = struct.unpack('!I', header)[0]
+            resp_len = struct.unpack("!I", header)[0]
             resp_data = self._recv_exact(resp_len)
             if not resp_data:
                 raise RPCError(RPCStatusCode.UNAVAILABLE, "响应数据不完整")
 
-            response = RPCMessage.from_json(resp_data.decode('utf-8'))
-            status = int(response.metadata.get('status', RPCStatusCode.OK))
+            response = RPCMessage.from_json(resp_data.decode("utf-8"))
+            status = int(response.metadata.get("status", RPCStatusCode.OK))
 
             if status != RPCStatusCode.OK:
-                error_info = response.payload.get('error', '未知错误')
+                error_info = response.payload.get("error", "未知错误")
                 raise RPCError(code=status, message=error_info)
 
             return response
@@ -4228,7 +4324,7 @@ class RPCClient:
 
     def _recv_exact(self, n: int) -> Optional[bytes]:
         """精确接收n字节"""
-        data = b''
+        data = b""
         while len(data) < n:
             chunk = self._socket.recv(n - len(data))
             if not chunk:
@@ -4236,7 +4332,7 @@ class RPCClient:
             data += chunk
         return data
 
-    def __enter__(self) -> 'RPCClient':
+    def __enter__(self) -> "RPCClient":
         """上下文管理器入口"""
         self.connect()
         return self
@@ -4249,6 +4345,7 @@ class RPCClient:
 # ============================================================
 # 步骤63: 异步处理支持 - asyncio集成
 # ============================================================
+
 
 class AsyncPipeline:
     """
@@ -4265,7 +4362,7 @@ class AsyncPipeline:
         self,
         pipeline: Pipeline,
         max_concurrency: int = 10,
-        timeout: Optional[float] = None
+        timeout: Optional[float] = None,
     ):
         """
         初始化异步Pipeline
@@ -4293,7 +4390,9 @@ class AsyncPipeline:
         if self._executor is None:
             self._executor = ThreadPoolExecutor(max_workers=self._max_concurrency)
 
-    async def process(self, text: str, metadata: Optional[Dict[str, Any]] = None) -> Doc:
+    async def process(
+        self, text: str, metadata: Optional[Dict[str, Any]] = None
+    ) -> Doc:
         """
         异步处理单个文本
 
@@ -4315,7 +4414,7 @@ class AsyncPipeline:
     async def process_batch(
         self,
         texts: List[str],
-        metadata_list: Optional[List[Optional[Dict[str, Any]]]] = None
+        metadata_list: Optional[List[Optional[Dict[str, Any]]]] = None,
     ) -> List[Doc]:
         """
         异步批量处理文本
@@ -4330,13 +4429,14 @@ class AsyncPipeline:
         await self._init_async()
         tasks = []
         for i, text in enumerate(texts):
-            meta = metadata_list[i] if metadata_list and i < len(metadata_list) else None
+            meta = (
+                metadata_list[i] if metadata_list and i < len(metadata_list) else None
+            )
             tasks.append(self.process(text, meta))
 
         if self._timeout:
             results = await asyncio.wait_for(
-                asyncio.gather(*tasks, return_exceptions=True),
-                timeout=self._timeout
+                asyncio.gather(*tasks, return_exceptions=True), timeout=self._timeout
             )
         else:
             results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -4353,7 +4453,7 @@ class AsyncPipeline:
         self,
         text: str,
         callback: Callable[[Doc], Any],
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> Doc:
         """
         异步处理并回调
@@ -4391,6 +4491,7 @@ class AsyncTaskManager:
 
     class TaskState(Enum):
         """任务状态"""
+
         PENDING = "pending"
         RUNNING = "running"
         COMPLETED = "completed"
@@ -4418,7 +4519,7 @@ class AsyncTaskManager:
         args: Tuple = (),
         kwargs: Optional[Dict[str, Any]] = None,
         priority: int = 0,
-        callback: Optional[Callable] = None
+        callback: Optional[Callable] = None,
     ) -> str:
         """
         创建异步任务
@@ -4437,16 +4538,16 @@ class AsyncTaskManager:
             task_id = f"task_{self._next_id}"
             self._next_id += 1
             self._tasks[task_id] = {
-                'func': func,
-                'args': args,
-                'kwargs': kwargs or {},
-                'priority': priority,
-                'callback': callback,
-                'state': self.TaskState.PENDING,
-                'created_at': time.time(),
-                'started_at': None,
-                'completed_at': None,
-                'error': None,
+                "func": func,
+                "args": args,
+                "kwargs": kwargs or {},
+                "priority": priority,
+                "callback": callback,
+                "state": self.TaskState.PENDING,
+                "created_at": time.time(),
+                "started_at": None,
+                "completed_at": None,
+                "error": None,
             }
             self._queue.append((priority, task_id))
             self._queue.sort(key=lambda x: -x[0])
@@ -4460,19 +4561,19 @@ class AsyncTaskManager:
         """获取任务结果"""
         return self._results.get(task_id)
 
-    def get_task_state(self, task_id: str) -> Optional['AsyncTaskManager.TaskState']:
+    def get_task_state(self, task_id: str) -> Optional["AsyncTaskManager.TaskState"]:
         """获取任务状态"""
         task = self._tasks.get(task_id)
         if task:
-            return task['state']
+            return task["state"]
         return None
 
     def cancel_task(self, task_id: str) -> bool:
         """取消任务"""
         with self._lock:
             task = self._tasks.get(task_id)
-            if task and task['state'] == self.TaskState.PENDING:
-                task['state'] = self.TaskState.CANCELLED
+            if task and task["state"] == self.TaskState.PENDING:
+                task["state"] = self.TaskState.CANCELLED
                 self._queue = [(p, tid) for p, tid in self._queue if tid != task_id]
                 return True
             return False
@@ -4480,23 +4581,23 @@ class AsyncTaskManager:
     def _execute_task(self, task_id: str) -> None:
         """执行单个任务"""
         task = self._tasks.get(task_id)
-        if not task or task['state'] != self.TaskState.PENDING:
+        if not task or task["state"] != self.TaskState.PENDING:
             return
 
-        task['state'] = self.TaskState.RUNNING
-        task['started_at'] = time.time()
+        task["state"] = self.TaskState.RUNNING
+        task["started_at"] = time.time()
 
         try:
-            result = task['func'](*task['args'], **task['kwargs'])
+            result = task["func"](*task["args"], **task["kwargs"])
             self._results[task_id] = result
-            task['state'] = self.TaskState.COMPLETED
-            if task['callback']:
-                task['callback'](result)
+            task["state"] = self.TaskState.COMPLETED
+            if task["callback"]:
+                task["callback"](result)
         except Exception as e:
-            task['error'] = str(e)
-            task['state'] = self.TaskState.FAILED
+            task["error"] = str(e)
+            task["state"] = self.TaskState.FAILED
         finally:
-            task['completed_at'] = time.time()
+            task["completed_at"] = time.time()
 
     def process_queue(self, max_tasks: int = -1) -> int:
         """
@@ -4521,7 +4622,7 @@ class AsyncTaskManager:
                     break
                 _, task_id = self._queue.pop(0)
                 task = self._tasks.get(task_id)
-                if not task or task['state'] != self.TaskState.PENDING:
+                if not task or task["state"] != self.TaskState.PENDING:
                     continue
 
             self._executor.submit(self._execute_task, task_id)
@@ -4536,18 +4637,20 @@ class AsyncTaskManager:
 
     def completed_count(self) -> int:
         """获取已完成任务数"""
-        return sum(1 for t in self._tasks.values() if t['state'] == self.TaskState.COMPLETED)
+        return sum(
+            1 for t in self._tasks.values() if t["state"] == self.TaskState.COMPLETED
+        )
 
     def stats(self) -> Dict[str, Any]:
         """获取任务统计信息"""
         states = {}
         for task in self._tasks.values():
-            state = task['state'].value
+            state = task["state"].value
             states[state] = states.get(state, 0) + 1
         return {
-            'total_tasks': len(self._tasks),
-            'pending': len(self._queue),
-            'states': states,
+            "total_tasks": len(self._tasks),
+            "pending": len(self._queue),
+            "states": states,
         }
 
     def shutdown(self) -> None:
@@ -4561,6 +4664,7 @@ class AsyncTaskManager:
 # 步骤64: 流式处理实现 - 大文件流式分词
 # ============================================================
 
+
 class ProgressCallback:
     """进度回调 - 报告处理进度"""
 
@@ -4568,7 +4672,7 @@ class ProgressCallback:
         self,
         total: Optional[int] = None,
         callback: Optional[Callable[[int, Optional[int], float], None]] = None,
-        report_interval: float = 1.0
+        report_interval: float = 1.0,
     ):
         """
         初始化进度回调
@@ -4605,8 +4709,10 @@ class ProgressCallback:
         """更新进度"""
         self._processed += increment
         current_time = time.time()
-        if (self._callback and
-                current_time - self._last_report_time >= self._report_interval):
+        if (
+            self._callback
+            and current_time - self._last_report_time >= self._report_interval
+        ):
             self._callback(self._processed, self._total, self.elapsed)
             self._last_report_time = current_time
 
@@ -4629,10 +4735,7 @@ class StreamProcessor:
     """
 
     def __init__(
-        self,
-        pipeline: Pipeline,
-        chunk_size: int = 1000,
-        max_memory_lines: int = 10000
+        self, pipeline: Pipeline, chunk_size: int = 1000, max_memory_lines: int = 10000
     ):
         """
         初始化流式处理器
@@ -4660,9 +4763,7 @@ class StreamProcessor:
         return count
 
     def _process_batch(
-        self,
-        texts: List[str],
-        result_formatter: Optional[Callable[[Doc], str]] = None
+        self, texts: List[str], result_formatter: Optional[Callable[[Doc], str]] = None
     ) -> List[Doc]:
         """处理一批文本"""
         return self._pipeline.process_batch(texts)
@@ -4674,7 +4775,7 @@ class StreamProcessor:
         output_path: Optional[str] = None,
         progress_callback: Optional[Callable[[int, Optional[int], float], None]] = None,
         line_filter: Optional[Callable[[str], bool]] = None,
-        result_formatter: Optional[Callable[[Doc], str]] = None
+        result_formatter: Optional[Callable[[Doc], str]] = None,
     ) -> List[Doc]:
         """
         流式处理文本文件
@@ -4697,7 +4798,7 @@ class StreamProcessor:
 
         try:
             if output_path:
-                output_file = open(output_path, 'w', encoding=encoding)
+                output_file = open(output_path, "w", encoding=encoding)
 
             with open(file_path, encoding=encoding) as f:
                 batch = []
@@ -4717,10 +4818,10 @@ class StreamProcessor:
 
                         if output_file and result_formatter:
                             for doc in batch_results:
-                                output_file.write(result_formatter(doc) + '\n')
+                                output_file.write(result_formatter(doc) + "\n")
 
                         if len(results) > self._max_memory_lines:
-                            results = results[-self._max_memory_lines:]
+                            results = results[-self._max_memory_lines :]
 
                         progress.update(len(batch))
                         batch = []
@@ -4730,7 +4831,7 @@ class StreamProcessor:
                     results.extend(batch_results)
                     if output_file and result_formatter:
                         for doc in batch_results:
-                            output_file.write(result_formatter(doc) + '\n')
+                            output_file.write(result_formatter(doc) + "\n")
                     progress.update(len(batch))
 
         finally:
@@ -4744,7 +4845,7 @@ class StreamProcessor:
         self,
         texts: Iterable[str],
         progress_callback: Optional[Callable[[int, Optional[int], float], None]] = None,
-        result_formatter: Optional[Callable[[Doc], str]] = None
+        result_formatter: Optional[Callable[[Doc], str]] = None,
     ) -> Iterator[Doc]:
         """
         流式处理可迭代文本
@@ -4783,7 +4884,7 @@ class StreamProcessor:
         text_stream: Iterator[str],
         output_stream: Optional[Any] = None,
         progress_callback: Optional[Callable[[int, Optional[int], float], None]] = None,
-        result_formatter: Optional[Callable[[Doc], str]] = None
+        result_formatter: Optional[Callable[[Doc], str]] = None,
     ) -> Iterator[Doc]:
         """
         流式处理文本流
@@ -4810,7 +4911,7 @@ class StreamProcessor:
                 for doc in docs:
                     progress.update()
                     if output_stream and result_formatter:
-                        output_stream.write(result_formatter(doc) + '\n')
+                        output_stream.write(result_formatter(doc) + "\n")
                     yield doc
                 batch = []
 
@@ -4819,7 +4920,7 @@ class StreamProcessor:
             for doc in docs:
                 progress.update()
                 if output_stream and result_formatter:
-                    output_stream.write(result_formatter(doc) + '\n')
+                    output_stream.write(result_formatter(doc) + "\n")
                 yield doc
 
         progress.finish()
@@ -4827,7 +4928,7 @@ class StreamProcessor:
     def process_lines(
         self,
         lines: List[str],
-        progress_callback: Optional[Callable[[int, Optional[int], float], None]] = None
+        progress_callback: Optional[Callable[[int, Optional[int], float], None]] = None,
     ) -> List[Doc]:
         """
         处理文本行列表
@@ -4843,7 +4944,7 @@ class StreamProcessor:
         results = []
 
         for i in range(0, len(lines), self._chunk_size):
-            batch = lines[i:i + self._chunk_size]
+            batch = lines[i : i + self._chunk_size]
             batch = [line.strip() for line in batch if line.strip()]
             if batch:
                 batch_results = self._pipeline.process_batch(batch)
@@ -4858,14 +4959,16 @@ class StreamProcessor:
 # 步骤65: 插件系统设计 - 第三方扩展机制
 # ============================================================
 
+
 class PluginState(Enum):
     """插件状态"""
-    DISCOVERED = "discovered"     # 已发现
-    LOADED = "loaded"             # 已加载
-    INITIALIZED = "initialized"   # 已初始化
-    ENABLED = "enabled"           # 已启用
-    DISABLED = "disabled"         # 已禁用
-    ERROR = "error"               # 错误
+
+    DISCOVERED = "discovered"  # 已发现
+    LOADED = "loaded"  # 已加载
+    INITIALIZED = "initialized"  # 已初始化
+    ENABLED = "enabled"  # 已启用
+    DISABLED = "disabled"  # 已禁用
+    ERROR = "error"  # 错误
 
 
 class PluginInfo:
@@ -4879,7 +4982,7 @@ class PluginInfo:
         author: str = "",
         module_path: str = "",
         dependencies: Optional[List[str]] = None,
-        entry_point: str = ""
+        entry_point: str = "",
     ):
         """
         初始化插件信息
@@ -4907,16 +5010,16 @@ class PluginInfo:
     def to_dict(self) -> Dict[str, Any]:
         """导出为字典"""
         return {
-            'name': self.name,
-            'version': self.version,
-            'description': self.description,
-            'author': self.author,
-            'module_path': self.module_path,
-            'dependencies': self.dependencies,
-            'entry_point': self.entry_point,
-            'state': self.state.value,
-            'error_message': self.error_message,
-            'loaded_at': self.loaded_at,
+            "name": self.name,
+            "version": self.version,
+            "description": self.description,
+            "author": self.author,
+            "module_path": self.module_path,
+            "dependencies": self.dependencies,
+            "entry_point": self.entry_point,
+            "state": self.state.value,
+            "error_message": self.error_message,
+            "loaded_at": self.loaded_at,
         }
 
 
@@ -4965,7 +5068,9 @@ class Plugin(ABC):
         """插件加载时调用"""
         pass
 
-    def on_initialize(self, pipeline: Pipeline, config: Optional[Dict[str, Any]] = None) -> None:
+    def on_initialize(
+        self, pipeline: Pipeline, config: Optional[Dict[str, Any]] = None
+    ) -> None:
         """
         插件初始化时调用
 
@@ -5113,25 +5218,23 @@ class PluginManager:
 
             # 查找插件目录下的Python模块
             for filename in os.listdir(plugin_dir):
-                if filename.endswith('.py') and not filename.startswith('_'):
+                if filename.endswith(".py") and not filename.startswith("_"):
                     module_name = filename[:-3]
                     module_path = os.path.join(plugin_dir, filename)
                     info = PluginInfo(
                         name=module_name,
                         module_path=module_path,
-                        entry_point=module_name
+                        entry_point=module_name,
                     )
                     self._plugin_infos[module_name] = info
                     discovered.append(info)
 
                 # 查找插件包目录
                 elif os.path.isdir(os.path.join(plugin_dir, filename)):
-                    init_path = os.path.join(plugin_dir, filename, '__init__.py')
+                    init_path = os.path.join(plugin_dir, filename, "__init__.py")
                     if os.path.exists(init_path):
                         info = PluginInfo(
-                            name=filename,
-                            module_path=init_path,
-                            entry_point=filename
+                            name=filename, module_path=init_path, entry_point=filename
                         )
                         self._plugin_infos[filename] = info
                         discovered.append(info)
@@ -5168,10 +5271,12 @@ class PluginManager:
                 if module_dir and module_dir not in sys.path:
                     sys.path.insert(0, module_dir)
 
-                if module_file.endswith('__init__.py'):
+                if module_file.endswith("__init__.py"):
                     module_name = name
                 else:
-                    module_name = module_file[:-3] if module_file.endswith('.py') else module_file
+                    module_name = (
+                        module_file[:-3] if module_file.endswith(".py") else module_file
+                    )
 
                 module = importlib.import_module(module_name)
 
@@ -5179,9 +5284,11 @@ class PluginManager:
                 plugin_instance = None
                 for attr_name in dir(module):
                     attr = getattr(module, attr_name)
-                    if (inspect.isclass(attr) and
-                            issubclass(attr, Plugin) and
-                            attr is not Plugin):
+                    if (
+                        inspect.isclass(attr)
+                        and issubclass(attr, Plugin)
+                        and attr is not Plugin
+                    ):
                         plugin_instance = attr()
                         break
 
@@ -5201,7 +5308,7 @@ class PluginManager:
                 self._plugins[name] = plugin_instance
 
                 # 触发钩子
-                self._trigger_hook('plugin_loaded', plugin=plugin_instance)
+                self._trigger_hook("plugin_loaded", plugin=plugin_instance)
 
                 return True
 
@@ -5233,12 +5340,14 @@ class PluginManager:
                     plugin.unregister_components(self._pipeline)
 
                 del self._plugins[name]
-                self._trigger_hook('plugin_unloaded', name=name)
+                self._trigger_hook("plugin_unloaded", name=name)
                 return True
             except Exception:
                 return False
 
-    def initialize_plugin(self, name: str, config: Optional[Dict[str, Any]] = None) -> bool:
+    def initialize_plugin(
+        self, name: str, config: Optional[Dict[str, Any]] = None
+    ) -> bool:
         """
         初始化插件
 
@@ -5261,7 +5370,7 @@ class PluginManager:
                 plugin.on_initialize(None, config)
 
             plugin.on_enable()
-            self._trigger_hook('plugin_initialized', plugin=plugin)
+            self._trigger_hook("plugin_initialized", plugin=plugin)
             return True
         except Exception as e:
             plugin._state = PluginState.ERROR
@@ -5283,7 +5392,7 @@ class PluginManager:
             return False
         try:
             plugin.on_enable()
-            self._trigger_hook('plugin_enabled', plugin=plugin)
+            self._trigger_hook("plugin_enabled", plugin=plugin)
             return True
         except Exception:
             return False
@@ -5303,7 +5412,7 @@ class PluginManager:
             return False
         try:
             plugin.on_disable()
-            self._trigger_hook('plugin_disabled', plugin=plugin)
+            self._trigger_hook("plugin_disabled", plugin=plugin)
             return True
         except Exception:
             return False
@@ -5408,16 +5517,17 @@ class PluginManager:
             state = plugin.state.value
             states[state] = states.get(state, 0) + 1
         return {
-            'total_discovered': len(self._plugin_infos),
-            'total_loaded': len(self._plugins),
-            'states': states,
-            'plugin_dirs': self._plugin_dirs,
+            "total_discovered": len(self._plugin_infos),
+            "total_loaded": len(self._plugins),
+            "states": states,
+            "plugin_dirs": self._plugin_dirs,
         }
 
 
 # ============================================================
 # 示例组件 - 用于演示Pipeline的使用
 # ============================================================
+
 
 class SimpleTokenizerComponent(PipelineComponent):
     """
@@ -5426,7 +5536,9 @@ class SimpleTokenizerComponent(PipelineComponent):
     基于最大正向匹配的简单分词器，用于演示Pipeline组件的编写方式。
     """
 
-    def __init__(self, name: str = "simple_tokenizer", dictionary: Optional[Set[str]] = None):
+    def __init__(
+        self, name: str = "simple_tokenizer", dictionary: Optional[Set[str]] = None
+    ):
         """
         初始化分词组件
 
@@ -5437,15 +5549,29 @@ class SimpleTokenizerComponent(PipelineComponent):
         super().__init__(name=name)
         self._dictionary = dictionary or set()
         self._max_word_len = 5
-        self.provide('tokens')
+        self.provide("tokens")
 
     def on_initialize(self) -> None:
         """初始化时加载默认词典"""
         if not self._dictionary:
             self._dictionary = {
-                '中国', '人民', '共和国', '北京', '上海', '广州', '深圳',
-                '人工智能', '自然语言', '处理', '技术', '机器学习',
-                '深度学习', '神经网络', '数据', '科学', '计算机',
+                "中国",
+                "人民",
+                "共和国",
+                "北京",
+                "上海",
+                "广州",
+                "深圳",
+                "人工智能",
+                "自然语言",
+                "处理",
+                "技术",
+                "机器学习",
+                "深度学习",
+                "神经网络",
+                "数据",
+                "科学",
+                "计算机",
             }
 
     def process(self, doc: Doc) -> Doc:
@@ -5464,13 +5590,10 @@ class SimpleTokenizerComponent(PipelineComponent):
         while i < len(text):
             matched = False
             for length in range(min(self._max_word_len, len(text) - i), 0, -1):
-                word = text[i:i + length]
+                word = text[i : i + length]
                 if word in self._dictionary:
                     token = Token(
-                        doc=doc,
-                        start=i,
-                        end=i + length,
-                        string_store=doc.string_store
+                        doc=doc, start=i, end=i + length, string_store=doc.string_store
                     )
                     tokens.append(token)
                     i += length
@@ -5478,10 +5601,7 @@ class SimpleTokenizerComponent(PipelineComponent):
                     break
             if not matched:
                 token = Token(
-                    doc=doc,
-                    start=i,
-                    end=i + 1,
-                    string_store=doc.string_store
+                    doc=doc, start=i, end=i + 1, string_store=doc.string_store
                 )
                 tokens.append(token)
                 i += 1
@@ -5507,8 +5627,8 @@ class POSTaggerComponent(PipelineComponent):
             name: 组件名称
         """
         super().__init__(name=name)
-        self.require('tokens')
-        self.provide('pos_tags')
+        self.require("tokens")
+        self.provide("pos_tags")
 
     def process(self, doc: Doc) -> Doc:
         """
@@ -5523,22 +5643,22 @@ class POSTaggerComponent(PipelineComponent):
         for token in doc.tokens:
             text = token.text
             # 简单的词性标注规则
-            if len(text) == 1 and text in '，。！？、；：""''（）【】':
-                token.pos = 'w'
+            if len(text) == 1 and text in '，。！？、；：""' "（）【】":
+                token.pos = "w"
             elif text.isdigit():
-                token.pos = 'm'
+                token.pos = "m"
             elif any(c.isdigit() for c in text):
-                token.pos = 'm'
-            elif len(text) >= 2 and text[-1] in '们':
-                token.pos = 'r'
-            elif len(text) >= 2 and text[-1] in '的':
-                token.pos = 'u'
-            elif len(text) >= 2 and text[-1] in '了着过':
-                token.pos = 'v'
+                token.pos = "m"
+            elif len(text) >= 2 and text[-1] in "们":
+                token.pos = "r"
+            elif len(text) >= 2 and text[-1] in "的":
+                token.pos = "u"
+            elif len(text) >= 2 and text[-1] in "了着过":
+                token.pos = "v"
             elif len(text) == 1:
-                token.pos = 'x'
+                token.pos = "x"
             else:
-                token.pos = 'n'
+                token.pos = "n"
 
         return doc
 

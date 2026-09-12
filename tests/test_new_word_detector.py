@@ -50,9 +50,9 @@ class TestNewWordDetectorTrain:
         detector.train(sample_corpus)
         assert detector.is_trained() is True
         stats = detector.get_statistics()
-        assert stats['trained'] is True
-        assert stats['total_chars'] > 0
-        assert stats['unique_chars'] > 0
+        assert stats["trained"] is True
+        assert stats["total_chars"] > 0
+        assert stats["unique_chars"] > 0
 
 
 class TestNewWordDetectorDetect:
@@ -67,11 +67,11 @@ class TestNewWordDetectorDetect:
         for word, info in results:
             assert isinstance(word, str)
             assert isinstance(info, dict)
-            assert 'frequency' in info
-            assert 'pmi' in info
-            assert 'left_entropy' in info
-            assert 'right_entropy' in info
-            assert 'avg_entropy' in info
+            assert "frequency" in info
+            assert "pmi" in info
+            assert "left_entropy" in info
+            assert "right_entropy" in info
+            assert "avg_entropy" in info
 
 
 class TestMutualInformation:

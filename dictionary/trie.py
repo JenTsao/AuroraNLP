@@ -2,7 +2,7 @@ from typing import Dict, List, Optional, Tuple
 
 
 class TrieNode:
-    __slots__ = ['children', 'is_word', 'pos_tag', 'priority', 'weight']
+    __slots__ = ["children", "is_word", "pos_tag", "priority", "weight"]
 
     def __init__(self):
         self.children: Dict[str, TrieNode] = {}
@@ -22,7 +22,7 @@ class Trie:
         word: str,
         pos_tag: Optional[str] = None,
         weight: float = 1.0,
-        priority: int = 0
+        priority: int = 0,
     ) -> None:
         node = self.root
         for char in word:
@@ -104,7 +104,9 @@ class Trie:
 
         return last_match
 
-    def get_max_match_with_pos(self, text: str, start: int = 0, max_len: int = 15) -> Tuple[int, Optional[str]]:
+    def get_max_match_with_pos(
+        self, text: str, start: int = 0, max_len: int = 15
+    ) -> Tuple[int, Optional[str]]:
         node = self.root
         last_match = 0
         last_pos = None
@@ -122,10 +124,7 @@ class Trie:
         return last_match, last_pos
 
     def get_max_match_with_info(
-        self,
-        text: str,
-        start: int = 0,
-        max_len: int = 15
+        self, text: str, start: int = 0, max_len: int = 15
     ) -> Tuple[int, Optional[str], float, int]:
         node = self.root
         last_match = 0
@@ -148,10 +147,7 @@ class Trie:
         return last_match, last_pos, last_weight, last_priority
 
     def get_all_matches_with_info(
-        self,
-        text: str,
-        start: int = 0,
-        max_len: int = 15
+        self, text: str, start: int = 0, max_len: int = 15
     ) -> List[Tuple[int, str, Optional[str], float, int]]:
         node = self.root
         matches = []
@@ -164,8 +160,10 @@ class Trie:
             node = node.children[char]
             if node.is_word:
                 word_len = i - start + 1
-                word = text[start:start + word_len]
-                matches.append((word_len, word, node.pos_tag, node.weight, node.priority))
+                word = text[start : start + word_len]
+                matches.append(
+                    (word_len, word, node.pos_tag, node.weight, node.priority)
+                )
 
         return matches
 

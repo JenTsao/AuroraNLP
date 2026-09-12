@@ -31,7 +31,7 @@ class AdminLevel(Enum):
     VILLAGE = 5
 
     @classmethod
-    def from_code_length(cls, code_length: int) -> Optional['AdminLevel']:
+    def from_code_length(cls, code_length: int) -> Optional["AdminLevel"]:
         mapping = {
             2: cls.PROVINCE,
             4: cls.CITY,
@@ -77,7 +77,7 @@ class Location:
     def has_coordinates(self) -> bool:
         return self.latitude is not None and self.longitude is not None
 
-    def distance_to(self, other: 'Location') -> Optional[float]:
+    def distance_to(self, other: "Location") -> Optional[float]:
         if not self.has_coordinates() or not other.has_coordinates():
             return None
 
@@ -87,7 +87,10 @@ class Location:
         dlat = lat2 - lat1
         dlon = lon2 - lon1
 
-        a = math.sin(dlat / 2) ** 2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+        a = (
+            math.sin(dlat / 2) ** 2
+            + math.cos(lat1) * math.cos(lat2) * math.sin(dlon / 2) ** 2
+        )
         c = 2 * math.asin(math.sqrt(a))
 
         r = 6371.0
@@ -109,9 +112,7 @@ class Location:
 
 
 class LocationDatabase:
-    DEFAULT_DATA_PATH = os.path.join(
-        os.path.dirname(__file__), 'data', 'locations.txt'
-    )
+    DEFAULT_DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "locations.txt")
 
     def __init__(self, load_default: bool = True):
         self._locations: Dict[str, Location] = {}
@@ -147,10 +148,10 @@ class LocationDatabase:
         self._parent_index.clear()
         self._location_count = 0
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
 
                 self._parse_location(line)
@@ -158,7 +159,7 @@ class LocationDatabase:
         self._loaded = True
 
     def _parse_location(self, line: str) -> None:
-        parts = line.split('\t')
+        parts = line.split("\t")
         if len(parts) < 3:
             return
 
@@ -192,7 +193,7 @@ class LocationDatabase:
                 pass
 
         if len(parts) > 5 and parts[5].strip():
-            aliases = [a.strip() for a in parts[5].split(',') if a.strip()]
+            aliases = [a.strip() for a in parts[5].split(",") if a.strip()]
 
         if len(parts) > 6 and parts[6].strip():
             parent_code = parts[6].strip()
@@ -216,7 +217,7 @@ class LocationDatabase:
             parent_code=parent_code,
             pinyin=pinyin,
             area_code=area_code,
-            zip_code=zip_code
+            zip_code=zip_code,
         )
 
         self._add_location(location)
@@ -362,7 +363,7 @@ class LocationDatabase:
         sorted_names = sorted(
             set(self._name_index.keys()) | set(self._alias_index.keys()),
             key=len,
-            reverse=True
+            reverse=True,
         )
 
         for name in sorted_names:
@@ -385,7 +386,9 @@ class LocationDatabase:
                         location = self._locations.get(code)
                     else:
                         codes = self._name_index.get(name, set())
-                        location = self._locations.get(next(iter(codes))) if codes else None
+                        location = (
+                            self._locations.get(next(iter(codes))) if codes else None
+                        )
 
                     if location:
                         results.append((location, pos, end))
@@ -402,11 +405,13 @@ class LocationDatabase:
         latitude: float,
         longitude: float,
         radius_km: float = 50.0,
-        level: Optional[AdminLevel] = None
+        level: Optional[AdminLevel] = None,
     ) -> List[Tuple[Location, float]]:
         results: List[Tuple[Location, float]] = []
 
-        locations = self.get_by_level(level) if level else list(self._locations.values())
+        locations = (
+            self.get_by_level(level) if level else list(self._locations.values())
+        )
 
         for location in locations:
             if location.has_coordinates():
@@ -415,7 +420,7 @@ class LocationDatabase:
                     name="temp",
                     level=AdminLevel.PROVINCE,
                     latitude=latitude,
-                    longitude=longitude
+                    longitude=longitude,
                 )
                 distance = location.distance_to(temp_loc)
                 if distance is not None and distance <= radius_km:
@@ -430,16 +435,20 @@ class LocationDatabase:
         max_lat: float,
         min_lon: float,
         max_lon: float,
-        level: Optional[AdminLevel] = None
+        level: Optional[AdminLevel] = None,
     ) -> List[Location]:
         results: List[Location] = []
 
-        locations = self.get_by_level(level) if level else list(self._locations.values())
+        locations = (
+            self.get_by_level(level) if level else list(self._locations.values())
+        )
 
         for location in locations:
             if location.has_coordinates():
-                if (min_lat <= location.latitude <= max_lat and
-                    min_lon <= location.longitude <= max_lon):
+                if (
+                    min_lat <= location.latitude <= max_lat
+                    and min_lon <= location.longitude <= max_lon
+                ):
                     results.append(location)
 
         return results
@@ -476,7 +485,7 @@ class LocationDatabase:
         parent_code: Optional[str] = None,
         pinyin: Optional[str] = None,
         area_code: Optional[str] = None,
-        zip_code: Optional[str] = None
+        zip_code: Optional[str] = None,
     ) -> None:
         location = Location(
             code=code,
@@ -488,14 +497,16 @@ class LocationDatabase:
             parent_code=parent_code,
             pinyin=pinyin,
             area_code=area_code,
-            zip_code=zip_code
+            zip_code=zip_code,
         )
         self._add_location(location)
 
     def save_data(self, path: str) -> None:
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write("# 地名数据库文件\n")
-            f.write("# 格式: 代码\\t名称\\t等级\\t纬度\\t经度\\t别名\\t上级代码\\t拼音\\t区号\\t邮编\n")
+            f.write(
+                "# 格式: 代码\\t名称\\t等级\\t纬度\\t经度\\t别名\\t上级代码\\t拼音\\t区号\\t邮编\n"
+            )
             f.write("# 等级: 1省 2市 3县 4镇 5村\n")
             f.write("#\n")
 
@@ -509,13 +520,13 @@ class LocationDatabase:
                             str(location.level.value),
                             str(location.latitude) if location.latitude else "",
                             str(location.longitude) if location.longitude else "",
-                            ','.join(location.aliases) if location.aliases else "",
+                            ",".join(location.aliases) if location.aliases else "",
                             location.parent_code or "",
                             location.pinyin or "",
                             location.area_code or "",
-                            location.zip_code or ""
+                            location.zip_code or "",
                         ]
-                        f.write('\t'.join(parts) + '\n')
+                        f.write("\t".join(parts) + "\n")
 
     def __len__(self) -> int:
         return self._location_count
@@ -634,7 +645,7 @@ class LocationManager:
         latitude: float,
         longitude: float,
         radius_km: float = 50.0,
-        level: Optional[AdminLevel] = None
+        level: Optional[AdminLevel] = None,
     ) -> List[Tuple[Location, float]]:
         if self._database is None:
             return []

@@ -33,8 +33,10 @@ from typing import Any, Callable, Dict, Iterator, List, Optional, Tuple, Union
 
 # ==================== 步骤81: 日志系统 ====================
 
+
 class LogLevel(IntEnum):
     """日志级别"""
+
     TRACE = 5
     DEBUG = 10
     INFO = 20
@@ -47,6 +49,7 @@ class LogLevel(IntEnum):
 
 class LogFormat(Enum):
     """日志格式"""
+
     TEXT = "text"
     JSON = "json"
 
@@ -129,7 +132,9 @@ class StructuredLogRecord:
     def to_text(self) -> str:
         """转换为文本格式"""
         dt = datetime.fromtimestamp(self.timestamp, tz=timezone.utc)
-        ts_str = dt.strftime("%Y-%m-%dT%H:%M:%S.") + f"{int(dt.microsecond / 1000):03d}Z"
+        ts_str = (
+            dt.strftime("%Y-%m-%dT%H:%M:%S.") + f"{int(dt.microsecond / 1000):03d}Z"
+        )
         parts = [f"[{ts_str}]", f"[{self.level.name:>8s}]", f"[{self.logger_name}]"]
         if self.request_id:
             parts.append(f"[req={self.request_id}]")
@@ -137,24 +142,21 @@ class StructuredLogRecord:
             parts.append(f"[trace={self.trace_id}]")
         parts.append(self.message)
         if self.exception:
-            parts.append(
-                f"\n  {type(self.exception).__name__}: {self.exception}"
-            )
+            parts.append(f"\n  {type(self.exception).__name__}: {self.exception}")
         return " ".join(parts)
 
 
 # ---------- 日志处理器 ----------
 
+
 class LogHandler(ABC):
     """日志处理器抽象基类"""
 
     @abstractmethod
-    def emit(self, record: StructuredLogRecord) -> None:
-        ...
+    def emit(self, record: StructuredLogRecord) -> None: ...
 
     @abstractmethod
-    def close(self) -> None:
-        ...
+    def close(self) -> None: ...
 
 
 class ConsoleLogHandler(LogHandler):
@@ -240,10 +242,7 @@ class FileLogHandler(LogHandler):
     def emit(self, record: StructuredLogRecord) -> None:
         if record.level < self._level:
             return
-        line = (
-            record.to_json() if self._format == LogFormat.JSON
-            else record.to_text()
-        )
+        line = record.to_json() if self._format == LogFormat.JSON else record.to_text()
         line += "\n"
         with self._lock:
             if self._max_bytes > 0 and self._current_size + len(line) > self._max_bytes:
@@ -324,7 +323,7 @@ class TimeRotatingFileLogHandler(LogHandler):
             if f.startswith(prefix) and f != basename:
                 files.append(f)
         files.sort(reverse=True)
-        for f in files[self._backup_count:]:
+        for f in files[self._backup_count :]:
             os.remove(os.path.join(dirpath, f))
 
     @property
@@ -343,8 +342,7 @@ class TimeRotatingFileLogHandler(LogHandler):
             if date_key != self._current_date:
                 self._rotate()
             line = (
-                record.to_json() if self._format == LogFormat.JSON
-                else record.to_text()
+                record.to_json() if self._format == LogFormat.JSON else record.to_text()
             )
             line += "\n"
             self._file.write(line)
@@ -393,12 +391,12 @@ class MemoryLogHandler(LogHandler):
 
 # ---------- 日志过滤器 ----------
 
+
 class LogFilter(ABC):
     """日志过滤器抽象基类"""
 
     @abstractmethod
-    def filter(self, record: StructuredLogRecord) -> bool:
-        ...
+    def filter(self, record: StructuredLogRecord) -> bool: ...
 
 
 class LevelFilter(LogFilter):
@@ -434,6 +432,7 @@ class ModuleFilter(LogFilter):
 
 
 # ---------- 日志管理器 ----------
+
 
 class Logger:
     """AuroraNLP 日志管理器
@@ -694,8 +693,10 @@ def get_logger(name: str = "auroranlp") -> Logger:
 
 # ==================== 步骤82: 健康检查接口 ====================
 
+
 class HealthStatus(Enum):
     """健康状态"""
+
     HEALTHY = "healthy"
     UNHEALTHY = "unhealthy"
     DEGRADED = "degraded"
@@ -707,12 +708,10 @@ class HealthCheck(ABC):
 
     @property
     @abstractmethod
-    def name(self) -> str:
-        ...
+    def name(self) -> str: ...
 
     @abstractmethod
-    def check(self) -> Tuple[HealthStatus, Optional[str], Optional[Dict[str, Any]]]:
-        ...
+    def check(self) -> Tuple[HealthStatus, Optional[str], Optional[Dict[str, Any]]]: ...
 
 
 class MemoryHealthCheck(HealthCheck):
@@ -729,17 +728,21 @@ class MemoryHealthCheck(HealthCheck):
     def check(self) -> Tuple[HealthStatus, Optional[str], Optional[Dict[str, Any]]]:
         try:
             import gc
+
             gc.collect()
-            free = gc.mem_alloc() if hasattr(gc, 'mem_alloc') else 0
-            total = gc.mem_free() if hasattr(gc, 'mem_free') else 1
+            free = gc.mem_alloc() if hasattr(gc, "mem_alloc") else 0
+            total = gc.mem_free() if hasattr(gc, "mem_free") else 1
             # 尝试使用更准确的方法
             try:
                 import resource
+
                 rusage = resource.getrusage(resource.RUSAGE_SELF)
                 max_rss = rusage.ru_maxrss
                 metrics = {
                     "max_rss": max_rss,
-                    "gc_collects": len(gc.get_stats()) if hasattr(gc, 'get_stats') else 0
+                    "gc_collects": (
+                        len(gc.get_stats()) if hasattr(gc, "get_stats") else 0
+                    ),
                 }
                 return HealthStatus.HEALTHY, None, metrics
             except ImportError:
@@ -752,7 +755,12 @@ class MemoryHealthCheck(HealthCheck):
 class DiskHealthCheck(HealthCheck):
     """磁盘健康检查"""
 
-    def __init__(self, path: str = "/", warning_threshold: float = 0.90, error_threshold: float = 0.98):
+    def __init__(
+        self,
+        path: str = "/",
+        warning_threshold: float = 0.90,
+        error_threshold: float = 0.98,
+    ):
         self._path = path
         self._warning_threshold = warning_threshold
         self._error_threshold = error_threshold
@@ -773,7 +781,7 @@ class DiskHealthCheck(HealthCheck):
                 "total_bytes": total,
                 "used_bytes": used,
                 "free_bytes": free,
-                "usage_percent": round(usage_ratio * 100, 2)
+                "usage_percent": round(usage_ratio * 100, 2),
             }
             if usage_ratio >= self._error_threshold:
                 return HealthStatus.UNHEALTHY, "磁盘空间不足", metrics
@@ -845,7 +853,9 @@ class HealthChecker:
                 "status": self.overall_status.value,
                 "timestamp": self.timestamp,
                 "version": self.version,
-                "uptime_seconds": round(self.uptime_seconds, 2) if self.uptime_seconds else None,
+                "uptime_seconds": (
+                    round(self.uptime_seconds, 2) if self.uptime_seconds else None
+                ),
                 "checks": [c.to_dict() for c in self.checks],
             }
 
@@ -934,8 +944,10 @@ class HealthChecker:
 
 # ==================== 步骤83: Prometheus指标 ====================
 
+
 class MetricType(Enum):
     """Prometheus 指标类型"""
+
     COUNTER = "counter"
     GAUGE = "gauge"
     HISTOGRAM = "histogram"
@@ -971,8 +983,7 @@ class PrometheusMetric:
         return self._help
 
     @abstractmethod
-    def to_exposition(self) -> str:
-        ...
+    def to_exposition(self) -> str: ...
 
     def _format_labels(self, additional: Optional[Dict[str, str]] = None) -> str:
         merged = {**self._labels, **(additional or {})}
@@ -1110,6 +1121,7 @@ class PrometheusRegistry:
 
 # ==================== 步骤84: Docker 镜像支持 ====================
 
+
 def generate_dockerfile_content(
     base_image: str = "python:3.12-slim",
     work_dir: str = "/app",
@@ -1117,7 +1129,14 @@ def generate_dockerfile_content(
 ) -> str:
     """生成 Dockerfile 内容"""
     deps = extra_deps or []
-    deps_str = "\n".join(f"RUN apt-get update && apt-get install -y --no-install-recommends {d} && rm -rf /var/lib/apt/lists/*" for d in deps) if deps else ""
+    deps_str = (
+        "\n".join(
+            f"RUN apt-get update && apt-get install -y --no-install-recommends {d} && rm -rf /var/lib/apt/lists/*"
+            for d in deps
+        )
+        if deps
+        else ""
+    )
 
     content = f"""
 # AuroraNLP Dockerfile
@@ -1154,6 +1173,7 @@ CMD [\"python\", \"-m\", \"AuroraNLP\"]
 
 
 # ==================== 步骤85: Kubernetes 配置 ====================
+
 
 def generate_k8s_deployment_content(
     name: str = "auroranlp",
@@ -1339,8 +1359,10 @@ __all_enterprise__ = [
 
 # ==================== 步骤86: 限流熔断 ====================
 
+
 class CircuitState(Enum):
     """断路器状态"""
+
     CLOSED = "closed"
     OPEN = "open"
     HALF_OPEN = "half_open"
@@ -1348,6 +1370,7 @@ class CircuitState(Enum):
 
 class RateLimitState(Enum):
     """限流状态"""
+
     ALLOWED = "allowed"
     DROPPED = "dropped"
     QUEUED = "queued"
@@ -1451,6 +1474,7 @@ class CircuitBreaker:
 
     class CircuitOpenError(Exception):
         """熔断器打开时抛出的错误"""
+
         pass
 
     def __init__(
@@ -1520,8 +1544,10 @@ class CircuitBreaker:
 
 # ==================== 步骤87: 认证授权 ====================
 
+
 class TokenType(Enum):
     """令牌类型"""
+
     API_KEY = "api_key"
     JWT = "jwt"
     OAUTH = "oauth"
@@ -1529,6 +1555,7 @@ class TokenType(Enum):
 
 class Permission(Enum):
     """权限枚举"""
+
     READ = "read"
     WRITE = "write"
     ADMIN = "admin"
@@ -1636,8 +1663,10 @@ class Authorizer:
 
 # ==================== 步骤88: 配置中心集成 ====================
 
+
 class ConfigEvent(Enum):
     """配置变更事件类型"""
+
     ADDED = "added"
     UPDATED = "updated"
     DELETED = "deleted"
@@ -1732,11 +1761,17 @@ class FileConfigStore:
                     self._load_config()
                     for key, value in self._configs.items():
                         if key not in old_configs or old_configs[key] != value:
-                            event = ConfigEvent.UPDATED if key in old_configs else ConfigEvent.ADDED
+                            event = (
+                                ConfigEvent.UPDATED
+                                if key in old_configs
+                                else ConfigEvent.ADDED
+                            )
                             self.watch.notify(key, event, value)
                     for key in old_configs:
                         if key not in self._configs:
-                            self.watch.notify(key, ConfigEvent.DELETED, old_configs[key])
+                            self.watch.notify(
+                                key, ConfigEvent.DELETED, old_configs[key]
+                            )
                     return True
             return False
         except Exception:
@@ -1770,7 +1805,9 @@ class ConfigManager:
             if is_default or self._default_store is None:
                 self._default_store = name
 
-    def get(self, key: str, default: Any = None, store_name: Optional[str] = None) -> Any:
+    def get(
+        self, key: str, default: Any = None, store_name: Optional[str] = None
+    ) -> Any:
         """获取配置"""
         store = self._get_store(store_name)
         return store.get(key, default) if store else default
@@ -1790,8 +1827,10 @@ class ConfigManager:
 
 # ==================== 步骤89: 灰度发布支持 ====================
 
+
 class DeploymentState(Enum):
     """部署状态"""
+
     DEPLOYING = "deploying"
     ACTIVE = "active"
     STAGING = "staging"
@@ -1839,7 +1878,9 @@ class CanaryDeployer:
         self._current_stable: Optional[str] = None
         self._lock = threading.Lock()
 
-    def deploy_version(self, version_id: str, metadata: Optional[dict[str, Any]] = None):
+    def deploy_version(
+        self, version_id: str, metadata: Optional[dict[str, Any]] = None
+    ):
         """部署新版本作为稳定版本"""
         with self._lock:
             version = DeploymentVersion(
@@ -1854,7 +1895,12 @@ class CanaryDeployer:
                 if vid != version_id:
                     v.state = DeploymentState.STAGING
 
-    def deploy_canary(self, version_id: str, percentage: float, metadata: Optional[dict[str, Any]] = None):
+    def deploy_canary(
+        self,
+        version_id: str,
+        percentage: float,
+        metadata: Optional[dict[str, Any]] = None,
+    ):
         """部署灰度版本，分配指定百分比的流量"""
         with self._lock:
             version = DeploymentVersion(
@@ -1904,8 +1950,10 @@ class CanaryDeployer:
 
 # ==================== 步骤90: 灾备方案 ====================
 
+
 class BackupType(Enum):
     """备份类型"""
+
     INCREMENTAL = "incremental"
     FULL = "full"
     SNAPSHOT = "snapshot"
@@ -1928,6 +1976,7 @@ class ClusterNode:
 
 class FailoverStrategy(Enum):
     """故障转移策略"""
+
     AUTOMATIC = "automatic"
     MANUAL = "manual"
     NONE = "none"
@@ -1949,7 +1998,9 @@ class DataBackupManager:
         os.makedirs(backup_dir, exist_ok=True)
         self._backups: list[dict[str, Any]] = []
 
-    def create_backup(self, source_path: str, backup_type: BackupType, name: Optional[str] = None) -> str:
+    def create_backup(
+        self, source_path: str, backup_type: BackupType, name: Optional[str] = None
+    ) -> str:
         """创建备份"""
         backup_name = name or f"backup_{int(time.time())}"
         backup_path = os.path.join(self.backup_dir, backup_name)
@@ -1962,6 +2013,7 @@ class DataBackupManager:
         }
         try:
             import shutil
+
             if os.path.exists(source_path):
                 if os.path.isdir(source_path):
                     shutil.copytree(source_path, backup_path)
@@ -1980,7 +2032,10 @@ class DataBackupManager:
         """恢复备份"""
         try:
             import shutil
-            backup_info = next((b for b in self._backups if b["name"] == backup_name), None)
+
+            backup_info = next(
+                (b for b in self._backups if b["name"] == backup_name), None
+            )
             if backup_info and os.path.exists(backup_info["path"]):
                 if os.path.isdir(backup_info["path"]):
                     shutil.copytree(backup_info["path"], target_path)
@@ -2039,7 +2094,8 @@ class FailoverController:
             if self.strategy == FailoverStrategy.NONE:
                 return None
             alive_slaves = [
-                node for node in self._nodes.values()
+                node
+                for node in self._nodes.values()
                 if node.is_alive and not node.is_master
             ]
             if alive_slaves:
@@ -2050,5 +2106,3 @@ class FailoverController:
                 self._current_master = new_master.node_id
                 return new_master
         return None
-
-

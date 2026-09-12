@@ -34,6 +34,7 @@ class KnowledgeEntity:
         source: Source of the knowledge (e.g., 'wikidata', 'custom')
         external_ids: External reference IDs (e.g., Wikidata Q-ID)
     """
+
     entity_id: str
     canonical_name: str
     entity_type: str
@@ -67,29 +68,29 @@ class KnowledgeEntity:
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            'entity_id': self.entity_id,
-            'canonical_name': self.canonical_name,
-            'entity_type': self.entity_type,
-            'aliases': self.aliases,
-            'attributes': self.attributes,
-            'description': self.description,
-            'confidence': self.confidence,
-            'source': self.source,
-            'external_ids': self.external_ids
+            "entity_id": self.entity_id,
+            "canonical_name": self.canonical_name,
+            "entity_type": self.entity_type,
+            "aliases": self.aliases,
+            "attributes": self.attributes,
+            "description": self.description,
+            "confidence": self.confidence,
+            "source": self.source,
+            "external_ids": self.external_ids,
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'KnowledgeEntity':
+    def from_dict(cls, data: Dict[str, Any]) -> "KnowledgeEntity":
         return cls(
-            entity_id=data['entity_id'],
-            canonical_name=data['canonical_name'],
-            entity_type=data['entity_type'],
-            aliases=data.get('aliases', []),
-            attributes=data.get('attributes', {}),
-            description=data.get('description', ''),
-            confidence=data.get('confidence', 1.0),
-            source=data.get('source', 'custom'),
-            external_ids=data.get('external_ids', {})
+            entity_id=data["entity_id"],
+            canonical_name=data["canonical_name"],
+            entity_type=data["entity_type"],
+            aliases=data.get("aliases", []),
+            attributes=data.get("attributes", {}),
+            description=data.get("description", ""),
+            confidence=data.get("confidence", 1.0),
+            source=data.get("source", "custom"),
+            external_ids=data.get("external_ids", {}),
         )
 
     def __repr__(self) -> str:
@@ -109,10 +110,13 @@ class LinkedEntity:
         is_linked: Whether the entity was successfully linked
         linking_method: Method used for linking ('exact', 'fuzzy', 'context')
     """
+
     entity: Entity
     knowledge_entity: Optional[KnowledgeEntity] = None
     confidence: float = 0.0
-    candidate_entities: List[Tuple[KnowledgeEntity, float]] = field(default_factory=list)
+    candidate_entities: List[Tuple[KnowledgeEntity, float]] = field(
+        default_factory=list
+    )
     is_linked: bool = False
     linking_method: str = ""
 
@@ -133,23 +137,23 @@ class LinkedEntity:
 
     def to_dict(self) -> Dict[str, Any]:
         result = {
-            'text': self.entity.text,
-            'type': self.entity.entity_type,
-            'start': self.entity.start,
-            'end': self.entity.end,
-            'is_linked': self.is_linked,
-            'confidence': self.confidence,
-            'linking_method': self.linking_method,
-            'canonical_name': self.get_canonical_name(),
-            'entity_id': self.get_entity_id()
+            "text": self.entity.text,
+            "type": self.entity.entity_type,
+            "start": self.entity.start,
+            "end": self.entity.end,
+            "is_linked": self.is_linked,
+            "confidence": self.confidence,
+            "linking_method": self.linking_method,
+            "canonical_name": self.get_canonical_name(),
+            "entity_id": self.get_entity_id(),
         }
 
         if self.knowledge_entity:
-            result['knowledge_entity'] = self.knowledge_entity.to_dict()
+            result["knowledge_entity"] = self.knowledge_entity.to_dict()
 
         if self.candidate_entities:
-            result['candidates'] = [
-                {'entity': ke.to_dict(), 'score': score}
+            result["candidates"] = [
+                {"entity": ke.to_dict(), "score": score}
                 for ke, score in self.candidate_entities[:5]
             ]
 
@@ -157,7 +161,9 @@ class LinkedEntity:
 
     def __repr__(self) -> str:
         status = "linked" if self.is_linked else "unlinked"
-        return f"LinkedEntity('{self.entity.text}', {status}, conf={self.confidence:.2f})"
+        return (
+            f"LinkedEntity('{self.entity.text}', {status}, conf={self.confidence:.2f})"
+        )
 
 
 class KnowledgeBase:
@@ -194,7 +200,7 @@ class KnowledgeBase:
         confidence: float = 1.0,
         source: str = "custom",
         external_ids: Optional[Dict[str, str]] = None,
-        entity_id: Optional[str] = None
+        entity_id: Optional[str] = None,
     ) -> KnowledgeEntity:
         if entity_id is None:
             entity_id = self._generate_id()
@@ -208,7 +214,7 @@ class KnowledgeBase:
             description=description,
             confidence=confidence,
             source=source,
-            external_ids=external_ids or {}
+            external_ids=external_ids or {},
         )
 
         return self._add_entity_object(entity)
@@ -242,9 +248,7 @@ class KnowledgeBase:
         return self._entities.get(entity_id)
 
     def get_entities_by_name(
-        self,
-        name: str,
-        case_sensitive: bool = False
+        self, name: str, case_sensitive: bool = False
     ) -> List[KnowledgeEntity]:
         if case_sensitive:
             entities = []
@@ -266,10 +270,7 @@ class KnowledgeBase:
         return [self._entities[eid] for eid in entity_ids if eid in self._entities]
 
     def search_entities(
-        self,
-        query: str,
-        entity_type: Optional[str] = None,
-        limit: int = 10
+        self, query: str, entity_type: Optional[str] = None, limit: int = 10
     ) -> List[Tuple[KnowledgeEntity, float]]:
         query_lower = query.lower()
         results: List[Tuple[KnowledgeEntity, float]] = []
@@ -303,7 +304,7 @@ class KnowledgeBase:
         query: str,
         entity_type: Optional[str] = None,
         threshold: float = 0.6,
-        limit: int = 10
+        limit: int = 10,
     ) -> List[Tuple[KnowledgeEntity, float]]:
         from difflib import SequenceMatcher
 
@@ -343,7 +344,7 @@ class KnowledgeBase:
         canonical_name: Optional[str] = None,
         aliases: Optional[List[str]] = None,
         attributes: Optional[Dict[str, Any]] = None,
-        description: Optional[str] = None
+        description: Optional[str] = None,
     ) -> Optional[KnowledgeEntity]:
         if entity_id not in self._entities:
             return None
@@ -386,31 +387,31 @@ class KnowledgeBase:
 
     def save(self, filepath: str):
         data = {
-            'name': self.name,
-            'next_id': self._next_id,
-            'entities': [e.to_dict() for e in self._entities.values()]
+            "name": self.name,
+            "next_id": self._next_id,
+            "entities": [e.to_dict() for e in self._entities.values()],
         }
 
         dir_path = os.path.dirname(filepath)
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
 
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     def load(self, filepath: str):
-        with open(filepath, encoding='utf-8') as f:
+        with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
 
         self.clear()
-        self.name = data.get('name', self.name)
-        self._next_id = data.get('next_id', 1)
+        self.name = data.get("name", self.name)
+        self._next_id = data.get("next_id", 1)
 
-        for entity_data in data.get('entities', []):
+        for entity_data in data.get("entities", []):
             entity = KnowledgeEntity.from_dict(entity_data)
             self._add_entity_object(entity)
 
-    def merge(self, other: 'KnowledgeBase', overwrite: bool = False):
+    def merge(self, other: "KnowledgeBase", overwrite: bool = False):
         for entity in other.get_all_entities():
             existing = self.get_entity_by_id(entity.entity_id)
             if existing and not overwrite:
@@ -423,7 +424,7 @@ class KnowledgeBase:
                     description=entity.description,
                     confidence=entity.confidence,
                     source=entity.source,
-                    external_ids=entity.external_ids.copy()
+                    external_ids=entity.external_ids.copy(),
                 )
                 self._add_entity_object(new_entity)
             else:
@@ -433,18 +434,18 @@ class KnowledgeBase:
 
     def export_to_dict(self) -> Dict[str, Any]:
         return {
-            'name': self.name,
-            'entities': [e.to_dict() for e in self._entities.values()],
-            'statistics': {
-                'total_entities': self.get_entity_count(),
-                'by_type': self.get_entity_count_by_type()
-            }
+            "name": self.name,
+            "entities": [e.to_dict() for e in self._entities.values()],
+            "statistics": {
+                "total_entities": self.get_entity_count(),
+                "by_type": self.get_entity_count_by_type(),
+            },
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> 'KnowledgeBase':
-        kb = cls(name=data.get('name', 'default'))
-        for entity_data in data.get('entities', []):
+    def from_dict(cls, data: Dict[str, Any]) -> "KnowledgeBase":
+        kb = cls(name=data.get("name", "default"))
+        for entity_data in data.get("entities", []):
             entity = KnowledgeEntity.from_dict(entity_data)
             kb._add_entity_object(entity)
         return kb
@@ -531,34 +532,36 @@ class EntityNormalizer:
 
     def save(self, filepath: str):
         data = {
-            'alias_map': self._alias_map,
-            'abbreviations': self._abbreviations,
-            'normalization_rules': [(p.pattern, r) for p, r in self._normalization_rules],
-            'type_specific_rules': {
+            "alias_map": self._alias_map,
+            "abbreviations": self._abbreviations,
+            "normalization_rules": [
+                (p.pattern, r) for p, r in self._normalization_rules
+            ],
+            "type_specific_rules": {
                 etype: [(p.pattern, r) for p, r in rules]
                 for etype, rules in self._type_specific_rules.items()
-            }
+            },
         }
 
         dir_path = os.path.dirname(filepath)
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
 
-        with open(filepath, 'w', encoding='utf-8') as f:
+        with open(filepath, "w", encoding="utf-8") as f:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     def load(self, filepath: str):
-        with open(filepath, encoding='utf-8') as f:
+        with open(filepath, encoding="utf-8") as f:
             data = json.load(f)
 
         self.clear()
-        self._alias_map = data.get('alias_map', {})
-        self._abbreviations = data.get('abbreviations', {})
+        self._alias_map = data.get("alias_map", {})
+        self._abbreviations = data.get("abbreviations", {})
 
-        for pattern, replacement in data.get('normalization_rules', []):
+        for pattern, replacement in data.get("normalization_rules", []):
             self.add_normalization_rule(pattern, replacement)
 
-        for etype, rules in data.get('type_specific_rules', {}).items():
+        for etype, rules in data.get("type_specific_rules", {}).items():
             for pattern, replacement in rules:
                 self.add_type_specific_rule(etype, pattern, replacement)
 
@@ -579,7 +582,7 @@ class EntityLinker:
         self,
         knowledge_base: Optional[KnowledgeBase] = None,
         ner_recognizer: Optional[NERRecognizer] = None,
-        normalizer: Optional[EntityNormalizer] = None
+        normalizer: Optional[EntityNormalizer] = None,
     ):
         self.knowledge_base = knowledge_base or KnowledgeBase()
         self.ner_recognizer = ner_recognizer
@@ -599,20 +602,14 @@ class EntityLinker:
         self._max_candidates = max_candidates
 
     def link_entity(
-        self,
-        entity: Entity,
-        context: Optional[str] = None
+        self, entity: Entity, context: Optional[str] = None
     ) -> LinkedEntity:
         normalized_name = self.normalizer.normalize(entity.text, entity.entity_type)
 
         candidates = self._find_candidates(entity, normalized_name)
 
         if not candidates:
-            return LinkedEntity(
-                entity=entity,
-                confidence=0.0,
-                is_linked=False
-            )
+            return LinkedEntity(entity=entity, confidence=0.0, is_linked=False)
 
         if context:
             candidates = self._disambiguate_by_context(entity, candidates, context)
@@ -623,15 +620,13 @@ class EntityLinker:
             entity=entity,
             knowledge_entity=best_entity,
             confidence=best_score,
-            candidate_entities=candidates[:self._max_candidates],
+            candidate_entities=candidates[: self._max_candidates],
             is_linked=True,
-            linking_method='exact' if best_score >= 0.95 else 'fuzzy'
+            linking_method="exact" if best_score >= 0.95 else "fuzzy",
         )
 
     def _find_candidates(
-        self,
-        entity: Entity,
-        normalized_name: str
+        self, entity: Entity, normalized_name: str
     ) -> List[Tuple[KnowledgeEntity, float]]:
         candidates: List[Tuple[KnowledgeEntity, float]] = []
 
@@ -647,7 +642,7 @@ class EntityLinker:
                 normalized_name,
                 entity_type=entity.entity_type,
                 threshold=self._fuzzy_threshold,
-                limit=self._max_candidates
+                limit=self._max_candidates,
             )
             candidates.extend(fuzzy_matches)
 
@@ -655,10 +650,12 @@ class EntityLinker:
             fuzzy_matches = self.knowledge_base.fuzzy_search(
                 normalized_name,
                 threshold=self._fuzzy_threshold,
-                limit=self._max_candidates
+                limit=self._max_candidates,
             )
             for ke, score in fuzzy_matches:
-                adjusted_score = score * 0.8 if ke.entity_type != entity.entity_type else score
+                adjusted_score = (
+                    score * 0.8 if ke.entity_type != entity.entity_type else score
+                )
                 candidates.append((ke, adjusted_score))
 
         candidates.sort(key=lambda x: -x[1])
@@ -668,7 +665,7 @@ class EntityLinker:
         self,
         entity: Entity,
         candidates: List[Tuple[KnowledgeEntity, float]],
-        context: str
+        context: str,
     ) -> List[Tuple[KnowledgeEntity, float]]:
         context_lower = context.lower()
 
@@ -692,20 +689,16 @@ class EntityLinker:
         return rescored
 
     def link_entities(
-        self,
-        entities: List[Entity],
-        context: Optional[str] = None
+        self, entities: List[Entity], context: Optional[str] = None
     ) -> List[LinkedEntity]:
         return [self.link_entity(entity, context) for entity in entities]
 
-    def link_text(
-        self,
-        text: str,
-        use_ner: bool = True
-    ) -> List[LinkedEntity]:
+    def link_text(self, text: str, use_ner: bool = True) -> List[LinkedEntity]:
         if use_ner and self.ner_recognizer:
             if not self.ner_recognizer.is_trained():
-                raise RuntimeError("NER recognizer has not been trained. Call train() first.")
+                raise RuntimeError(
+                    "NER recognizer has not been trained. Call train() first."
+                )
             entities = self.ner_recognizer.recognize(text)
         else:
             entities = []
@@ -713,9 +706,7 @@ class EntityLinker:
         return self.link_entities(entities, text)
 
     def batch_link(
-        self,
-        texts: List[str],
-        use_ner: bool = True
+        self, texts: List[str], use_ner: bool = True
     ) -> List[List[LinkedEntity]]:
         return [self.link_text(text, use_ner) for text in texts]
 
@@ -726,7 +717,7 @@ class EntityLinker:
         aliases: Optional[List[str]] = None,
         attributes: Optional[Dict[str, Any]] = None,
         description: str = "",
-        external_ids: Optional[Dict[str, str]] = None
+        external_ids: Optional[Dict[str, str]] = None,
     ) -> KnowledgeEntity:
         return self.knowledge_base.add_entity(
             canonical_name=canonical_name,
@@ -734,34 +725,29 @@ class EntityLinker:
             aliases=aliases,
             attributes=attributes,
             description=description,
-            external_ids=external_ids
+            external_ids=external_ids,
         )
 
     def add_normalization_alias(self, alias: str, canonical: str):
         self.normalizer.add_alias(alias, canonical)
 
     def get_linked_entities_by_type(
-        self,
-        linked_entities: List[LinkedEntity],
-        entity_type: str
+        self, linked_entities: List[LinkedEntity], entity_type: str
     ) -> List[LinkedEntity]:
         return [
-            le for le in linked_entities
-            if le.is_linked and le.knowledge_entity
+            le
+            for le in linked_entities
+            if le.is_linked
+            and le.knowledge_entity
             and le.knowledge_entity.entity_type == entity_type
         ]
 
     def get_unlinked_entities(
-        self,
-        linked_entities: List[LinkedEntity]
+        self, linked_entities: List[LinkedEntity]
     ) -> List[LinkedEntity]:
         return [le for le in linked_entities if not le.is_linked]
 
-    def annotate_text(
-        self,
-        text: str,
-        use_ner: bool = True
-    ) -> str:
+    def annotate_text(self, text: str, use_ner: bool = True) -> str:
         linked_entities = self.link_text(text, use_ner)
 
         if not linked_entities:
@@ -773,7 +759,7 @@ class EntityLinker:
         last_end = 0
 
         for le in linked_entities:
-            result.append(text[last_end:le.entity.start])
+            result.append(text[last_end : le.entity.start])
 
             if le.is_linked and le.knowledge_entity:
                 annotation = f"[{le.entity.text}→{le.knowledge_entity.canonical_name}/{le.knowledge_entity.entity_type}]"
@@ -785,53 +771,52 @@ class EntityLinker:
 
         result.append(text[last_end:])
 
-        return ''.join(result)
+        return "".join(result)
 
-    def get_statistics(
-        self,
-        linked_entities: List[LinkedEntity]
-    ) -> Dict[str, Any]:
+    def get_statistics(self, linked_entities: List[LinkedEntity]) -> Dict[str, Any]:
         total = len(linked_entities)
         linked = sum(1 for le in linked_entities if le.is_linked)
 
-        by_type: Dict[str, Dict[str, int]] = defaultdict(lambda: {'linked': 0, 'unlinked': 0})
+        by_type: Dict[str, Dict[str, int]] = defaultdict(
+            lambda: {"linked": 0, "unlinked": 0}
+        )
         for le in linked_entities:
             etype = le.entity.entity_type
             if le.is_linked:
-                by_type[etype]['linked'] += 1
+                by_type[etype]["linked"] += 1
             else:
-                by_type[etype]['unlinked'] += 1
+                by_type[etype]["unlinked"] += 1
 
         avg_confidence = 0.0
         if linked > 0:
-            avg_confidence = sum(
-                le.confidence for le in linked_entities if le.is_linked
-            ) / linked
+            avg_confidence = (
+                sum(le.confidence for le in linked_entities if le.is_linked) / linked
+            )
 
         return {
-            'total_entities': total,
-            'linked_entities': linked,
-            'unlinked_entities': total - linked,
-            'link_rate': linked / total if total > 0 else 0.0,
-            'average_confidence': avg_confidence,
-            'by_type': dict(by_type)
+            "total_entities": total,
+            "linked_entities": linked,
+            "unlinked_entities": total - linked,
+            "link_rate": linked / total if total > 0 else 0.0,
+            "average_confidence": avg_confidence,
+            "by_type": dict(by_type),
         }
 
     def save(self, directory: str):
         os.makedirs(directory, exist_ok=True)
 
-        kb_path = os.path.join(directory, 'knowledge_base.json')
+        kb_path = os.path.join(directory, "knowledge_base.json")
         self.knowledge_base.save(kb_path)
 
-        norm_path = os.path.join(directory, 'normalizer.json')
+        norm_path = os.path.join(directory, "normalizer.json")
         self.normalizer.save(norm_path)
 
     def load(self, directory: str):
-        kb_path = os.path.join(directory, 'knowledge_base.json')
+        kb_path = os.path.join(directory, "knowledge_base.json")
         if os.path.exists(kb_path):
             self.knowledge_base.load(kb_path)
 
-        norm_path = os.path.join(directory, 'normalizer.json')
+        norm_path = os.path.join(directory, "normalizer.json")
         if os.path.exists(norm_path):
             self.normalizer.load(norm_path)
 
@@ -843,85 +828,60 @@ def create_sample_knowledge_base() -> KnowledgeBase:
         canonical_name="阿里巴巴集团",
         entity_type="ORG",
         aliases=["阿里巴巴", "阿里", "Alibaba", "Alibaba Group"],
-        attributes={
-            "industry": "电子商务",
-            "founded": "1999",
-            "headquarters": "杭州"
-        },
+        attributes={"industry": "电子商务", "founded": "1999", "headquarters": "杭州"},
         description="中国领先的电子商务公司",
-        external_ids={"wikidata": "Q418249"}
+        external_ids={"wikidata": "Q418249"},
     )
 
     kb.add_entity(
         canonical_name="腾讯控股有限公司",
         entity_type="ORG",
         aliases=["腾讯", "腾讯公司", "Tencent"],
-        attributes={
-            "industry": "互联网",
-            "founded": "1998",
-            "headquarters": "深圳"
-        },
+        attributes={"industry": "互联网", "founded": "1998", "headquarters": "深圳"},
         description="中国互联网科技公司",
-        external_ids={"wikidata": "Q860479"}
+        external_ids={"wikidata": "Q860479"},
     )
 
     kb.add_entity(
         canonical_name="清华大学",
         entity_type="ORG",
         aliases=["清华", "THU"],
-        attributes={
-            "type": "大学",
-            "location": "北京",
-            "founded": "1911"
-        },
+        attributes={"type": "大学", "location": "北京", "founded": "1911"},
         description="中国著名高等学府",
-        external_ids={"wikidata": "Q16955"}
+        external_ids={"wikidata": "Q16955"},
     )
 
     kb.add_entity(
         canonical_name="北京大学",
         entity_type="ORG",
         aliases=["北大", "PKU", "京师大学堂"],
-        attributes={
-            "type": "大学",
-            "location": "北京",
-            "founded": "1898"
-        },
+        attributes={"type": "大学", "location": "北京", "founded": "1898"},
         description="中国著名高等学府",
-        external_ids={"wikidata": "Q16952"}
+        external_ids={"wikidata": "Q16952"},
     )
 
     kb.add_entity(
         canonical_name="北京市",
         entity_type="LOC",
         aliases=["北京", "北平", "Beijing", "Peking"],
-        attributes={
-            "type": "直辖市",
-            "country": "中国"
-        },
-        external_ids={"wikidata": "Q956"}
+        attributes={"type": "直辖市", "country": "中国"},
+        external_ids={"wikidata": "Q956"},
     )
 
     kb.add_entity(
         canonical_name="上海市",
         entity_type="LOC",
         aliases=["上海", "Shanghai"],
-        attributes={
-            "type": "直辖市",
-            "country": "中国"
-        },
-        external_ids={"wikidata": "Q8686"}
+        attributes={"type": "直辖市", "country": "中国"},
+        external_ids={"wikidata": "Q8686"},
     )
 
     kb.add_entity(
         canonical_name="深圳市",
         entity_type="LOC",
         aliases=["深圳", "Shenzhen"],
-        attributes={
-            "type": "地级市",
-            "province": "广东"
-        },
-        external_ids={"wikidata": "Q15175"}
+        attributes={"type": "地级市", "province": "广东"},
+        external_ids={"wikidata": "Q15175"},
     )
 
     return kb
@@ -930,35 +890,39 @@ def create_sample_knowledge_base() -> KnowledgeBase:
 def create_sample_normalizer() -> EntityNormalizer:
     normalizer = EntityNormalizer()
 
-    normalizer.add_aliases({
-        "阿里": "阿里巴巴集团",
-        "阿里巴巴": "阿里巴巴集团",
-        "腾讯": "腾讯控股有限公司",
-        "腾讯公司": "腾讯控股有限公司",
-        "清华": "清华大学",
-        "北大": "北京大学",
-    })
+    normalizer.add_aliases(
+        {
+            "阿里": "阿里巴巴集团",
+            "阿里巴巴": "阿里巴巴集团",
+            "腾讯": "腾讯控股有限公司",
+            "腾讯公司": "腾讯控股有限公司",
+            "清华": "清华大学",
+            "北大": "北京大学",
+        }
+    )
 
-    normalizer.add_abbreviations({
-        "THU": "清华大学",
-        "PKU": "北京大学",
-    })
+    normalizer.add_abbreviations(
+        {
+            "THU": "清华大学",
+            "PKU": "北京大学",
+        }
+    )
 
-    normalizer.add_normalization_rule(r'\s+', '')
-    normalizer.add_normalization_rule(r'[（(].*?[）)]', '')
+    normalizer.add_normalization_rule(r"\s+", "")
+    normalizer.add_normalization_rule(r"[（(].*?[）)]", "")
 
-    normalizer.add_type_specific_rule('ORG', r'有限公司$', '集团')
-    normalizer.add_type_specific_rule('LOC', r'^中国', '')
+    normalizer.add_type_specific_rule("ORG", r"有限公司$", "集团")
+    normalizer.add_type_specific_rule("LOC", r"^中国", "")
 
     return normalizer
 
 
 __all__ = [
-    'EntityLinker',
-    'EntityNormalizer',
-    'KnowledgeBase',
-    'KnowledgeEntity',
-    'LinkedEntity',
-    'create_sample_knowledge_base',
-    'create_sample_normalizer',
+    "EntityLinker",
+    "EntityNormalizer",
+    "KnowledgeBase",
+    "KnowledgeEntity",
+    "LinkedEntity",
+    "create_sample_knowledge_base",
+    "create_sample_normalizer",
 ]

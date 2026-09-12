@@ -35,15 +35,30 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict, defaultdict, deque
 from enum import Enum, IntEnum
 from functools import lru_cache, wraps
-from typing import Any, Callable, Deque, Dict, Generic, Iterator, List, NamedTuple, Optional, Set, Tuple, TypeVar, Union
+from typing import (
+    Any,
+    Callable,
+    Deque,
+    Dict,
+    Generic,
+    Iterator,
+    List,
+    NamedTuple,
+    Optional,
+    Set,
+    Tuple,
+    TypeVar,
+    Union,
+)
 
 # ==================== 步骤66: 对象复用与对象池 ====================
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class PoolStats(NamedTuple):
     """对象池统计"""
+
     allocated: int
     in_use: int
     free: int
@@ -62,7 +77,7 @@ class ObjectPool(Generic[T]):
         factory: Callable[[], T],
         resetter: Optional[Callable[[T], None]] = None,
         max_size: int = 1000,
-        initial_size: int = 10
+        initial_size: int = 10,
     ):
         self._factory = factory
         self._resetter = resetter
@@ -71,13 +86,7 @@ class ObjectPool(Generic[T]):
         self._in_use: Set[int] = set()  # 对象ID集合
 
         # 统计
-        self._stats = {
-            'allocated': 0,
-            'in_use': 0,
-            'free': 0,
-            'hits': 0,
-            'misses': 0
-        }
+        self._stats = {"allocated": 0, "in_use": 0, "free": 0, "hits": 0, "misses": 0}
         self._lock = threading.RLock()
 
         # 预分配初始对象
@@ -87,24 +96,24 @@ class ObjectPool(Generic[T]):
                 if resetter:
                     resetter(obj)  # 预分配时就重置
                 self._pool.append(obj)
-                self._stats['allocated'] += 1
-            self._stats['free'] = len(self._pool)
+                self._stats["allocated"] += 1
+            self._stats["free"] = len(self._pool)
 
     def acquire(self) -> T:
         """获取一个对象"""
         with self._lock:
             if self._pool:
                 obj = self._pool.popleft()
-                self._stats['hits'] += 1
+                self._stats["hits"] += 1
             else:
                 obj = self._factory()
                 if self._resetter:
                     self._resetter(obj)  # 新对象也重置
-                self._stats['allocated'] += 1
-                self._stats['misses'] += 1
+                self._stats["allocated"] += 1
+                self._stats["misses"] += 1
             self._in_use.add(id(obj))
-            self._stats['in_use'] = len(self._in_use)
-            self._stats['free'] = len(self._pool)
+            self._stats["in_use"] = len(self._in_use)
+            self._stats["free"] = len(self._pool)
             return obj
 
     def release(self, obj: T) -> None:
@@ -117,18 +126,18 @@ class ObjectPool(Generic[T]):
                     self._resetter(obj)
                 if len(self._pool) < self._max_size:
                     self._pool.append(obj)
-                self._stats['in_use'] = len(self._in_use)
-                self._stats['free'] = len(self._pool)
+                self._stats["in_use"] = len(self._in_use)
+                self._stats["free"] = len(self._pool)
 
     def get_stats(self) -> PoolStats:
         """获取统计信息"""
         with self._lock:
             return PoolStats(
-                self._stats['allocated'],
-                self._stats['in_use'],
-                self._stats['free'],
-                self._stats['hits'],
-                self._stats['misses']
+                self._stats["allocated"],
+                self._stats["in_use"],
+                self._stats["free"],
+                self._stats["hits"],
+                self._stats["misses"],
             )
 
     def clear(self) -> None:
@@ -136,8 +145,8 @@ class ObjectPool(Generic[T]):
         with self._lock:
             self._pool.clear()
             self._in_use.clear()
-            self._stats['free'] = 0
-            self._stats['in_use'] = 0
+            self._stats["free"] = 0
+            self._stats["in_use"] = 0
 
     def __enter__(self) -> T:
         """上下文管理器支持"""
@@ -146,9 +155,9 @@ class ObjectPool(Generic[T]):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """上下文管理器退出"""
-        if hasattr(self, '_current_obj'):
+        if hasattr(self, "_current_obj"):
             self.release(self._current_obj)
-            delattr(self, '_current_obj')
+            delattr(self, "_current_obj")
 
 
 class PoolContext(Generic[T]):
@@ -170,31 +179,24 @@ class PoolContext(Generic[T]):
 
 # ==================== 步骤67: 批量操作优化 ====================
 
+
 class BatchProcessor:
     """批量处理优化器
 
     减少函数调用开销，支持批量执行和流水线处理
     """
 
-    def __init__(
-        self,
-        chunk_size: int = 100,
-        pipeline_depth: int = 1
-    ):
+    def __init__(self, chunk_size: int = 100, pipeline_depth: int = 1):
         self._chunk_size = chunk_size
         self._pipeline_depth = pipeline_depth
-        self._stats = {
-            'total_batches': 0,
-            'total_items': 0,
-            'avg_time': 0.0
-        }
+        self._stats = {"total_batches": 0, "total_items": 0, "avg_time": 0.0}
         self._lock = threading.RLock()
 
     def process(
         self,
         items: List[Any],
         func: Callable[[Any], Any],
-        batch_func: Optional[Callable[[List[Any]], List[Any]]] = None
+        batch_func: Optional[Callable[[List[Any]], List[Any]]] = None,
     ) -> List[Any]:
         """批量处理"""
         if not items:
@@ -209,27 +211,23 @@ class BatchProcessor:
         else:
             # 分块处理
             for i in range(0, len(items), self._chunk_size):
-                chunk = items[i:i+self._chunk_size]
+                chunk = items[i : i + self._chunk_size]
                 chunk_results = [func(item) for item in chunk]
                 results.extend(chunk_results)
 
         end_time = time.time()
 
         with self._lock:
-            self._stats['total_batches'] += 1
-            self._stats['total_items'] += len(items)
+            self._stats["total_batches"] += 1
+            self._stats["total_items"] += len(items)
             elapsed = end_time - start_time
-            n = self._stats['total_batches']
-            self._stats['avg_time'] = (
-                (self._stats['avg_time'] * (n - 1) + elapsed) / n
-            )
+            n = self._stats["total_batches"]
+            self._stats["avg_time"] = (self._stats["avg_time"] * (n - 1) + elapsed) / n
 
         return results
 
     def process_stream(
-        self,
-        item_stream: Iterator[Any],
-        func: Callable[[Any], Any]
+        self, item_stream: Iterator[Any], func: Callable[[Any], Any]
     ) -> Iterator[Any]:
         """流式批量处理"""
         buffer: List[Any] = []
@@ -247,7 +245,7 @@ class BatchProcessor:
         self,
         items: List[Any],
         map_func: Callable[[Any], Any],
-        reduce_func: Callable[[List[Any]], Any]
+        reduce_func: Callable[[List[Any]], Any],
     ) -> Any:
         """Map-Reduce模式"""
         mapped = self.process(items, map_func)
@@ -260,6 +258,7 @@ class BatchProcessor:
 
 
 # ==================== 步骤68: 内存池管理 ====================
+
 
 class MemoryBlock:
     """内存块"""
@@ -276,7 +275,7 @@ class MemoryBlock:
         """写入数据到内存块"""
         available = self.size - self.used
         write_size = min(len(data), available)
-        self.data[self.used:self.used+write_size] = data[:write_size]
+        self.data[self.used : self.used + write_size] = data[:write_size]
         self.used += write_size
         return write_size
 
@@ -298,7 +297,7 @@ class MemoryPool:
         small_count: int = 100,
         medium_count: int = 50,
         large_count: int = 10,
-        xlarge_count: int = 2
+        xlarge_count: int = 2,
     ):
         self._pools: Dict[int, Deque[MemoryBlock]] = {}
         self._lock = threading.RLock()
@@ -308,7 +307,7 @@ class MemoryPool:
             (self.BlockSize.SMALL, small_count),
             (self.BlockSize.MEDIUM, medium_count),
             (self.BlockSize.LARGE, large_count),
-            (self.BlockSize.XLARGE, xlarge_count)
+            (self.BlockSize.XLARGE, xlarge_count),
         ]
         for size, count in sizes:
             self._pools[size] = deque()
@@ -324,7 +323,7 @@ class MemoryPool:
                 self.BlockSize.SMALL,
                 self.BlockSize.MEDIUM,
                 self.BlockSize.LARGE,
-                self.BlockSize.XLARGE
+                self.BlockSize.XLARGE,
             ]:
                 if bsize >= min_size:
                     block_size = bsize
@@ -352,16 +351,17 @@ class MemoryPool:
             result = {}
             for size, pool in self._pools.items():
                 name = {
-                    self.BlockSize.SMALL: 'small',
-                    self.BlockSize.MEDIUM: 'medium',
-                    self.BlockSize.LARGE: 'large',
-                    self.BlockSize.XLARGE: 'xlarge'
+                    self.BlockSize.SMALL: "small",
+                    self.BlockSize.MEDIUM: "medium",
+                    self.BlockSize.LARGE: "large",
+                    self.BlockSize.XLARGE: "xlarge",
                 }.get(size, str(size))
                 result[name] = len(pool)
             return result
 
 
 # ==================== 步骤69: 延迟释放与GC管理 ====================
+
 
 class DelayedGC:
     """延迟垃圾收集管理器
@@ -407,14 +407,15 @@ class DelayedGC:
                 count = gc.collect()
                 self._last_gc = time.time()
                 return {
-                    'collected': count,
-                    'reason': 'manual' if force else 'threshold'
+                    "collected": count,
+                    "reason": "manual" if force else "threshold",
                 }
-            return {'collected': 0, 'reason': 'skipped'}
+            return {"collected": 0, "reason": "skipped"}
 
     @staticmethod
     def run_in_gc_free_zone(func: Callable):
         """在无GC区域运行"""
+
         @wraps(func)
         def wrapper(*args, **kwargs):
             gc.disable()
@@ -423,10 +424,12 @@ class DelayedGC:
             finally:
                 gc.collect()
                 gc.enable()
+
         return wrapper
 
 
 # ==================== 步骤70: 多线程支持 ====================
+
 
 class ThreadPoolExecutor:
     """简单线程池执行器（标准库实现）"""
@@ -514,9 +517,7 @@ class ParallelTokenizer:
     """并行分词器"""
 
     def __init__(
-        self,
-        tokenizer_func: Callable[[str], List[str]],
-        num_workers: int = 4
+        self, tokenizer_func: Callable[[str], List[str]], num_workers: int = 4
     ):
         self._tokenizer = tokenizer_func
         self._pool = ThreadPoolExecutor(num_workers)
@@ -541,6 +542,7 @@ class ParallelTokenizer:
 
 # ==================== 步骤71: 多进程处理 ====================
 
+
 class ProcessPoolExecutor:
     """简单进程池（基于multiprocessing）"""
 
@@ -564,10 +566,16 @@ class ProcessPoolExecutor:
             finally:
                 self._pool = None
 
-    def map(self, func: Callable, items: List[Any], timeout: Optional[float] = None) -> List[Any]:
+    def map(
+        self, func: Callable, items: List[Any], timeout: Optional[float] = None
+    ) -> List[Any]:
         if not self._pool:
             raise RuntimeError("Pool not started")
-        return self._pool.map(func, items) if timeout is None else self._pool.map_async(func, items).get(timeout=timeout)
+        return (
+            self._pool.map(func, items)
+            if timeout is None
+            else self._pool.map_async(func, items).get(timeout=timeout)
+        )
 
     def apply_async(self, func: Callable, *args):
         if not self._pool:
@@ -577,8 +585,10 @@ class ProcessPoolExecutor:
 
 # ==================== 步骤72: GPU加速接口层 ====================
 
+
 class DeviceType(IntEnum):
     """设备类型"""
+
     CPU = 0
     CUDA = 1
     MPS = 2  # Apple Silicon
@@ -598,6 +608,7 @@ class GPUInterface:
         """检测可用设备"""
         try:
             import torch
+
             if torch.cuda.is_available():
                 return DeviceType.CUDA
         except Exception:
@@ -605,6 +616,7 @@ class GPUInterface:
 
         try:
             import torch
+
             if torch.backends.mps.is_available():
                 return DeviceType.MPS
         except Exception:
@@ -624,6 +636,7 @@ class GPUInterface:
         """尝试加载PyTorch后端"""
         try:
             import torch
+
             self._backend = torch
             return True
         except ImportError:
@@ -631,6 +644,7 @@ class GPUInterface:
 
 
 # ==================== 步骤73: Batch推理优化 ====================
+
 
 class BatchInference:
     """批量推理优化器
@@ -642,26 +656,26 @@ class BatchInference:
         self,
         initial_batch_size: int = 32,
         max_batch_size: int = 128,
-        min_batch_size: int = 1
+        min_batch_size: int = 1,
     ):
         self._initial_batch = initial_batch_size
         self._max_batch = max_batch_size
         self._min_batch = min_batch_size
         self._current_batch = initial_batch_size
-        self._stats = {'total_batches': 0, 'avg_latency': 0.0}
+        self._stats = {"total_batches": 0, "avg_latency": 0.0}
 
     def infer(
         self,
         model: Any,
         items: List[Any],
-        predict_func: Callable[[Any, List[Any]], Any]
+        predict_func: Callable[[Any, List[Any]], Any],
     ) -> List[Any]:
         """批量推理"""
         results = []
         total_items = len(items)
 
         for i in range(0, total_items, self._current_batch):
-            batch = items[i:i+self._current_batch]
+            batch = items[i : i + self._current_batch]
             start = time.time()
             batch_results = predict_func(model, batch)
             latency = time.time() - start
@@ -672,16 +686,18 @@ class BatchInference:
         return results
 
     def _update_stats(self, latency: float):
-        self._stats['total_batches'] += 1
-        avg = self._stats['avg_latency']
-        n = self._stats['total_batches']
-        self._stats['avg_latency'] = (avg * (n-1) + latency) / n
+        self._stats["total_batches"] += 1
+        avg = self._stats["avg_latency"]
+        n = self._stats["total_batches"]
+        self._stats["avg_latency"] = (avg * (n - 1) + latency) / n
 
 
 # ==================== 步骤74: 混合精度推理接口 ====================
 
+
 class MixedPrecisionMode(IntEnum):
     """混合精度模式"""
+
     FP32 = 0
     FP16 = 1
     BF16 = 2
@@ -706,6 +722,7 @@ class MixedPrecisionInference:
 
 # ==================== 步骤75: TensorRT接口（可选） ====================
 
+
 class TensorRTInterface:
     """TensorRT集成接口（可选）"""
 
@@ -716,12 +733,14 @@ class TensorRTInterface:
         """检查TensorRT是否可用"""
         try:
             import tensorrt
+
             return True
         except ImportError:
             return False
 
 
 # ==================== 步骤76: 内存映射文件 ====================
+
 
 class MemoryMappedFile:
     """内存映射文件管理
@@ -738,7 +757,7 @@ class MemoryMappedFile:
 
     def open(self) -> None:
         """打开文件并映射到内存"""
-        self._file_obj = open(self._filename, 'rb')
+        self._file_obj = open(self._filename, "rb")
         self._file_obj.seek(0, 2)
         self._size = self._file_obj.tell()
 
@@ -750,7 +769,7 @@ class MemoryMappedFile:
         self._mmap = mmap.mmap(
             self._file_obj.fileno(),
             self._size,
-            access=mmap.ACCESS_READ if not self._writeable else mmap.ACCESS_WRITE
+            access=mmap.ACCESS_READ if not self._writeable else mmap.ACCESS_WRITE,
         )
 
     def read_bytes(self, offset: int, size: int) -> bytes:
@@ -759,7 +778,7 @@ class MemoryMappedFile:
             raise RuntimeError("File not open")
         if offset < 0 or offset + size > self._size:
             raise ValueError("Offset/size out of range")
-        return bytes(self._mmap[offset:offset+size])
+        return bytes(self._mmap[offset : offset + size])
 
     def close(self) -> None:
         """关闭映射和文件"""
@@ -774,7 +793,7 @@ class MemoryMappedFile:
             except Exception:
                 pass
 
-    def __enter__(self) -> 'MemoryMappedFile':
+    def __enter__(self) -> "MemoryMappedFile":
         self.open()
         return self
 
@@ -784,8 +803,10 @@ class MemoryMappedFile:
 
 # ==================== 步骤77: 词典压缩 ====================
 
+
 class CompressionType(IntEnum):
     """压缩算法"""
+
     NONE = 0
     ZLIB = 1
     BZ2 = 2
@@ -823,6 +844,7 @@ class DictionaryCompressor:
 
 # ==================== 步骤78: 结果缓存 ====================
 
+
 class LRUResultCache:
     """结果LRU缓存"""
 
@@ -834,7 +856,7 @@ class LRUResultCache:
         self._misses = 0
 
     def _get_key(self, text: str) -> str:
-        return hashlib.md5(text.encode('utf-8')).hexdigest()
+        return hashlib.md5(text.encode("utf-8")).hexdigest()
 
     def get(self, text: str) -> Optional[Any]:
         """获取缓存结果"""
@@ -871,19 +893,20 @@ class LRUResultCache:
     def get_stats(self) -> Dict[str, int]:
         with self._lock:
             return {
-                'size': len(self._cache),
-                'max_size': self._max_size,
-                'hits': self._hits,
-                'misses': self._misses,
-                'hit_rate': (
+                "size": len(self._cache),
+                "max_size": self._max_size,
+                "hits": self._hits,
+                "misses": self._misses,
+                "hit_rate": (
                     self._hits / (self._hits + self._misses)
                     if (self._hits + self._misses) > 0
                     else 0.0
-                )
+                ),
             }
 
 
 # ==================== 步骤79: 分布式任务调度接口 ====================
+
 
 class DistributedTask:
     """分布式任务表示"""
@@ -893,17 +916,17 @@ class DistributedTask:
         self.func = func
         self.args = args
         self.kwargs = kwargs
-        self.status = 'pending'
+        self.status = "pending"
         self.result = None
 
     def run(self):
-        self.status = 'running'
+        self.status = "running"
         try:
             self.result = self.func(*self.args, **self.kwargs)
-            self.status = 'success'
+            self.status = "success"
         except Exception as e:
             self.result = e
-            self.status = 'failed'
+            self.status = "failed"
 
 
 class SimpleTaskScheduler:
@@ -930,8 +953,10 @@ class SimpleTaskScheduler:
 
 # ==================== 步骤80: 性能监控 ====================
 
+
 class MetricType(IntEnum):
     """指标类型"""
+
     COUNTER = 0
     GAUGE = 1
     HISTOGRAM = 2
@@ -944,8 +969,8 @@ class Metric:
         self.name = name
         self.type = metric_type
         self.value = 0.0
-        self.min = float('inf')
-        self.max = -float('inf')
+        self.min = float("inf")
+        self.max = -float("inf")
         self.sum = 0.0
         self.count = 0
         self._lock = threading.RLock()
@@ -971,14 +996,14 @@ class Metric:
         with self._lock:
             avg = self.sum / self.count if self.count > 0 else 0.0
             return {
-                'name': self.name,
-                'value': self.value,
-                'current': self.value,
-                'min': self.min if self.count > 0 else float('inf'),
-                'max': self.max if self.count > 0 else float('-inf'),
-                'sum': self.sum,
-                'average': avg,
-                'count': self.count
+                "name": self.name,
+                "value": self.value,
+                "current": self.value,
+                "min": self.min if self.count > 0 else float("inf"),
+                "max": self.max if self.count > 0 else float("-inf"),
+                "sum": self.sum,
+                "average": avg,
+                "count": self.count,
             }
 
 
@@ -990,7 +1015,9 @@ class PerformanceMonitor:
         self._lock = threading.RLock()
         self._start_time = time.time()
 
-    def get_metric(self, name: str, metric_type: MetricType = MetricType.GAUGE) -> Metric:
+    def get_metric(
+        self, name: str, metric_type: MetricType = MetricType.GAUGE
+    ) -> Metric:
         """获取或创建指标"""
         with self._lock:
             if name not in self._metrics:
@@ -1010,7 +1037,9 @@ class PerformanceMonitor:
                 finally:
                     elapsed = time.time() - start
                     metric.record(elapsed * 1000)  # ms
+
             return wrapper
+
         return decorator
 
     def get_report(self) -> Dict:
@@ -1018,15 +1047,13 @@ class PerformanceMonitor:
         with self._lock:
             uptime = time.time() - self._start_time
             return {
-                'uptime_seconds': uptime,
-                'metrics': {
-                    name: m.get_stats()
-                    for name, m in self._metrics.items()
-                }
+                "uptime_seconds": uptime,
+                "metrics": {name: m.get_stats() for name, m in self._metrics.items()},
             }
 
 
 # ==================== 快捷函数 ====================
+
 
 class OptimizationSuite:
     """一站式优化套件
@@ -1063,7 +1090,7 @@ class OptimizationSuite:
         name: str,
         factory: Callable,
         resetter: Callable = None,
-        max_size: int = 1000
+        max_size: int = 1000,
     ) -> ObjectPool:
         """注册对象池"""
         pool = ObjectPool(factory, resetter, max_size)
@@ -1073,13 +1100,13 @@ class OptimizationSuite:
     def get_full_report(self) -> Dict:
         """获取完整性能报告"""
         return {
-            'monitor': self._monitor.get_report(),
-            'cache': self._result_cache.get_stats(),
-            'memory_pool': self._memory_pool.get_usage(),
-            'object_pools': {
+            "monitor": self._monitor.get_report(),
+            "cache": self._result_cache.get_stats(),
+            "memory_pool": self._memory_pool.get_usage(),
+            "object_pools": {
                 name: pool.get_stats()._asdict()
                 for name, pool in self._object_pools.items()
-            }
+            },
         }
 
 
@@ -1087,24 +1114,25 @@ class OptimizationSuite:
 
 # 导出类
 __all_core = [
-    'ObjectPool', 'PoolContext',
-    'BatchProcessor',
-    'MemoryPool', 'MemoryBlock',
-    'DelayedGC',
-    'ThreadPoolExecutor',
-    'ParallelTokenizer',
-    'ProcessPoolExecutor',
-    'GPUInterface',
-    'BatchInference',
-    'MixedPrecisionInference',
-    'TensorRTInterface',
-    'MemoryMappedFile',
-    'DictionaryCompressor',
-    'LRUResultCache',
-    'PerformanceMonitor',
-    'OptimizationSuite',
-    'Metric',
-    'DistributedTask',
-    'SimpleTaskScheduler'
+    "ObjectPool",
+    "PoolContext",
+    "BatchProcessor",
+    "MemoryPool",
+    "MemoryBlock",
+    "DelayedGC",
+    "ThreadPoolExecutor",
+    "ParallelTokenizer",
+    "ProcessPoolExecutor",
+    "GPUInterface",
+    "BatchInference",
+    "MixedPrecisionInference",
+    "TensorRTInterface",
+    "MemoryMappedFile",
+    "DictionaryCompressor",
+    "LRUResultCache",
+    "PerformanceMonitor",
+    "OptimizationSuite",
+    "Metric",
+    "DistributedTask",
+    "SimpleTaskScheduler",
 ]
-

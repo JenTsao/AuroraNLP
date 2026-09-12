@@ -1,4 +1,5 @@
 """Hybrid 混合分词测试"""
+
 import pytest
 
 from AuroraNLP.segmentation.hybrid import (
@@ -57,7 +58,7 @@ class TestSegmenterResult:
             confidence=0.9,
             segmenter_type=SegmenterType.STATISTICAL,
             segmenter_name="hmm",
-            metadata={"model": "v1"}
+            metadata={"model": "v1"},
         )
         assert result.words == ["中国", "人"]
         assert result.confidence == 0.9
@@ -67,7 +68,9 @@ class TestSegmenterResult:
 
     def test_segmenter_result_properties(self):
         """分词结果属性（word_count, avg_word_length, single_char_ratio）"""
-        result = SegmenterResult(words=["自然", "语言", "处理", "是", "好", "的", "技术"])
+        result = SegmenterResult(
+            words=["自然", "语言", "处理", "是", "好", "的", "技术"]
+        )
         assert result.word_count == 7
         # 2+2+2+1+1+1+2 = 11, avg = 11/7
         assert result.avg_word_length == pytest.approx(11 / 7, rel=1e-6)
@@ -90,10 +93,10 @@ class TestHybridConfig:
         config = HybridConfig()
         assert config.strategy == HybridStrategy.WEIGHTED
         assert isinstance(config.weights, dict)
-        assert 'dict' in config.weights
-        assert 'hmm' in config.weights
-        assert 'crf' in config.weights
-        assert 'perceptron' in config.weights
+        assert "dict" in config.weights
+        assert "hmm" in config.weights
+        assert "crf" in config.weights
+        assert "perceptron" in config.weights
         assert isinstance(config.cascade_order, list)
         assert config.confidence_threshold == 0.7
         assert config.min_confidence == 0.3
@@ -167,25 +170,25 @@ class TestFusionStrategyFactory:
         """策略工厂"""
         factory = FusionStrategyFactory()
         available = factory.get_available_strategies()
-        assert 'vote' in available
-        assert 'weighted' in available
-        assert 'cascade' in available
-        assert 'adaptive' in available
-        assert 'confidence' in available
+        assert "vote" in available
+        assert "weighted" in available
+        assert "cascade" in available
+        assert "adaptive" in available
+        assert "confidence" in available
 
-        vote_strategy = factory.get_strategy('vote')
+        vote_strategy = factory.get_strategy("vote")
         assert isinstance(vote_strategy, VoteFusionStrategy)
 
-        weighted_strategy = factory.get_strategy('weighted')
+        weighted_strategy = factory.get_strategy("weighted")
         assert isinstance(weighted_strategy, WeightedFusionStrategy)
 
-        cascade_strategy = factory.get_strategy('cascade')
+        cascade_strategy = factory.get_strategy("cascade")
         assert isinstance(cascade_strategy, CascadeFusionStrategy)
 
-        confidence_strategy = factory.get_strategy('confidence')
+        confidence_strategy = factory.get_strategy("confidence")
         assert isinstance(confidence_strategy, ConfidenceFusionStrategy)
 
-        unknown_strategy = factory.get_strategy('unknown')
+        unknown_strategy = factory.get_strategy("unknown")
         assert unknown_strategy is None
 
 
@@ -197,12 +200,12 @@ class TestTextClassifier:
         classifier = TextClassifier()
         features = classifier.extract_features("自然语言处理是人工智能的重要方向")
         assert isinstance(features, dict)
-        assert 'length' in features
-        assert 'chinese_ratio' in features
-        assert 'english_ratio' in features
-        assert 'digit_ratio' in features
-        assert 'punct_ratio' in features
-        assert features['length'] > 0
+        assert "length" in features
+        assert "chinese_ratio" in features
+        assert "english_ratio" in features
+        assert "digit_ratio" in features
+        assert "punct_ratio" in features
+        assert features["length"] > 0
 
 
 class TestStrategySelector:
@@ -211,9 +214,13 @@ class TestStrategySelector:
     def test_strategy_selector_init(self):
         """策略选择器初始化"""
         selector = StrategySelector()
-        features = {'chinese_ratio': 0.8, 'english_ratio': 0.1, 'digit_ratio': 0.0}
+        features = {"chinese_ratio": 0.8, "english_ratio": 0.1, "digit_ratio": 0.0}
         results = [
-            SegmenterResult(words=["自然", "语言", "处理"], segmenter_type=SegmenterType.STATISTICAL, segmenter_name="hmm"),
+            SegmenterResult(
+                words=["自然", "语言", "处理"],
+                segmenter_type=SegmenterType.STATISTICAL,
+                segmenter_name="hmm",
+            ),
         ]
         selected = selector.select(features, results)
         assert isinstance(selected, str)

@@ -1,4 +1,5 @@
 """Trie 树测试"""
+
 import pytest
 
 from AuroraNLP.dictionary.trie import Trie

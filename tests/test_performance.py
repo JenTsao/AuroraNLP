@@ -56,10 +56,7 @@ class TestObjectPool(unittest.TestCase):
 
     def setUp(self):
         self.pool = ObjectPool(
-            factory=list_factory,
-            resetter=list_resetter,
-            max_size=5,
-            initial_size=2
+            factory=list_factory, resetter=list_resetter, max_size=5, initial_size=2
         )
 
     def test_pool_acquire(self):
@@ -155,10 +152,7 @@ class TestMemoryPool(unittest.TestCase):
 
     def setUp(self):
         self.pool = MemoryPool(
-            small_count=10,
-            medium_count=5,
-            large_count=2,
-            xlarge_count=1
+            small_count=10, medium_count=5, large_count=2, xlarge_count=1
         )
 
     def test_memory_block_acquire(self):
@@ -208,6 +202,7 @@ class TestDelayedGC(unittest.TestCase):
 
     def test_gc_free_zone_decorator(self):
         """测试无GC区域装饰器"""
+
         @DelayedGC.run_in_gc_free_zone
         def compute():
             result = 0
@@ -239,12 +234,7 @@ class TestThreadPool(unittest.TestCase):
         """测试并行分词器"""
         tokenizer = ParallelTokenizer(simple_tokenizer, num_workers=2)
 
-        texts = [
-            "hello world",
-            "foo bar baz",
-            "a b c d",
-            "one two three four"
-        ]
+        texts = ["hello world", "foo bar baz", "a b c d", "one two three four"]
 
         results = tokenizer.tokenize_batch(texts)
         expected = [text.split() for text in texts]
@@ -298,13 +288,12 @@ class TestBatchInference(unittest.TestCase):
 
     def setUp(self):
         self.inference = BatchInference(
-            initial_batch_size=10,
-            max_batch_size=50,
-            min_batch_size=1
+            initial_batch_size=10, max_batch_size=50, min_batch_size=1
         )
 
     def test_batch_inference(self):
         """测试批量推理"""
+
         # 创建简单的模型和预测函数
         class DummyModel:
             pass
@@ -491,6 +480,7 @@ class TestPerformanceMonitor(unittest.TestCase):
 
     def test_timer_decorator(self):
         """测试计时器装饰器"""
+
         @self.monitor.time_it("test_function")
         def compute():
             time.sleep(0.1)
@@ -525,10 +515,7 @@ class TestOptimizationSuite(unittest.TestCase):
 
         # 测试注册对象池
         pool = self.suite.register_object_pool(
-            "test_pool",
-            factory=lambda: [],
-            resetter=lambda x: x.clear(),
-            max_size=10
+            "test_pool", factory=lambda: [], resetter=lambda x: x.clear(), max_size=10
         )
         self.assertIsNotNone(pool)
 

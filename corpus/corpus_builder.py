@@ -24,7 +24,7 @@ class CorpusBuilder:
             "people_daily": "人民日报语料",
             "ctb": "CTB语料",
             "msra": "MSRA语料",
-            "custom": "自有语料"
+            "custom": "自有语料",
         }
 
     def load_corpus(self, corpus_type: str, file_path: str) -> List[str]:
@@ -41,7 +41,7 @@ class CorpusBuilder:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"语料文件不存在: {file_path}")
 
-        with open(file_path, encoding='utf-8') as f:
+        with open(file_path, encoding="utf-8") as f:
             lines = [line.strip() for line in f if line.strip()]
 
         return lines
@@ -84,14 +84,14 @@ class CorpusBuilder:
     def _process_people_daily(self, line: str) -> str:
         """处理人民日报语料"""
         # 移除标记和注释
-        line = re.sub(r'\[.*?\]', '', line)
-        line = re.sub(r'\(.*?\)', '', line)
+        line = re.sub(r"\[.*?\]", "", line)
+        line = re.sub(r"\(.*?\)", "", line)
         return line
 
     def _process_ctb(self, line: str) -> str:
         """处理CTB语料"""
         # 移除XML标记
-        line = re.sub(r'<.*?>', '', line)
+        line = re.sub(r"<.*?>", "", line)
         return line
 
     def _process_msra(self, line: str) -> str:
@@ -99,7 +99,9 @@ class CorpusBuilder:
         # MSRA语料通常是分词标注格式，保留原始格式
         return line
 
-    def convert_to_standard_format(self, lines: List[str], format_type: str = "segmented") -> List[str]:
+    def convert_to_standard_format(
+        self, lines: List[str], format_type: str = "segmented"
+    ) -> List[str]:
         """
         转换为标准格式
 
@@ -127,7 +129,7 @@ class CorpusBuilder:
             elif format_type == "plain":
                 # 转换为纯文本
                 # 移除分词标记
-                plain_line = re.sub(r'\s+', '', line)
+                plain_line = re.sub(r"\s+", "", line)
                 converted_lines.append(plain_line)
 
         return converted_lines
@@ -152,7 +154,9 @@ class CorpusBuilder:
         Returns:
             构建完成的语料库文件路径
         """
-        output_path = corpus_config.get("output_path", os.path.join(self.data_dir, "train_corpus.txt"))
+        output_path = corpus_config.get(
+            "output_path", os.path.join(self.data_dir, "train_corpus.txt")
+        )
         corpora = corpus_config.get("corpora", [])
         target_format = corpus_config.get("format", "segmented")
 
@@ -171,25 +175,33 @@ class CorpusBuilder:
                 # 预处理
                 preprocessed_lines = self.preprocess_corpus(lines, corpus_type)
                 # 转换格式
-                converted_lines = self.convert_to_standard_format(preprocessed_lines, target_format)
+                converted_lines = self.convert_to_standard_format(
+                    preprocessed_lines, target_format
+                )
                 # 添加到总语料
                 all_lines.extend(converted_lines)
 
-                print(f"成功加载 {self.corpus_types.get(corpus_type, corpus_type)}: {len(converted_lines)} 条")
+                print(
+                    f"成功加载 {self.corpus_types.get(corpus_type, corpus_type)}: {len(converted_lines)} 条"
+                )
             except Exception as e:
-                print(f"加载 {self.corpus_types.get(corpus_type, corpus_type)} 失败: {e}")
+                print(
+                    f"加载 {self.corpus_types.get(corpus_type, corpus_type)} 失败: {e}"
+                )
 
         # 保存构建的语料库
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write('\n'.join(all_lines))
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write("\n".join(all_lines))
 
         print(f"语料库构建完成，保存到: {output_path}")
         print(f"总语料条数: {len(all_lines)}")
 
         return output_path
 
-    def split_corpus(self, corpus_path: str, train_ratio: float = 0.8, val_ratio: float = 0.1) -> Tuple[str, str, str]:
+    def split_corpus(
+        self, corpus_path: str, train_ratio: float = 0.8, val_ratio: float = 0.1
+    ) -> Tuple[str, str, str]:
         """
         分割语料库为训练集、验证集和测试集
 
@@ -204,7 +216,7 @@ class CorpusBuilder:
         if not os.path.exists(corpus_path):
             raise FileNotFoundError(f"语料库文件不存在: {corpus_path}")
 
-        with open(corpus_path, encoding='utf-8') as f:
+        with open(corpus_path, encoding="utf-8") as f:
             lines = [line.strip() for line in f if line.strip()]
 
         total = len(lines)
@@ -212,8 +224,8 @@ class CorpusBuilder:
         val_size = int(total * val_ratio)
 
         train_lines = lines[:train_size]
-        val_lines = lines[train_size:train_size + val_size]
-        test_lines = lines[train_size + val_size:]
+        val_lines = lines[train_size : train_size + val_size]
+        test_lines = lines[train_size + val_size :]
 
         # 生成输出路径
         base_dir = os.path.dirname(corpus_path)
@@ -224,9 +236,13 @@ class CorpusBuilder:
         test_path = os.path.join(base_dir, f"{base_name}_test.txt")
 
         # 保存分割后的文件
-        for path, data in [(train_path, train_lines), (val_path, val_lines), (test_path, test_lines)]:
-            with open(path, 'w', encoding='utf-8') as f:
-                f.write('\n'.join(data))
+        for path, data in [
+            (train_path, train_lines),
+            (val_path, val_lines),
+            (test_path, test_lines),
+        ]:
+            with open(path, "w", encoding="utf-8") as f:
+                f.write("\n".join(data))
             print(f"保存 {os.path.basename(path)}: {len(data)} 条")
 
         return train_path, val_path, test_path
@@ -244,7 +260,7 @@ class CorpusBuilder:
         if not os.path.exists(corpus_path):
             raise FileNotFoundError(f"语料库文件不存在: {corpus_path}")
 
-        with open(corpus_path, encoding='utf-8') as f:
+        with open(corpus_path, encoding="utf-8") as f:
             lines = [line.strip() for line in f if line.strip()]
 
         total_lines = len(lines)
@@ -256,7 +272,7 @@ class CorpusBuilder:
             tokens = line.split()
             total_tokens += len(tokens)
             # 计算字符数（去除空格）
-            total_chars += len(re.sub(r'\s+', '', line))
+            total_chars += len(re.sub(r"\s+", "", line))
 
         avg_tokens_per_line = total_tokens / total_lines if total_lines > 0 else 0
         avg_chars_per_line = total_chars / total_lines if total_lines > 0 else 0
@@ -266,7 +282,7 @@ class CorpusBuilder:
             "total_tokens": total_tokens,
             "total_chars": total_chars,
             "avg_tokens_per_line": round(avg_tokens_per_line, 2),
-            "avg_chars_per_line": round(avg_chars_per_line, 2)
+            "avg_chars_per_line": round(avg_chars_per_line, 2),
         }
 
 
@@ -292,7 +308,7 @@ class CorpusManager:
     def _load_registry(self):
         """加载语料库注册表"""
         if os.path.exists(self.corpus_registry):
-            with open(self.corpus_registry, encoding='utf-8') as f:
+            with open(self.corpus_registry, encoding="utf-8") as f:
                 self.registry = json.load(f)
         else:
             self.registry = {"corpora": []}
@@ -300,10 +316,12 @@ class CorpusManager:
     def _save_registry(self):
         """保存语料库注册表"""
         os.makedirs(os.path.dirname(self.corpus_registry), exist_ok=True)
-        with open(self.corpus_registry, 'w', encoding='utf-8') as f:
+        with open(self.corpus_registry, "w", encoding="utf-8") as f:
             json.dump(self.registry, f, ensure_ascii=False, indent=2)
 
-    def register_corpus(self, name: str, corpus_type: str, path: str, description: str = ""):
+    def register_corpus(
+        self, name: str, corpus_type: str, path: str, description: str = ""
+    ):
         """
         注册语料库
 
@@ -318,11 +336,13 @@ class CorpusManager:
             "type": corpus_type,
             "path": path,
             "description": description,
-            "registered_at": datetime.now().isoformat()
+            "registered_at": datetime.now().isoformat(),
         }
 
         # 检查是否已存在
-        existing = next((c for c in self.registry["corpora"] if c["name"] == name), None)
+        existing = next(
+            (c for c in self.registry["corpora"] if c["name"] == name), None
+        )
         if existing:
             existing.update(corpus_info)
         else:
@@ -340,7 +360,9 @@ class CorpusManager:
         """
         return self.registry["corpora"]
 
-    def build_combined_corpus(self, name: str, corpus_names: List[str], output_format: str = "segmented") -> str:
+    def build_combined_corpus(
+        self, name: str, corpus_names: List[str], output_format: str = "segmented"
+    ) -> str:
         """
         构建组合语料库
 
@@ -355,7 +377,9 @@ class CorpusManager:
         corpora = []
 
         for corpus_name in corpus_names:
-            corpus = next((c for c in self.registry["corpora"] if c["name"] == corpus_name), None)
+            corpus = next(
+                (c for c in self.registry["corpora"] if c["name"] == corpus_name), None
+            )
             if corpus:
                 corpora.append({"type": corpus["type"], "path": corpus["path"]})
             else:
@@ -369,7 +393,7 @@ class CorpusManager:
         config = {
             "output_path": output_path,
             "corpora": corpora,
-            "format": output_format
+            "format": output_format,
         }
 
         result_path = self.builder.build_corpus(config)
@@ -379,7 +403,7 @@ class CorpusManager:
             name=name,
             corpus_type="combined",
             path=result_path,
-            description=f"组合语料库: {', '.join(corpus_names)}"
+            description=f"组合语料库: {', '.join(corpus_names)}",
         )
 
         return result_path
@@ -403,6 +427,8 @@ class CorpusManager:
         Args:
             name: 语料库名称
         """
-        self.registry["corpora"] = [c for c in self.registry["corpora"] if c["name"] != name]
+        self.registry["corpora"] = [
+            c for c in self.registry["corpora"] if c["name"] != name
+        ]
         self._save_registry()
         print(f"语料库 {name} 已移除")

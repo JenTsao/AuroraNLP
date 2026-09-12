@@ -12,7 +12,9 @@ class PerceptronFeatureTemplate:
         self.feature_names: List[str] = []
 
     def add_unigram_feature(self, name: str, position: int):
-        def feature_func(chars: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            chars: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             idx = pos + position
             if 0 <= idx < len(chars):
                 char = chars[idx]
@@ -23,7 +25,9 @@ class PerceptronFeatureTemplate:
         self.feature_names.append(f"unigram_{name}_{position}")
 
     def add_bigram_feature(self, name: str, position: int):
-        def feature_func(chars: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            chars: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             idx = pos + position
             if 0 <= idx < len(chars) - 1:
                 char1 = chars[idx]
@@ -35,7 +39,9 @@ class PerceptronFeatureTemplate:
         self.feature_names.append(f"bigram_{name}_{position}")
 
     def add_transition_feature(self):
-        def feature_func(chars: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            chars: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             if prev_tag:
                 return f"T:{prev_tag}->{curr_tag}"
             return None
@@ -44,7 +50,9 @@ class PerceptronFeatureTemplate:
         self.feature_names.append("transition")
 
     def add_start_feature(self):
-        def feature_func(chars: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            chars: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             if pos == 0:
                 return f"START:{curr_tag}"
             return None
@@ -53,7 +61,9 @@ class PerceptronFeatureTemplate:
         self.feature_names.append("start")
 
     def add_end_feature(self):
-        def feature_func(chars: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            chars: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             if pos == len(chars) - 1:
                 return f"END:{curr_tag}"
             return None
@@ -64,18 +74,20 @@ class PerceptronFeatureTemplate:
     def add_char_type_feature(self, position: int):
         def get_char_type(char: str) -> str:
             if char.isdigit():
-                return 'D'
+                return "D"
             elif char.isalpha():
                 if char.isupper():
-                    return 'U'
+                    return "U"
                 else:
-                    return 'L'
-            elif '\u4e00' <= char <= '\u9fff':
-                return 'C'
+                    return "L"
+            elif "\u4e00" <= char <= "\u9fff":
+                return "C"
             else:
-                return 'O'
+                return "O"
 
-        def feature_func(chars: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            chars: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             idx = pos + position
             if 0 <= idx < len(chars):
                 char_type = get_char_type(chars[idx])
@@ -86,7 +98,9 @@ class PerceptronFeatureTemplate:
         self.feature_names.append(f"char_type_{position}")
 
     def add_length_context_feature(self, window: int):
-        def feature_func(chars: List[str], pos: int, prev_tag: str, curr_tag: str) -> Optional[str]:
+        def feature_func(
+            chars: List[str], pos: int, prev_tag: str, curr_tag: str
+        ) -> Optional[str]:
             start = max(0, pos - window)
             end = min(len(chars), pos + window + 1)
             context_len = end - start
@@ -96,11 +110,7 @@ class PerceptronFeatureTemplate:
         self.feature_names.append(f"length_context_{window}")
 
     def extract_features(
-        self,
-        chars: List[str],
-        pos: int,
-        prev_tag: str,
-        curr_tag: str
+        self, chars: List[str], pos: int, prev_tag: str, curr_tag: str
     ) -> List[str]:
         features = []
         for feature_func in self.feature_functions:
@@ -143,11 +153,11 @@ class StructuredPerceptron:
     def _get_state_sequence(self, word: str) -> List[str]:
         length = len(word)
         if length == 1:
-            return ['S']
+            return ["S"]
         elif length == 2:
-            return ['B', 'E']
+            return ["B", "E"]
         else:
-            return ['B'] + ['M'] * (length - 2) + ['E']
+            return ["B"] + ["M"] * (length - 2) + ["E"]
 
     def _tokens_to_chars(self, tokens: List[str]) -> Tuple[List[str], List[str]]:
         chars = []
@@ -177,20 +187,22 @@ class StructuredPerceptron:
         backpointers = [{} for _ in range(length)]
 
         for tag in self.tags:
-            features = self.feature_template.extract_features(chars, 0, '', tag)
+            features = self.feature_template.extract_features(chars, 0, "", tag)
             viterbi_scores[0][tag] = self._compute_score(features)
             backpointers[0][tag] = None
 
         for pos in range(1, length):
             for curr_tag in self.tags:
-                best_score = float('-inf')
+                best_score = float("-inf")
                 best_prev_tag = None
 
                 for prev_tag in self.tags:
                     features = self.feature_template.extract_features(
                         chars, pos, prev_tag, curr_tag
                     )
-                    score = viterbi_scores[pos - 1][prev_tag] + self._compute_score(features)
+                    score = viterbi_scores[pos - 1][prev_tag] + self._compute_score(
+                        features
+                    )
 
                     if score > best_score:
                         best_score = score
@@ -199,7 +211,7 @@ class StructuredPerceptron:
                 viterbi_scores[pos][curr_tag] = best_score
                 backpointers[pos][curr_tag] = best_prev_tag
 
-        best_final_score = float('-inf')
+        best_final_score = float("-inf")
         best_final_tag = None
 
         for tag in self.tags:
@@ -208,7 +220,7 @@ class StructuredPerceptron:
                 best_final_tag = tag
 
         if best_final_tag is None:
-            return ['S'] * length
+            return ["S"] * length
 
         path = [best_final_tag]
         for pos in range(length - 1, 0, -1):
@@ -218,18 +230,15 @@ class StructuredPerceptron:
         return path
 
     def _update_weights(
-        self,
-        chars: List[str],
-        gold_tags: List[str],
-        pred_tags: List[str]
+        self, chars: List[str], gold_tags: List[str], pred_tags: List[str]
     ):
         for pos in range(len(chars)):
             gold_tag = gold_tags[pos]
             pred_tag = pred_tags[pos]
 
             if gold_tag != pred_tag:
-                prev_gold = gold_tags[pos - 1] if pos > 0 else ''
-                prev_pred = pred_tags[pos - 1] if pos > 0 else ''
+                prev_gold = gold_tags[pos - 1] if pos > 0 else ""
+                prev_pred = pred_tags[pos - 1] if pos > 0 else ""
 
                 gold_features = self.feature_template.extract_features(
                     chars, pos, prev_gold, gold_tag
@@ -240,11 +249,15 @@ class StructuredPerceptron:
 
                 for feature in gold_features:
                     self.weights[feature] += self._learning_rate
-                    self._accumulated_weights[feature] += self._num_updates * self._learning_rate
+                    self._accumulated_weights[feature] += (
+                        self._num_updates * self._learning_rate
+                    )
 
                 for feature in pred_features:
                     self.weights[feature] -= self._learning_rate
-                    self._accumulated_weights[feature] -= self._num_updates * self._learning_rate
+                    self._accumulated_weights[feature] -= (
+                        self._num_updates * self._learning_rate
+                    )
 
                 self._num_updates += 1
 
@@ -253,7 +266,9 @@ class StructuredPerceptron:
             return
 
         for feature in self.weights:
-            self.weights[feature] -= self._accumulated_weights[feature] / self._num_updates
+            self.weights[feature] -= (
+                self._accumulated_weights[feature] / self._num_updates
+            )
 
     def train(
         self,
@@ -261,12 +276,12 @@ class StructuredPerceptron:
         learning_rate: float = 1.0,
         max_iter: int = 10,
         averaged: bool = True,
-        verbose: bool = True
+        verbose: bool = True,
     ):
         if not corpus:
             raise ValueError("Training corpus cannot be empty")
 
-        self.tags = ['B', 'M', 'E', 'S']
+        self.tags = ["B", "M", "E", "S"]
 
         if not self.feature_template.feature_functions:
             self._setup_default_features()
@@ -302,9 +317,7 @@ class StructuredPerceptron:
         self._trained = True
 
     def train_online(
-        self,
-        tokens: List[str],
-        update_weights: bool = True
+        self, tokens: List[str], update_weights: bool = True
     ) -> Tuple[bool, float]:
         if not tokens:
             return True, 1.0
@@ -329,10 +342,10 @@ class StructuredPerceptron:
         self,
         corpus: List[List[str]],
         learning_rate: Optional[float] = None,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         if not self.tags:
-            self.tags = ['B', 'M', 'E', 'S']
+            self.tags = ["B", "M", "E", "S"]
 
         if not self.feature_template.feature_functions:
             self._setup_default_features()
@@ -353,7 +366,9 @@ class StructuredPerceptron:
             total += 1
 
         if verbose:
-            print(f"Partial fit completed. Accuracy: {correct / total if total > 0 else 0:.4f}")
+            print(
+                f"Partial fit completed. Accuracy: {correct / total if total > 0 else 0:.4f}"
+            )
 
         self._trained = True
 
@@ -362,37 +377,39 @@ class StructuredPerceptron:
 
     def save_model(self, filepath: str):
         if not self._trained:
-            raise RuntimeError("Model has not been trained. Call train() first before saving.")
+            raise RuntimeError(
+                "Model has not been trained. Call train() first before saving."
+            )
 
         model_data = {
-            'tags': self.tags,
-            'weights': dict(self.weights),
-            'feature_names': self.feature_template.get_feature_names(),
-            'learning_rate': self._learning_rate,
-            'max_iter': self._max_iter,
-            'num_updates': self._num_updates,
-            'averaged': self._averaged,
-            'trained': self._trained
+            "tags": self.tags,
+            "weights": dict(self.weights),
+            "feature_names": self.feature_template.get_feature_names(),
+            "learning_rate": self._learning_rate,
+            "max_iter": self._max_iter,
+            "num_updates": self._num_updates,
+            "averaged": self._averaged,
+            "trained": self._trained,
         }
 
         dir_path = os.path.dirname(filepath)
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
 
-        with open(filepath, 'wb') as f:
+        with open(filepath, "wb") as f:
             pickle.dump(model_data, f)
 
     def load_model(self, filepath: str):
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             model_data = pickle.load(f)
 
-        self.tags = model_data['tags']
-        self.weights = defaultdict(float, model_data['weights'])
-        self._learning_rate = model_data['learning_rate']
-        self._max_iter = model_data['max_iter']
-        self._num_updates = model_data.get('num_updates', 0)
-        self._averaged = model_data.get('averaged', True)
-        self._trained = model_data['trained']
+        self.tags = model_data["tags"]
+        self.weights = defaultdict(float, model_data["weights"])
+        self._learning_rate = model_data["learning_rate"]
+        self._max_iter = model_data["max_iter"]
+        self._num_updates = model_data.get("num_updates", 0)
+        self._averaged = model_data.get("averaged", True)
+        self._trained = model_data["trained"]
 
         if not self.feature_template.feature_functions:
             self._setup_default_features()
@@ -402,26 +419,26 @@ class StructuredPerceptron:
 
     def get_model_info(self) -> Dict[str, Any]:
         if not self._trained:
-            return {'trained': False}
+            return {"trained": False}
 
         return {
-            'trained': True,
-            'num_tags': len(self.tags),
-            'tags': self.tags,
-            'num_features': len(self.weights),
-            'num_feature_templates': len(self.feature_template.feature_functions),
-            'learning_rate': self._learning_rate,
-            'max_iter': self._max_iter,
-            'num_updates': self._num_updates,
-            'averaged': self._averaged
+            "trained": True,
+            "num_tags": len(self.tags),
+            "tags": self.tags,
+            "num_features": len(self.weights),
+            "num_feature_templates": len(self.feature_template.feature_functions),
+            "learning_rate": self._learning_rate,
+            "max_iter": self._max_iter,
+            "num_updates": self._num_updates,
+            "averaged": self._averaged,
         }
 
 
 class PerceptronSegmentor:
-    STATE_B = 'B'
-    STATE_M = 'M'
-    STATE_E = 'E'
-    STATE_S = 'S'
+    STATE_B = "B"
+    STATE_M = "M"
+    STATE_E = "E"
+    STATE_S = "S"
 
     STATES = [STATE_B, STATE_M, STATE_E, STATE_S]
 
@@ -457,18 +474,20 @@ class PerceptronSegmentor:
         learning_rate: float = 1.0,
         max_iter: int = 10,
         averaged: bool = True,
-        verbose: bool = True
+        verbose: bool = True,
     ):
         self.model.train(
             corpus,
             learning_rate=learning_rate,
             max_iter=max_iter,
             averaged=averaged,
-            verbose=verbose
+            verbose=verbose,
         )
         self._trained = True
 
-    def train_online(self, tokens: List[str], update_weights: bool = True) -> Tuple[bool, float]:
+    def train_online(
+        self, tokens: List[str], update_weights: bool = True
+    ) -> Tuple[bool, float]:
         is_correct, accuracy = self.model.train_online(tokens, update_weights)
         if update_weights:
             self._trained = True
@@ -478,7 +497,7 @@ class PerceptronSegmentor:
         self,
         corpus: List[List[str]],
         learning_rate: Optional[float] = None,
-        verbose: bool = False
+        verbose: bool = False,
     ):
         self.model.partial_fit(corpus, learning_rate, verbose)
         self._trained = True
@@ -504,12 +523,16 @@ class PerceptronSegmentor:
                 words.append(text[i])
                 word_start = i + 1
             elif state == self.STATE_E:
-                words.append(text[word_start:i + 1])
+                words.append(text[word_start : i + 1])
                 word_start = i + 1
             elif state == self.STATE_B:
                 word_start = i
 
-        if word_start < len(text) and states and states[-1] not in (self.STATE_E, self.STATE_S):
+        if (
+            word_start < len(text)
+            and states
+            and states[-1] not in (self.STATE_E, self.STATE_S)
+        ):
             words.append(text[word_start:])
 
         return words
@@ -525,7 +548,9 @@ class PerceptronSegmentor:
 
     def save_model(self, filepath: str):
         if not self._trained:
-            raise RuntimeError("Model has not been trained. Call train() first before saving.")
+            raise RuntimeError(
+                "Model has not been trained. Call train() first before saving."
+            )
         self.model.save_model(filepath)
 
     def load_model(self, filepath: str):
@@ -539,7 +564,9 @@ class PerceptronSegmentor:
         return self.model.get_model_info()
 
 
-def train_from_file(model: PerceptronSegmentor, filepath: str, encoding: str = 'utf-8') -> None:
+def train_from_file(
+    model: PerceptronSegmentor, filepath: str, encoding: str = "utf-8"
+) -> None:
     corpus = []
 
     with open(filepath, encoding=encoding) as f:
@@ -555,4 +582,9 @@ def train_from_file(model: PerceptronSegmentor, filepath: str, encoding: str = '
     model.train(corpus)
 
 
-__all__ = ['PerceptronFeatureTemplate', 'PerceptronSegmentor', 'StructuredPerceptron', 'train_from_file']
+__all__ = [
+    "PerceptronFeatureTemplate",
+    "PerceptronSegmentor",
+    "StructuredPerceptron",
+    "train_from_file",
+]

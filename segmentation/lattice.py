@@ -24,7 +24,11 @@ class LatticeEdge:
     def __eq__(self, other):
         if not isinstance(other, LatticeEdge):
             return False
-        return self.start == other.start and self.end == other.end and self.word == other.word
+        return (
+            self.start == other.start
+            and self.end == other.end
+            and self.word == other.word
+        )
 
     def __lt__(self, other):
         return self.weight < other.weight
@@ -61,20 +65,22 @@ class Lattice:
         for i in range(self.length + 1):
             self.nodes[i] = LatticeNode(position=i)
 
-    def add_edge(self, word: str, start: int, end: int,
-                 pos_tag: Optional[str] = None,
-                 weight: float = 0.0,
-                 freq: int = 0) -> LatticeEdge:
+    def add_edge(
+        self,
+        word: str,
+        start: int,
+        end: int,
+        pos_tag: Optional[str] = None,
+        weight: float = 0.0,
+        freq: int = 0,
+    ) -> LatticeEdge:
         if start < 0 or end > self.length or start >= end:
-            raise ValueError(f"Invalid edge range: [{start}, {end}) for text length {self.length}")
+            raise ValueError(
+                f"Invalid edge range: [{start}, {end}) for text length {self.length}"
+            )
 
         edge = LatticeEdge(
-            word=word,
-            start=start,
-            end=end,
-            pos_tag=pos_tag,
-            weight=weight,
-            freq=freq
+            word=word, start=start, end=end, pos_tag=pos_tag, weight=weight, freq=freq
         )
 
         self.edges.append(edge)
@@ -99,8 +105,13 @@ class Lattice:
         self._dfs_paths(0, [], paths, max_paths)
         return paths
 
-    def _dfs_paths(self, current_pos: int, current_path: List[LatticeEdge],
-                   all_paths: List[List[LatticeEdge]], max_paths: int) -> None:
+    def _dfs_paths(
+        self,
+        current_pos: int,
+        current_path: List[LatticeEdge],
+        all_paths: List[List[LatticeEdge]],
+        max_paths: int,
+    ) -> None:
         if len(all_paths) >= max_paths:
             return
 
@@ -121,7 +132,9 @@ class Lattice:
     def get_path_words(self, path: List[LatticeEdge]) -> List[str]:
         return [edge.word for edge in path]
 
-    def get_path_with_pos(self, path: List[LatticeEdge]) -> List[Tuple[str, Optional[str]]]:
+    def get_path_with_pos(
+        self, path: List[LatticeEdge]
+    ) -> List[Tuple[str, Optional[str]]]:
         return [(edge.word, edge.pos_tag) for edge in path]
 
     def has_path(self) -> bool:
@@ -149,19 +162,21 @@ class Lattice:
         max_branching = 0
 
         if self.length > 0:
-            branching_factors = [len(self.get_outgoing_edges(i)) for i in range(self.length)]
+            branching_factors = [
+                len(self.get_outgoing_edges(i)) for i in range(self.length)
+            ]
             non_zero = [b for b in branching_factors if b > 0]
             avg_branching = sum(non_zero) / len(non_zero) if non_zero else 0.0
             max_branching = max(branching_factors) if branching_factors else 0
 
         return {
-            'text_length': self.length,
-            'total_edges': total_edges,
-            'total_nodes': len(self.nodes),
-            'avg_branching_factor': avg_branching,
-            'max_branching_factor': max_branching,
-            'has_path': self.has_path(),
-            'is_fully_connected': self.is_fully_connected()
+            "text_length": self.length,
+            "total_edges": total_edges,
+            "total_nodes": len(self.nodes),
+            "avg_branching_factor": avg_branching,
+            "max_branching_factor": max_branching,
+            "has_path": self.has_path(),
+            "is_fully_connected": self.is_fully_connected(),
         }
 
     def visualize(self) -> str:
@@ -174,7 +189,9 @@ class Lattice:
                 if node.outgoing_edges:
                     lines.append("  Outgoing:")
                     for edge in node.outgoing_edges:
-                        lines.append(f"    -> [{edge.end}] '{edge.word}' (weight={edge.weight:.4f})")
+                        lines.append(
+                            f"    -> [{edge.end}] '{edge.word}' (weight={edge.weight:.4f})"
+                        )
                 if node.incoming_edges:
                     lines.append("  Incoming:")
                     for edge in node.incoming_edges:
@@ -184,7 +201,7 @@ class Lattice:
 
 
 class LatticeBuilder:
-    def __init__(self, dictionary: 'Dictionary', max_word_len: int = 15):
+    def __init__(self, dictionary: "Dictionary", max_word_len: int = 15):
         self.dictionary = dictionary
         self.max_word_len = max_word_len
 
@@ -196,7 +213,7 @@ class LatticeBuilder:
 
             found_words = []
             for length in range(1, max_len + 1):
-                word = text[start:start + length]
+                word = text[start : start + length]
                 if self.dictionary.search_in_dict(word):
                     _, pos_tag = self.dictionary.search_with_pos(word)
                     found_words.append((word, length, pos_tag))
@@ -205,12 +222,13 @@ class LatticeBuilder:
                 lattice.add_edge(word, start, start + length, pos_tag=pos_tag)
 
             if not found_words and include_unknown:
-                lattice.add_edge(text[start], start, start + 1, pos_tag='x')
+                lattice.add_edge(text[start], start, start + 1, pos_tag="x")
 
         return lattice
 
-    def build_with_freq(self, text: str, word_freq: Dict[str, int],
-                        include_unknown: bool = True) -> Lattice:
+    def build_with_freq(
+        self, text: str, word_freq: Dict[str, int], include_unknown: bool = True
+    ) -> Lattice:
         lattice = Lattice(text)
 
         for start in range(len(text)):
@@ -218,17 +236,19 @@ class LatticeBuilder:
 
             found_words = []
             for length in range(1, max_len + 1):
-                word = text[start:start + length]
+                word = text[start : start + length]
                 if self.dictionary.search_in_dict(word):
                     _, pos_tag = self.dictionary.search_with_pos(word)
                     freq = word_freq.get(word, 0)
                     found_words.append((word, length, pos_tag, freq))
 
             for word, length, pos_tag, freq in found_words:
-                lattice.add_edge(word, start, start + length, pos_tag=pos_tag, freq=freq)
+                lattice.add_edge(
+                    word, start, start + length, pos_tag=pos_tag, freq=freq
+                )
 
             if not found_words and include_unknown:
-                lattice.add_edge(text[start], start, start + 1, pos_tag='x')
+                lattice.add_edge(text[start], start, start + 1, pos_tag="x")
 
         return lattice
 
@@ -253,32 +273,34 @@ class PathScorer:
         return sum(edge.weight for edge in path)
 
     @staticmethod
-    def score_by_ngram(path: List[LatticeEdge], ngram_model: 'NGramModel') -> float:
+    def score_by_ngram(path: List[LatticeEdge], ngram_model: "NGramModel") -> float:
         words = [edge.word for edge in path]
         prob = ngram_model.sentence_probability(words)
-        return prob if prob > float('-inf') else -1e10
+        return prob if prob > float("-inf") else -1e10
 
 
 class LatticeSegmentor:
-    def __init__(self, dictionary: 'Dictionary', max_word_len: int = 15):
+    def __init__(self, dictionary: "Dictionary", max_word_len: int = 15):
         self.dictionary = dictionary
         self.max_word_len = max_word_len
         self.builder = LatticeBuilder(dictionary, max_word_len)
         self.ngram_model: Optional[NGramModel] = None
         self.word_freq: Dict[str, int] = {}
-        self._scoring_method = 'shortest'
+        self._scoring_method = "shortest"
 
-    def set_ngram_model(self, model: 'NGramModel') -> None:
+    def set_ngram_model(self, model: "NGramModel") -> None:
         self.ngram_model = model
-        self._scoring_method = 'ngram'
+        self._scoring_method = "ngram"
 
     def set_word_frequency(self, freq_dict: Dict[str, int]) -> None:
         self.word_freq = freq_dict
 
     def set_scoring_method(self, method: str) -> None:
-        valid_methods = ['shortest', 'longest_word', 'frequency', 'weight', 'ngram']
+        valid_methods = ["shortest", "longest_word", "frequency", "weight", "ngram"]
         if method not in valid_methods:
-            raise ValueError(f"Invalid scoring method: {method}. Valid methods: {valid_methods}")
+            raise ValueError(
+                f"Invalid scoring method: {method}. Valid methods: {valid_methods}"
+            )
         self._scoring_method = method
 
     def get_scoring_method(self) -> str:
@@ -290,7 +312,7 @@ class LatticeSegmentor:
         return self.builder.build(text)
 
     def shortest_path(self, lattice: Lattice) -> List[LatticeEdge]:
-        dist = {i: float('inf') for i in range(lattice.length + 1)}
+        dist = {i: float("inf") for i in range(lattice.length + 1)}
         dist[0] = 0
         prev: Dict[int, LatticeEdge] = {}
 
@@ -324,23 +346,22 @@ class LatticeSegmentor:
 
         if not path and lattice.length > 0:
             for i in range(lattice.length):
-                path.append(LatticeEdge(
-                    word=lattice.text[i],
-                    start=i,
-                    end=i + 1,
-                    pos_tag='x'
-                ))
+                path.append(
+                    LatticeEdge(word=lattice.text[i], start=i, end=i + 1, pos_tag="x")
+                )
 
         path.reverse()
         return path
 
-    def best_path_dijkstra(self, lattice: Lattice,
-                           weight_func=None) -> List[LatticeEdge]:
+    def best_path_dijkstra(
+        self, lattice: Lattice, weight_func=None
+    ) -> List[LatticeEdge]:
         if weight_func is None:
+
             def weight_func(e):
                 return 1.0
 
-        dist = {i: float('inf') for i in range(lattice.length + 1)}
+        dist = {i: float("inf") for i in range(lattice.length + 1)}
         dist[0] = 0
         prev: Dict[int, LatticeEdge] = {}
 
@@ -375,12 +396,9 @@ class LatticeSegmentor:
 
         if not path and lattice.length > 0:
             for i in range(lattice.length):
-                path.append(LatticeEdge(
-                    word=lattice.text[i],
-                    start=i,
-                    end=i + 1,
-                    pos_tag='x'
-                ))
+                path.append(
+                    LatticeEdge(word=lattice.text[i], start=i, end=i + 1, pos_tag="x")
+                )
 
         path.reverse()
         return path
@@ -391,17 +409,17 @@ class LatticeSegmentor:
 
         ngram = self.ngram_model
 
-        best_score = {i: float('-inf') for i in range(lattice.length + 1)}
+        best_score = {i: float("-inf") for i in range(lattice.length + 1)}
         best_score[0] = 0.0
         prev: Dict[int, Tuple[LatticeEdge, List[str]]] = {}
         best_path_words = {i: [] for i in range(lattice.length + 1)}
 
         for pos in range(lattice.length + 1):
-            if best_score[pos] == float('-inf') and pos > 0:
+            if best_score[pos] == float("-inf") and pos > 0:
                 continue
 
             for edge in lattice.get_outgoing_edges(pos):
-                context = best_path_words[pos][-(ngram.n - 1):] if ngram.n > 1 else []
+                context = best_path_words[pos][-(ngram.n - 1) :] if ngram.n > 1 else []
 
                 log_prob = ngram.log_probability(edge.word, context)
                 new_score = best_score[pos] + log_prob
@@ -432,7 +450,9 @@ class LatticeSegmentor:
 
         return self.best_path_dijkstra(lattice, freq_weight)
 
-    def find_k_best_paths(self, lattice: Lattice, k: int = 5) -> List[List[LatticeEdge]]:
+    def find_k_best_paths(
+        self, lattice: Lattice, k: int = 5
+    ) -> List[List[LatticeEdge]]:
         paths: List[List[LatticeEdge]] = []
         scores: List[float] = []
 
@@ -448,15 +468,15 @@ class LatticeSegmentor:
         return [path for _, path in sorted_pairs[:k]]
 
     def _score_path(self, path: List[LatticeEdge]) -> float:
-        if self._scoring_method == 'shortest':
+        if self._scoring_method == "shortest":
             return PathScorer.score_by_length(path)
-        elif self._scoring_method == 'longest_word':
+        elif self._scoring_method == "longest_word":
             return PathScorer.score_by_word_length(path)
-        elif self._scoring_method == 'frequency':
+        elif self._scoring_method == "frequency":
             return PathScorer.score_by_frequency(path)
-        elif self._scoring_method == 'weight':
+        elif self._scoring_method == "weight":
             return PathScorer.score_by_weight(path)
-        elif self._scoring_method == 'ngram' and self.ngram_model:
+        elif self._scoring_method == "ngram" and self.ngram_model:
             return PathScorer.score_by_ngram(path, self.ngram_model)
         else:
             return PathScorer.score_by_length(path)
@@ -467,9 +487,9 @@ class LatticeSegmentor:
         if not lattice.has_path():
             return list(text)
 
-        if self._scoring_method == 'ngram' and self.ngram_model:
+        if self._scoring_method == "ngram" and self.ngram_model:
             path = self.best_path_ngram(lattice)
-        elif self._scoring_method == 'frequency' and self.word_freq:
+        elif self._scoring_method == "frequency" and self.word_freq:
             path = self.best_path_frequency(lattice)
         else:
             path = self.shortest_path(lattice)
@@ -480,11 +500,11 @@ class LatticeSegmentor:
         lattice = self.build_lattice(text)
 
         if not lattice.has_path():
-            return [(char, 'x') for char in text]
+            return [(char, "x") for char in text]
 
-        if self._scoring_method == 'ngram' and self.ngram_model:
+        if self._scoring_method == "ngram" and self.ngram_model:
             path = self.best_path_ngram(lattice)
-        elif self._scoring_method == 'frequency' and self.word_freq:
+        elif self._scoring_method == "frequency" and self.word_freq:
             path = self.best_path_frequency(lattice)
         else:
             path = self.shortest_path(lattice)
@@ -497,9 +517,9 @@ class LatticeSegmentor:
         if not lattice.has_path():
             return list(text), lattice
 
-        if self._scoring_method == 'ngram' and self.ngram_model:
+        if self._scoring_method == "ngram" and self.ngram_model:
             path = self.best_path_ngram(lattice)
-        elif self._scoring_method == 'frequency' and self.word_freq:
+        elif self._scoring_method == "frequency" and self.word_freq:
             path = self.best_path_frequency(lattice)
         else:
             path = self.shortest_path(lattice)
@@ -517,38 +537,50 @@ class LatticeSegmentor:
                 for edge in outgoing:
                     for other_edge in outgoing:
                         if edge != other_edge:
-                            if edge.end > other_edge.start and edge.start < other_edge.start:
-                                cross_ambiguity.append({
-                                    'type': 'cross',
-                                    'position': pos,
-                                    'words': [edge.word, other_edge.word],
-                                    'ranges': [(edge.start, edge.end), (other_edge.start, other_edge.end)]
-                                })
+                            if (
+                                edge.end > other_edge.start
+                                and edge.start < other_edge.start
+                            ):
+                                cross_ambiguity.append(
+                                    {
+                                        "type": "cross",
+                                        "position": pos,
+                                        "words": [edge.word, other_edge.word],
+                                        "ranges": [
+                                            (edge.start, edge.end),
+                                            (other_edge.start, other_edge.end),
+                                        ],
+                                    }
+                                )
                                 break
 
                 if cross_ambiguity:
                     ambiguities.extend(cross_ambiguity)
                 else:
-                    ambiguities.append({
-                        'type': 'combination',
-                        'position': pos,
-                        'words': [e.word for e in outgoing],
-                        'count': len(outgoing)
-                    })
+                    ambiguities.append(
+                        {
+                            "type": "combination",
+                            "position": pos,
+                            "words": [e.word for e in outgoing],
+                            "count": len(outgoing),
+                        }
+                    )
 
         return ambiguities
 
-    def get_all_segmentations(self, text: str, max_results: int = 10) -> List[List[str]]:
+    def get_all_segmentations(
+        self, text: str, max_results: int = 10
+    ) -> List[List[str]]:
         lattice = self.build_lattice(text)
         paths = lattice.get_all_paths(max_paths=max_results)
         return [lattice.get_path_words(path) for path in paths]
 
 
 __all__ = [
-    'Lattice',
-    'LatticeBuilder',
-    'LatticeEdge',
-    'LatticeNode',
-    'LatticeSegmentor',
-    'PathScorer'
+    "Lattice",
+    "LatticeBuilder",
+    "LatticeEdge",
+    "LatticeNode",
+    "LatticeSegmentor",
+    "PathScorer",
 ]

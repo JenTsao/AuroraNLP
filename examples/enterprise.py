@@ -11,7 +11,13 @@ def logging_example():
     print("1. 日志系统")
     print("=" * 60)
 
-    from AuroraNLP import ConsoleLogHandler, FileLogHandler, LogFormat, LogLevel, LogManager
+    from AuroraNLP import (
+        ConsoleLogHandler,
+        FileLogHandler,
+        LogFormat,
+        LogLevel,
+        LogManager,
+    )
 
     logger = LogManager.get_logger("enterprise_example")
     logger.set_level(LogLevel.INFO)
@@ -27,11 +33,10 @@ def logging_example():
     logger.error("这是一条 error 日志")
 
     # 结构化日志
-    logger.info("请求处理完成", extra={
-        "text_length": 100,
-        "processing_time": 0.001,
-        "success": True
-    })
+    logger.info(
+        "请求处理完成",
+        extra={"text_length": 100, "processing_time": 0.001, "success": True},
+    )
     print()
 
 
@@ -68,9 +73,7 @@ def prometheus_example():
 
     # Counter
     requests_counter = PrometheusCounter(
-        "requests_total",
-        "总请求数",
-        labels=["method", "endpoint"]
+        "requests_total", "总请求数", labels=["method", "endpoint"]
     )
     registry.register(requests_counter)
 
@@ -79,10 +82,7 @@ def prometheus_example():
     requests_counter.inc(labels={"method": "POST", "endpoint": "/api"})
 
     # Gauge
-    active_users = PrometheusGauge(
-        "active_users",
-        "活跃用户数"
-    )
+    active_users = PrometheusGauge("active_users", "活跃用户数")
     registry.register(active_users)
 
     active_users.set(100)
@@ -116,9 +116,7 @@ def rate_limit_example():
     # 熔断器
     print("熔断器:")
     breaker = CircuitBreaker(
-        failure_threshold=3,
-        recovery_timeout=5,
-        half_open_max_calls=2
+        failure_threshold=3, recovery_timeout=5, half_open_max_calls=2
     )
 
     print(f"初始状态: {breaker.state}")
@@ -179,9 +177,7 @@ def docker_k8s_example():
 
     # Dockerfile
     dockerfile = generate_dockerfile_content(
-        base_image="python:3.10-slim",
-        expose_ports=[8000],
-        healthcheck=True
+        base_image="python:3.10-slim", expose_ports=[8000], healthcheck=True
     )
     print("Dockerfile:")
     print(dockerfile)
@@ -194,7 +190,7 @@ def docker_k8s_example():
         replicas=3,
         ports=[8000],
         liveness_probe=True,
-        readiness_probe=True
+        readiness_probe=True,
     )
     print("K8s Deployment:")
     print(deployment)

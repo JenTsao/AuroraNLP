@@ -44,12 +44,12 @@ class TestAmbiguityResult:
         """测试结果对象属性"""
         detector = AmbiguityDetector(sample_dictionary)
         result = detector.detect("研究生命")
-        assert hasattr(result, 'text')
-        assert hasattr(result, 'total_ambiguities')
-        assert hasattr(result, 'cross_count')
-        assert hasattr(result, 'combination_count')
-        assert hasattr(result, 'overlap_count')
-        assert hasattr(result, 'regions')
+        assert hasattr(result, "text")
+        assert hasattr(result, "total_ambiguities")
+        assert hasattr(result, "cross_count")
+        assert hasattr(result, "combination_count")
+        assert hasattr(result, "overlap_count")
+        assert hasattr(result, "regions")
         assert isinstance(result.regions, list)
         assert result.has_ambiguity() == (result.total_ambiguities > 0)
 
@@ -65,12 +65,12 @@ class TestAmbiguityRegion:
         if result.regions:
             region = result.regions[0]
             assert isinstance(region, AmbiguityRegion)
-            assert hasattr(region, 'start')
-            assert hasattr(region, 'end')
-            assert hasattr(region, 'text')
-            assert hasattr(region, 'ambiguity_type')
-            assert hasattr(region, 'segmentations')
-            assert hasattr(region, 'confidence')
+            assert hasattr(region, "start")
+            assert hasattr(region, "end")
+            assert hasattr(region, "text")
+            assert hasattr(region, "ambiguity_type")
+            assert hasattr(region, "segmentations")
+            assert hasattr(region, "confidence")
             assert isinstance(region.start, int)
             assert isinstance(region.end, int)
             assert isinstance(region.text, str)
@@ -82,9 +82,9 @@ class TestAmbiguityType:
 
     def test_ambiguity_type(self):
         """测试歧义类型枚举"""
-        assert hasattr(AmbiguityType, 'CROSS')
-        assert hasattr(AmbiguityType, 'COMBINATION')
-        assert hasattr(AmbiguityType, 'OVERLAP')
+        assert hasattr(AmbiguityType, "CROSS")
+        assert hasattr(AmbiguityType, "COMBINATION")
+        assert hasattr(AmbiguityType, "OVERLAP")
         assert AmbiguityType.CROSS.value == "cross"
         assert AmbiguityType.COMBINATION.value == "combination"
         assert AmbiguityType.OVERLAP.value == "overlap"

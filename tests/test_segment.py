@@ -1,4 +1,5 @@
 """Segmentor 主类测试"""
+
 import pytest
 
 from AuroraNLP.segmentation.segmentor import Segmentor
@@ -17,21 +18,21 @@ class TestSegmentorSegment:
     def test_segment_forward(self, sample_segmentor):
         """正向分词"""
         seg = sample_segmentor
-        result = seg.segment("中国人在北京", mode='forward')
+        result = seg.segment("中国人在北京", mode="forward")
         assert isinstance(result, list)
         assert "".join(result) == "中国人在北京"
 
     def test_segment_backward(self, sample_segmentor):
         """逆向分词"""
         seg = sample_segmentor
-        result = seg.segment("中国人在北京", mode='backward')
+        result = seg.segment("中国人在北京", mode="backward")
         assert isinstance(result, list)
         assert "".join(result) == "中国人在北京"
 
     def test_segment_bidirectional(self, sample_segmentor):
         """双向分词"""
         seg = sample_segmentor
-        result = seg.segment("中国人在北京", mode='bidirectional')
+        result = seg.segment("中国人在北京", mode="bidirectional")
         assert isinstance(result, list)
         assert "".join(result) == "中国人在北京"
 
@@ -78,20 +79,20 @@ class TestSegmentorSegment:
     def test_set_mode(self, sample_segmentor):
         """设置分词模式"""
         seg = sample_segmentor
-        seg.set_mode('forward')
-        assert seg.mode == 'forward'
-        seg.set_mode('backward')
-        assert seg.mode == 'backward'
-        seg.set_mode('bidirectional')
-        assert seg.mode == 'bidirectional'
+        seg.set_mode("forward")
+        assert seg.mode == "forward"
+        seg.set_mode("backward")
+        assert seg.mode == "backward"
+        seg.set_mode("bidirectional")
+        assert seg.mode == "bidirectional"
 
     def test_invalid_mode(self, sample_segmentor):
         """无效模式抛异常"""
         seg = sample_segmentor
         with pytest.raises(ValueError):
-            seg.set_mode('invalid_mode')
+            seg.set_mode("invalid_mode")
         with pytest.raises(ValueError):
-            seg.segment("测试", mode='invalid_mode')
+            seg.segment("测试", mode="invalid_mode")
 
     def test_get_dictionary_size(self, sample_segmentor):
         """获取词典大小"""
@@ -110,7 +111,7 @@ class TestSegmentorSegment:
         """关键词提取"""
         seg = sample_segmentor
         text = "自然语言处理是人工智能的重要方向，自然语言处理技术发展迅速"
-        result = seg.extract_keywords(text, top_k=5, method='freq', use_stopwords=False)
+        result = seg.extract_keywords(text, top_k=5, method="freq", use_stopwords=False)
         assert isinstance(result, list)
         assert len(result) <= 5
         assert all(isinstance(item, tuple) and len(item) == 2 for item in result)
@@ -120,6 +121,8 @@ class TestSegmentorSegment:
         seg = sample_segmentor
         text1 = "自然语言处理"
         text2 = "自然语言处理"
-        similarity = seg.compute_similarity(text1, text2, method='jaccard', use_stopwords=False)
+        similarity = seg.compute_similarity(
+            text1, text2, method="jaccard", use_stopwords=False
+        )
         assert isinstance(similarity, float)
         assert similarity > 0.0

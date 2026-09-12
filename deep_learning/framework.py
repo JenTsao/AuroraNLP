@@ -9,6 +9,7 @@ from typing import Any, Dict, Optional
 
 class FrameworkType(Enum):
     """框架类型枚举"""
+
     PYTORCH = "pytorch"
     TENSORFLOW = "tensorflow"
     AUTO = "auto"
@@ -48,7 +49,9 @@ class Framework(ABC):
         pass
 
 
-def get_framework(framework_type: FrameworkType = FrameworkType.AUTO) -> Optional[Framework]:
+def get_framework(
+    framework_type: FrameworkType = FrameworkType.AUTO,
+) -> Optional[Framework]:
     """获取可用的深度学习框架
 
     Args:

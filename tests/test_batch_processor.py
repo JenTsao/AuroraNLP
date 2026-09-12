@@ -1,4 +1,5 @@
 """BatchProcessor 批量处理器测试"""
+
 import pytest
 
 from AuroraNLP.core.batch_processor import BatchProcessor
@@ -70,9 +71,11 @@ class TestBatchProcessor:
         bp = BatchProcessor(sample_segmentor)
         texts = [
             "自然语言处理是人工智能的重要方向，自然语言处理技术发展迅速",
-            "机器学习是人工智能的核心技术"
+            "机器学习是人工智能的核心技术",
         ]
-        results = bp.extract_keywords_batch(texts, top_k=5, method='freq', use_stopwords=False)
+        results = bp.extract_keywords_batch(
+            texts, top_k=5, method="freq", use_stopwords=False
+        )
         assert isinstance(results, list)
         assert len(results) == 2
         for result in results:
@@ -84,7 +87,9 @@ class TestBatchProcessor:
         """相似度矩阵计算"""
         bp = BatchProcessor(sample_segmentor)
         texts = ["自然语言处理", "自然语言处理", "机器学习"]
-        matrix = bp.compute_similarity_matrix(texts, method='jaccard', use_stopwords=False)
+        matrix = bp.compute_similarity_matrix(
+            texts, method="jaccard", use_stopwords=False
+        )
         assert isinstance(matrix, list)
         assert len(matrix) == 3
         for row in matrix:

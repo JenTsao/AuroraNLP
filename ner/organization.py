@@ -131,27 +131,79 @@ class GovType(Enum):
 
 
 ENTERPRISE_SUFFIXES: List[str] = [
-    "有限公司", "股份有限公司", "集团", "公司", "有限责任公司",
-    "集团股份有限公司", "控股集团", "投资集团", "科技集团",
-    "Co.", "Ltd.", "Inc.", "Corp.", "Corporation", "Company",
+    "有限公司",
+    "股份有限公司",
+    "集团",
+    "公司",
+    "有限责任公司",
+    "集团股份有限公司",
+    "控股集团",
+    "投资集团",
+    "科技集团",
+    "Co.",
+    "Ltd.",
+    "Inc.",
+    "Corp.",
+    "Corporation",
+    "Company",
 ]
 
 SCHOOL_SUFFIXES: List[str] = [
-    "大学", "学院", "学校", "中学", "小学", "幼儿园",
-    "高级中学", "初级中学", "实验小学", "附属中学", "附属小学",
-    "职业技术学院", "专科学校", "研究院", "研究生院",
+    "大学",
+    "学院",
+    "学校",
+    "中学",
+    "小学",
+    "幼儿园",
+    "高级中学",
+    "初级中学",
+    "实验小学",
+    "附属中学",
+    "附属小学",
+    "职业技术学院",
+    "专科学校",
+    "研究院",
+    "研究生院",
 ]
 
 HOSPITAL_SUFFIXES: List[str] = [
-    "医院", "人民医院", "中心医院", "附属医院", "专科医院",
-    "中医院", "中西医结合医院", "妇幼保健院", "儿童医院",
-    "第一医院", "第二医院", "第三医院", "诊所", "卫生院",
+    "医院",
+    "人民医院",
+    "中心医院",
+    "附属医院",
+    "专科医院",
+    "中医院",
+    "中西医结合医院",
+    "妇幼保健院",
+    "儿童医院",
+    "第一医院",
+    "第二医院",
+    "第三医院",
+    "诊所",
+    "卫生院",
 ]
 
 GOV_SUFFIXES: List[str] = [
-    "人民政府", "政府", "厅", "局", "委员会", "部", "署",
-    "办公室", "中心", "站", "所", "院", "司", "处",
-    "省委", "市委", "县委", "区委", "镇政府", "乡政府",
+    "人民政府",
+    "政府",
+    "厅",
+    "局",
+    "委员会",
+    "部",
+    "署",
+    "办公室",
+    "中心",
+    "站",
+    "所",
+    "院",
+    "司",
+    "处",
+    "省委",
+    "市委",
+    "县委",
+    "区委",
+    "镇政府",
+    "乡政府",
 ]
 
 
@@ -251,7 +303,7 @@ class Government(Organization):
 
 class OrganizationDatabase:
     DEFAULT_DATA_PATH = os.path.join(
-        os.path.dirname(__file__), 'data', 'organizations.txt'
+        os.path.dirname(__file__), "data", "organizations.txt"
     )
 
     def __init__(self, load_default: bool = True):
@@ -290,13 +342,18 @@ class OrganizationDatabase:
 
         current_section = None
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith('#'):
-                    if line.startswith('# @'):
+                if not line or line.startswith("#"):
+                    if line.startswith("# @"):
                         section = line[3:].strip()
-                        if section in ['enterprises', 'schools', 'hospitals', 'governments']:
+                        if section in [
+                            "enterprises",
+                            "schools",
+                            "hospitals",
+                            "governments",
+                        ]:
                             current_section = section
                     continue
 
@@ -305,7 +362,7 @@ class OrganizationDatabase:
         self._loaded = True
 
     def _parse_organization(self, line: str, section: Optional[str]) -> None:
-        parts = line.split('\t')
+        parts = line.split("\t")
         if len(parts) < 3:
             return
 
@@ -320,7 +377,7 @@ class OrganizationDatabase:
 
         aliases = []
         if len(parts) > 5 and parts[5].strip():
-            aliases = [a.strip() for a in parts[5].split(',') if a.strip()]
+            aliases = [a.strip() for a in parts[5].split(",") if a.strip()]
 
         website = parts[6].strip() if len(parts) > 6 and parts[6].strip() else None
         description = parts[7].strip() if len(parts) > 7 and parts[7].strip() else None
@@ -329,8 +386,14 @@ class OrganizationDatabase:
 
         org: Organization
         if org_type == OrgType.ENTERPRISE:
-            enterprise_type = self._parse_enterprise_type(sub_type) if sub_type else EnterpriseType.OTHER
-            industry = parts[10].strip() if len(parts) > 10 and parts[10].strip() else None
+            enterprise_type = (
+                self._parse_enterprise_type(sub_type)
+                if sub_type
+                else EnterpriseType.OTHER
+            )
+            industry = (
+                parts[10].strip() if len(parts) > 10 and parts[10].strip() else None
+            )
             org = Enterprise(
                 org_id=org_id,
                 name=name,
@@ -345,8 +408,14 @@ class OrganizationDatabase:
                 address=address,
             )
         elif org_type == OrgType.SCHOOL:
-            school_type = self._parse_school_type(sub_type) if sub_type else SchoolType.OTHER
-            is_public = parts[10].strip().lower() != 'private' if len(parts) > 10 and parts[10].strip() else True
+            school_type = (
+                self._parse_school_type(sub_type) if sub_type else SchoolType.OTHER
+            )
+            is_public = (
+                parts[10].strip().lower() != "private"
+                if len(parts) > 10 and parts[10].strip()
+                else True
+            )
             level = parts[11].strip() if len(parts) > 11 and parts[11].strip() else None
             org = School(
                 org_id=org_id,
@@ -363,9 +432,15 @@ class OrganizationDatabase:
                 address=address,
             )
         elif org_type == OrgType.HOSPITAL:
-            hospital_type = self._parse_hospital_type(sub_type) if sub_type else HospitalType.OTHER
+            hospital_type = (
+                self._parse_hospital_type(sub_type) if sub_type else HospitalType.OTHER
+            )
             level = parts[10].strip() if len(parts) > 10 and parts[10].strip() else None
-            is_public = parts[11].strip().lower() != 'private' if len(parts) > 11 and parts[11].strip() else True
+            is_public = (
+                parts[11].strip().lower() != "private"
+                if len(parts) > 11 and parts[11].strip()
+                else True
+            )
             org = Hospital(
                 org_id=org_id,
                 name=name,
@@ -382,7 +457,9 @@ class OrganizationDatabase:
             )
         elif org_type == OrgType.GOVERNMENT:
             gov_type = self._parse_gov_type(sub_type) if sub_type else GovType.OTHER
-            department = parts[10].strip() if len(parts) > 10 and parts[10].strip() else None
+            department = (
+                parts[10].strip() if len(parts) > 10 and parts[10].strip() else None
+            )
             org = Government(
                 org_id=org_id,
                 name=name,
@@ -414,104 +491,104 @@ class OrganizationDatabase:
 
     def _parse_org_type(self, type_str: str) -> OrgType:
         mapping = {
-            'enterprise': OrgType.ENTERPRISE,
-            '企业': OrgType.ENTERPRISE,
-            'school': OrgType.SCHOOL,
-            '学校': OrgType.SCHOOL,
-            'hospital': OrgType.HOSPITAL,
-            '医院': OrgType.HOSPITAL,
-            'government': OrgType.GOVERNMENT,
-            '政府': OrgType.GOVERNMENT,
-            '政府机构': OrgType.GOVERNMENT,
+            "enterprise": OrgType.ENTERPRISE,
+            "企业": OrgType.ENTERPRISE,
+            "school": OrgType.SCHOOL,
+            "学校": OrgType.SCHOOL,
+            "hospital": OrgType.HOSPITAL,
+            "医院": OrgType.HOSPITAL,
+            "government": OrgType.GOVERNMENT,
+            "政府": OrgType.GOVERNMENT,
+            "政府机构": OrgType.GOVERNMENT,
         }
         return mapping.get(type_str.lower(), OrgType.OTHER)
 
     def _parse_enterprise_type(self, type_str: str) -> EnterpriseType:
         mapping = {
-            'state_owned': EnterpriseType.STATE_OWNED,
-            '国企': EnterpriseType.STATE_OWNED,
-            '国有企业': EnterpriseType.STATE_OWNED,
-            'private': EnterpriseType.PRIVATE,
-            '民企': EnterpriseType.PRIVATE,
-            '民营企业': EnterpriseType.PRIVATE,
-            'foreign': EnterpriseType.FOREIGN,
-            '外企': EnterpriseType.FOREIGN,
-            '外资企业': EnterpriseType.FOREIGN,
-            'joint_venture': EnterpriseType.JOINT_VENTURE,
-            '合资': EnterpriseType.JOINT_VENTURE,
-            '合资企业': EnterpriseType.JOINT_VENTURE,
-            'listed': EnterpriseType.LISTED,
-            '上市': EnterpriseType.LISTED,
-            '上市企业': EnterpriseType.LISTED,
-            'startup': EnterpriseType.STARTUP,
-            '创业公司': EnterpriseType.STARTUP,
+            "state_owned": EnterpriseType.STATE_OWNED,
+            "国企": EnterpriseType.STATE_OWNED,
+            "国有企业": EnterpriseType.STATE_OWNED,
+            "private": EnterpriseType.PRIVATE,
+            "民企": EnterpriseType.PRIVATE,
+            "民营企业": EnterpriseType.PRIVATE,
+            "foreign": EnterpriseType.FOREIGN,
+            "外企": EnterpriseType.FOREIGN,
+            "外资企业": EnterpriseType.FOREIGN,
+            "joint_venture": EnterpriseType.JOINT_VENTURE,
+            "合资": EnterpriseType.JOINT_VENTURE,
+            "合资企业": EnterpriseType.JOINT_VENTURE,
+            "listed": EnterpriseType.LISTED,
+            "上市": EnterpriseType.LISTED,
+            "上市企业": EnterpriseType.LISTED,
+            "startup": EnterpriseType.STARTUP,
+            "创业公司": EnterpriseType.STARTUP,
         }
         return mapping.get(type_str.lower(), EnterpriseType.OTHER)
 
     def _parse_school_type(self, type_str: str) -> SchoolType:
         mapping = {
-            'university': SchoolType.UNIVERSITY,
-            '大学': SchoolType.UNIVERSITY,
-            'college': SchoolType.COLLEGE,
-            '学院': SchoolType.COLLEGE,
-            'high_school': SchoolType.HIGH_SCHOOL,
-            '高中': SchoolType.HIGH_SCHOOL,
-            '高级中学': SchoolType.HIGH_SCHOOL,
-            'middle_school': SchoolType.MIDDLE_SCHOOL,
-            '初中': SchoolType.MIDDLE_SCHOOL,
-            '初级中学': SchoolType.MIDDLE_SCHOOL,
-            'primary_school': SchoolType.PRIMARY_SCHOOL,
-            '小学': SchoolType.PRIMARY_SCHOOL,
-            'kindergarten': SchoolType.KINDERGARTEN,
-            '幼儿园': SchoolType.KINDERGARTEN,
-            'vocational': SchoolType.VOCATIONAL,
-            '职业': SchoolType.VOCATIONAL,
-            '职业学校': SchoolType.VOCATIONAL,
+            "university": SchoolType.UNIVERSITY,
+            "大学": SchoolType.UNIVERSITY,
+            "college": SchoolType.COLLEGE,
+            "学院": SchoolType.COLLEGE,
+            "high_school": SchoolType.HIGH_SCHOOL,
+            "高中": SchoolType.HIGH_SCHOOL,
+            "高级中学": SchoolType.HIGH_SCHOOL,
+            "middle_school": SchoolType.MIDDLE_SCHOOL,
+            "初中": SchoolType.MIDDLE_SCHOOL,
+            "初级中学": SchoolType.MIDDLE_SCHOOL,
+            "primary_school": SchoolType.PRIMARY_SCHOOL,
+            "小学": SchoolType.PRIMARY_SCHOOL,
+            "kindergarten": SchoolType.KINDERGARTEN,
+            "幼儿园": SchoolType.KINDERGARTEN,
+            "vocational": SchoolType.VOCATIONAL,
+            "职业": SchoolType.VOCATIONAL,
+            "职业学校": SchoolType.VOCATIONAL,
         }
         return mapping.get(type_str.lower(), SchoolType.OTHER)
 
     def _parse_hospital_type(self, type_str: str) -> HospitalType:
         mapping = {
-            'general': HospitalType.GENERAL,
-            '综合': HospitalType.GENERAL,
-            '综合医院': HospitalType.GENERAL,
-            'specialized': HospitalType.SPECIALIZED,
-            '专科': HospitalType.SPECIALIZED,
-            '专科医院': HospitalType.SPECIALIZED,
-            'tcm': HospitalType.TCM,
-            '中医': HospitalType.TCM,
-            '中医院': HospitalType.TCM,
-            'community': HospitalType.COMMUNITY,
-            '社区': HospitalType.COMMUNITY,
-            '社区医院': HospitalType.COMMUNITY,
-            'clinic': HospitalType.CLINIC,
-            '诊所': HospitalType.CLINIC,
-            'maternity': HospitalType.MATERNITY,
-            '妇幼': HospitalType.MATERNITY,
-            '妇幼保健院': HospitalType.MATERNITY,
-            'children': HospitalType.CHILDREN,
-            '儿童': HospitalType.CHILDREN,
-            '儿童医院': HospitalType.CHILDREN,
+            "general": HospitalType.GENERAL,
+            "综合": HospitalType.GENERAL,
+            "综合医院": HospitalType.GENERAL,
+            "specialized": HospitalType.SPECIALIZED,
+            "专科": HospitalType.SPECIALIZED,
+            "专科医院": HospitalType.SPECIALIZED,
+            "tcm": HospitalType.TCM,
+            "中医": HospitalType.TCM,
+            "中医院": HospitalType.TCM,
+            "community": HospitalType.COMMUNITY,
+            "社区": HospitalType.COMMUNITY,
+            "社区医院": HospitalType.COMMUNITY,
+            "clinic": HospitalType.CLINIC,
+            "诊所": HospitalType.CLINIC,
+            "maternity": HospitalType.MATERNITY,
+            "妇幼": HospitalType.MATERNITY,
+            "妇幼保健院": HospitalType.MATERNITY,
+            "children": HospitalType.CHILDREN,
+            "儿童": HospitalType.CHILDREN,
+            "儿童医院": HospitalType.CHILDREN,
         }
         return mapping.get(type_str.lower(), HospitalType.OTHER)
 
     def _parse_gov_type(self, type_str: str) -> GovType:
         mapping = {
-            'central': GovType.CENTRAL,
-            '中央': GovType.CENTRAL,
-            '中央级': GovType.CENTRAL,
-            'province': GovType.PROVINCE,
-            '省': GovType.PROVINCE,
-            '省级': GovType.PROVINCE,
-            'city': GovType.CITY,
-            '市': GovType.CITY,
-            '市级': GovType.CITY,
-            'county': GovType.COUNTY,
-            '县': GovType.COUNTY,
-            '县级': GovType.COUNTY,
-            'town': GovType.TOWN,
-            '乡镇': GovType.TOWN,
-            '乡镇级': GovType.TOWN,
+            "central": GovType.CENTRAL,
+            "中央": GovType.CENTRAL,
+            "中央级": GovType.CENTRAL,
+            "province": GovType.PROVINCE,
+            "省": GovType.PROVINCE,
+            "省级": GovType.PROVINCE,
+            "city": GovType.CITY,
+            "市": GovType.CITY,
+            "市级": GovType.CITY,
+            "county": GovType.COUNTY,
+            "县": GovType.COUNTY,
+            "县级": GovType.COUNTY,
+            "town": GovType.TOWN,
+            "乡镇": GovType.TOWN,
+            "乡镇级": GovType.TOWN,
         }
         return mapping.get(type_str.lower(), GovType.OTHER)
 
@@ -538,7 +615,9 @@ class OrganizationDatabase:
 
     def get_by_name(self, name: str) -> List[Organization]:
         codes = self._name_index.get(name, set())
-        return [self._organizations[code] for code in codes if code in self._organizations]
+        return [
+            self._organizations[code] for code in codes if code in self._organizations
+        ]
 
     def get_by_alias(self, alias: str) -> Optional[Organization]:
         code = self._alias_index.get(alias)
@@ -569,7 +648,9 @@ class OrganizationDatabase:
 
     def get_by_type(self, org_type: OrgType) -> List[Organization]:
         codes = self._type_index.get(org_type, set())
-        return [self._organizations[code] for code in codes if code in self._organizations]
+        return [
+            self._organizations[code] for code in codes if code in self._organizations
+        ]
 
     def get_enterprises(self) -> List[Organization]:
         return self.get_by_type(OrgType.ENTERPRISE)
@@ -585,13 +666,19 @@ class OrganizationDatabase:
 
     def get_by_region(self, region: str) -> List[Organization]:
         codes = self._region_index.get(region, set())
-        return [self._organizations[code] for code in codes if code in self._organizations]
+        return [
+            self._organizations[code] for code in codes if code in self._organizations
+        ]
 
-    def get_by_type_and_region(self, org_type: OrgType, region: str) -> List[Organization]:
+    def get_by_type_and_region(
+        self, org_type: OrgType, region: str
+    ) -> List[Organization]:
         type_codes = self._type_index.get(org_type, set())
         region_codes = self._region_index.get(region, set())
         codes = type_codes & region_codes
-        return [self._organizations[code] for code in codes if code in self._organizations]
+        return [
+            self._organizations[code] for code in codes if code in self._organizations
+        ]
 
     def is_organization(self, text: str) -> bool:
         if text in self._organizations:
@@ -645,7 +732,7 @@ class OrganizationDatabase:
         sorted_names = sorted(
             set(self._name_index.keys()) | set(self._alias_index.keys()),
             key=len,
-            reverse=True
+            reverse=True,
         )
 
         for name in sorted_names:
@@ -668,7 +755,11 @@ class OrganizationDatabase:
                         org = self._organizations.get(code)
                     else:
                         codes = self._name_index.get(name, set())
-                        org = self._organizations.get(next(iter(codes))) if codes else None
+                        org = (
+                            self._organizations.get(next(iter(codes)))
+                            if codes
+                            else None
+                        )
 
                     if org:
                         results.append((org, pos, end))
@@ -824,10 +915,12 @@ class OrganizationDatabase:
         self._add_organization(org)
 
     def save_data(self, path: str) -> None:
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write("# 机构名词库数据文件\n")
             f.write("# 格式说明:\n")
-            f.write("# 机构ID\\t名称\\t类型\\t子类型\\t地区\\t别名\\t网址\\t描述\\t成立时间\\t地址\\t扩展字段\n")
+            f.write(
+                "# 机构ID\\t名称\\t类型\\t子类型\\t地区\\t别名\\t网址\\t描述\\t成立时间\\t地址\\t扩展字段\n"
+            )
             f.write("#\n")
 
             f.write("\n# @enterprises\n")
@@ -840,14 +933,14 @@ class OrganizationDatabase:
                         "enterprise",
                         org.enterprise_type.value if org.enterprise_type else "",
                         org.region or "",
-                        ','.join(org.aliases) if org.aliases else "",
+                        ",".join(org.aliases) if org.aliases else "",
                         org.website or "",
                         org.description or "",
                         org.founded or "",
                         org.address or "",
                         org.industry or "",
                     ]
-                    f.write('\t'.join(parts) + '\n')
+                    f.write("\t".join(parts) + "\n")
 
             f.write("\n# @schools\n")
             for org_id in sorted(self._type_index[OrgType.SCHOOL]):
@@ -859,7 +952,7 @@ class OrganizationDatabase:
                         "school",
                         org.school_type.value if org.school_type else "",
                         org.region or "",
-                        ','.join(org.aliases) if org.aliases else "",
+                        ",".join(org.aliases) if org.aliases else "",
                         org.website or "",
                         org.description or "",
                         org.founded or "",
@@ -867,7 +960,7 @@ class OrganizationDatabase:
                         "public" if org.is_public else "private",
                         org.level or "",
                     ]
-                    f.write('\t'.join(parts) + '\n')
+                    f.write("\t".join(parts) + "\n")
 
             f.write("\n# @hospitals\n")
             for org_id in sorted(self._type_index[OrgType.HOSPITAL]):
@@ -879,7 +972,7 @@ class OrganizationDatabase:
                         "hospital",
                         org.hospital_type.value if org.hospital_type else "",
                         org.region or "",
-                        ','.join(org.aliases) if org.aliases else "",
+                        ",".join(org.aliases) if org.aliases else "",
                         org.website or "",
                         org.description or "",
                         org.founded or "",
@@ -887,7 +980,7 @@ class OrganizationDatabase:
                         org.level or "",
                         "public" if org.is_public else "private",
                     ]
-                    f.write('\t'.join(parts) + '\n')
+                    f.write("\t".join(parts) + "\n")
 
             f.write("\n# @governments\n")
             for org_id in sorted(self._type_index[OrgType.GOVERNMENT]):
@@ -899,14 +992,14 @@ class OrganizationDatabase:
                         "government",
                         org.gov_type.value if org.gov_type else "",
                         org.region or "",
-                        ','.join(org.aliases) if org.aliases else "",
+                        ",".join(org.aliases) if org.aliases else "",
                         org.website or "",
                         org.description or "",
                         org.founded or "",
                         org.address or "",
                         org.department or "",
                     ]
-                    f.write('\t'.join(parts) + '\n')
+                    f.write("\t".join(parts) + "\n")
 
     def __len__(self) -> int:
         return self._org_count

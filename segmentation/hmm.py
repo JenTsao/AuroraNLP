@@ -6,14 +6,14 @@ import pickle
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
-HMM_MODEL_SIGNATURE = b'AuroraNLP_HMM_MODEL_v1'
+HMM_MODEL_SIGNATURE = b"AuroraNLP_HMM_MODEL_v1"
 
 
 class HMMSegmentor:
-    STATE_B = 'B'
-    STATE_M = 'M'
-    STATE_E = 'E'
-    STATE_S = 'S'
+    STATE_B = "B"
+    STATE_M = "M"
+    STATE_E = "E"
+    STATE_S = "S"
 
     STATES = [STATE_B, STATE_M, STATE_E, STATE_S]
 
@@ -23,8 +23,12 @@ class HMMSegmentor:
         self.emit_prob: Dict[str, Dict[str, float]] = {}
 
         self.init_count: Dict[str, int] = defaultdict(int)
-        self.trans_count: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
-        self.emit_count: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        self.trans_count: Dict[str, Dict[str, int]] = defaultdict(
+            lambda: defaultdict(int)
+        )
+        self.emit_count: Dict[str, Dict[str, int]] = defaultdict(
+            lambda: defaultdict(int)
+        )
 
         self.state_count: Dict[str, int] = defaultdict(int)
         self.total_states = 0
@@ -83,7 +87,8 @@ class HMMSegmentor:
         for state in self.STATES:
             if total_init > 0:
                 self.init_prob[state] = math.log(
-                    (self.init_count[state] + smooth) / (total_init + smooth * len(self.STATES))
+                    (self.init_count[state] + smooth)
+                    / (total_init + smooth * len(self.STATES))
                 )
             else:
                 self.init_prob[state] = math.log(1.0 / len(self.STATES))
@@ -94,18 +99,22 @@ class HMMSegmentor:
             for curr_state in self.STATES:
                 if total_trans > 0:
                     self.trans_prob[prev_state][curr_state] = math.log(
-                        (self.trans_count[prev_state][curr_state] + smooth) /
-                        (total_trans + smooth * len(self.STATES))
+                        (self.trans_count[prev_state][curr_state] + smooth)
+                        / (total_trans + smooth * len(self.STATES))
                     )
                 else:
-                    self.trans_prob[prev_state][curr_state] = math.log(1.0 / len(self.STATES))
+                    self.trans_prob[prev_state][curr_state] = math.log(
+                        1.0 / len(self.STATES)
+                    )
 
         for state in self.STATES:
             total_emit = sum(self.emit_count[state].values())
             self.emit_prob[state] = {}
             for char, count in self.emit_count[state].items():
                 if total_emit > 0:
-                    self.emit_prob[state][char] = math.log((count + smooth) / (total_emit + smooth))
+                    self.emit_prob[state][char] = math.log(
+                        (count + smooth) / (total_emit + smooth)
+                    )
 
         self._smooth = smooth
 
@@ -145,11 +154,15 @@ class HMMSegmentor:
             for curr_state in self.STATES:
                 emit_prob = self._get_emit_prob(curr_state, char)
 
-                best_prob = float('-inf')
+                best_prob = float("-inf")
                 best_prev_state = None
 
                 for prev_state in self.STATES:
-                    prob = V[t - 1][prev_state] + self.trans_prob[prev_state][curr_state] + emit_prob
+                    prob = (
+                        V[t - 1][prev_state]
+                        + self.trans_prob[prev_state][curr_state]
+                        + emit_prob
+                    )
                     if prob > best_prob:
                         best_prob = prob
                         best_prev_state = prev_state
@@ -159,7 +172,7 @@ class HMMSegmentor:
 
             path = new_path
 
-        best_final_prob = float('-inf')
+        best_final_prob = float("-inf")
         best_final_state = None
         for state in self.STATES:
             if V[length - 1][state] > best_final_prob:
@@ -188,12 +201,16 @@ class HMMSegmentor:
                 words.append(text[i])
                 word_start = i + 1
             elif state == self.STATE_E:
-                words.append(text[word_start:i + 1])
+                words.append(text[word_start : i + 1])
                 word_start = i + 1
             elif state == self.STATE_B:
                 word_start = i
 
-        if word_start < len(text) and states and states[-1] not in (self.STATE_E, self.STATE_S):
+        if (
+            word_start < len(text)
+            and states
+            and states[-1] not in (self.STATE_E, self.STATE_S)
+        ):
             words.append(text[word_start:])
 
         return words
@@ -212,19 +229,21 @@ class HMMSegmentor:
 
     def save_model(self, filepath: str, key: Optional[str] = None):
         if not self._trained:
-            raise RuntimeError("Model has not been trained. Call train() first before saving.")
+            raise RuntimeError(
+                "Model has not been trained. Call train() first before saving."
+            )
 
         model_data = {
-            'init_prob': self.init_prob,
-            'trans_prob': self.trans_prob,
-            'emit_prob': self.emit_prob,
-            'init_count': dict(self.init_count),
-            'trans_count': {k: dict(v) for k, v in self.trans_count.items()},
-            'emit_count': {k: dict(v) for k, v in self.emit_count.items()},
-            'state_count': dict(self.state_count),
-            'total_states': self.total_states,
-            'smooth': self._smooth,
-            'trained': self._trained
+            "init_prob": self.init_prob,
+            "trans_prob": self.trans_prob,
+            "emit_prob": self.emit_prob,
+            "init_count": dict(self.init_count),
+            "trans_count": {k: dict(v) for k, v in self.trans_count.items()},
+            "emit_count": {k: dict(v) for k, v in self.emit_count.items()},
+            "state_count": dict(self.state_count),
+            "total_states": self.total_states,
+            "smooth": self._smooth,
+            "trained": self._trained,
         }
 
         serialized = pickle.dumps(model_data)
@@ -233,77 +252,83 @@ class HMMSegmentor:
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
 
-        with open(filepath, 'wb') as f:
+        with open(filepath, "wb") as f:
             f.write(HMM_MODEL_SIGNATURE)
-            f.write(len(serialized).to_bytes(8, 'big'))
+            f.write(len(serialized).to_bytes(8, "big"))
             f.write(serialized)
 
             if key:
                 signature = hmac.HMAC(
-                    key=key.encode('utf-8'),
+                    key=key.encode("utf-8"),
                     msg=HMM_MODEL_SIGNATURE + serialized,
-                    digestmod=hashlib.sha256
+                    digestmod=hashlib.sha256,
                 ).digest()
                 f.write(signature)
 
     def load_model(self, filepath: str, key: Optional[str] = None, verify: bool = True):
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             signature = f.read(len(HMM_MODEL_SIGNATURE))
             if signature != HMM_MODEL_SIGNATURE:
                 raise ValueError("Invalid model file format or corrupted file")
 
             size_bytes = f.read(8)
-            size = int.from_bytes(size_bytes, 'big')
+            size = int.from_bytes(size_bytes, "big")
             serialized = f.read(size)
 
             if verify and key:
                 stored_signature = f.read(32)
                 if len(stored_signature) != 32:
-                    raise ValueError("Model file does not contain a signature. Expected signed model but found unsigned.")
+                    raise ValueError(
+                        "Model file does not contain a signature. Expected signed model but found unsigned."
+                    )
                 expected_signature = hmac.HMAC(
-                    key=key.encode('utf-8'),
+                    key=key.encode("utf-8"),
                     msg=HMM_MODEL_SIGNATURE + serialized,
-                    digestmod=hashlib.sha256
+                    digestmod=hashlib.sha256,
                 ).digest()
                 if not hmac.compare_digest(stored_signature, expected_signature):
-                    raise ValueError("Model signature verification failed. File may be tampered.")
+                    raise ValueError(
+                        "Model signature verification failed. File may be tampered."
+                    )
 
         model_data = pickle.loads(serialized)
 
-        self.init_prob = model_data['init_prob']
-        self.trans_prob = model_data['trans_prob']
-        self.emit_prob = model_data['emit_prob']
-        self.init_count = defaultdict(int, model_data['init_count'])
+        self.init_prob = model_data["init_prob"]
+        self.trans_prob = model_data["trans_prob"]
+        self.emit_prob = model_data["emit_prob"]
+        self.init_count = defaultdict(int, model_data["init_count"])
         self.trans_count = defaultdict(lambda: defaultdict(int))
-        for k, v in model_data['trans_count'].items():
+        for k, v in model_data["trans_count"].items():
             self.trans_count[k] = defaultdict(int, v)
         self.emit_count = defaultdict(lambda: defaultdict(int))
-        for k, v in model_data['emit_count'].items():
+        for k, v in model_data["emit_count"].items():
             self.emit_count[k] = defaultdict(int, v)
-        self.state_count = defaultdict(int, model_data['state_count'])
-        self.total_states = model_data['total_states']
-        self._smooth = model_data['smooth']
-        self._trained = model_data['trained']
+        self.state_count = defaultdict(int, model_data["state_count"])
+        self.total_states = model_data["total_states"]
+        self._smooth = model_data["smooth"]
+        self._trained = model_data["trained"]
 
     def is_trained(self) -> bool:
         return self._trained
 
     def get_model_info(self) -> Dict[str, Any]:
         if not self._trained:
-            return {'trained': False}
+            return {"trained": False}
 
         vocab_sizes = {state: len(self.emit_count[state]) for state in self.STATES}
 
         return {
-            'trained': True,
-            'total_states': self.total_states,
-            'state_counts': dict(self.state_count),
-            'vocabulary_sizes': vocab_sizes,
-            'smooth': self._smooth
+            "trained": True,
+            "total_states": self.total_states,
+            "state_counts": dict(self.state_count),
+            "vocabulary_sizes": vocab_sizes,
+            "smooth": self._smooth,
         }
 
 
-def train_from_file(model: HMMSegmentor, filepath: str, encoding: str = 'utf-8') -> None:
+def train_from_file(
+    model: HMMSegmentor, filepath: str, encoding: str = "utf-8"
+) -> None:
     corpus = []
 
     with open(filepath, encoding=encoding) as f:
@@ -319,4 +344,4 @@ def train_from_file(model: HMMSegmentor, filepath: str, encoding: str = 'utf-8')
     model.train(corpus)
 
 
-__all__ = ['HMMSegmentor', 'train_from_file']
+__all__ = ["HMMSegmentor", "train_from_file"]

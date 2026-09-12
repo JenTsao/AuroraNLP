@@ -11,21 +11,23 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 def test_module_import():
     """测试预训练模型模块可导入"""
     from AuroraNLP.deep_learning import pretrained
-    assert hasattr(pretrained, 'PreTrainedModelType')
-    assert hasattr(pretrained, 'PreTrainedModelConfig')
-    assert hasattr(pretrained, 'PreTrainedBERT')
-    assert hasattr(pretrained, 'BERTChineseSegmentor')
-    assert hasattr(pretrained, 'get_available_pretrained_models')
-    assert hasattr(pretrained, 'create_bert_segmentor')
-    assert hasattr(pretrained, 'LightweightSegmentor')
-    assert hasattr(pretrained, 'ModelComparator')
-    assert hasattr(pretrained, 'get_lightweight_models')
-    assert hasattr(pretrained, 'create_lightweight_segmentor')
+
+    assert hasattr(pretrained, "PreTrainedModelType")
+    assert hasattr(pretrained, "PreTrainedModelConfig")
+    assert hasattr(pretrained, "PreTrainedBERT")
+    assert hasattr(pretrained, "BERTChineseSegmentor")
+    assert hasattr(pretrained, "get_available_pretrained_models")
+    assert hasattr(pretrained, "create_bert_segmentor")
+    assert hasattr(pretrained, "LightweightSegmentor")
+    assert hasattr(pretrained, "ModelComparator")
+    assert hasattr(pretrained, "get_lightweight_models")
+    assert hasattr(pretrained, "create_lightweight_segmentor")
 
 
 def test_model_type_enum():
     """测试模型类型枚举"""
     from AuroraNLP.deep_learning.pretrained import PreTrainedModelType
+
     assert PreTrainedModelType.BERT_CHINESE is not None
     assert PreTrainedModelType.MACBERT is not None
     assert PreTrainedModelType.ROBERTA_CHINESE is not None
@@ -42,7 +44,11 @@ def test_model_type_enum():
 
 def test_config_defaults():
     """测试预训练模型配置"""
-    from AuroraNLP.deep_learning.pretrained import PreTrainedModelConfig, PreTrainedModelType
+    from AuroraNLP.deep_learning.pretrained import (
+        PreTrainedModelConfig,
+        PreTrainedModelType,
+    )
+
     # 默认配置
     config = PreTrainedModelConfig()
     assert config.model_type == PreTrainedModelType.ALBERT_TINY
@@ -51,9 +57,7 @@ def test_config_defaults():
 
     # 自定义配置
     custom_config = PreTrainedModelConfig(
-        model_type=PreTrainedModelType.MACBERT,
-        max_seq_length=256,
-        num_labels=10
+        model_type=PreTrainedModelType.MACBERT, max_seq_length=256, num_labels=10
     )
     assert custom_config.model_type == PreTrainedModelType.MACBERT
     assert custom_config.max_seq_length == 256
@@ -62,7 +66,10 @@ def test_config_defaults():
 
 def test_config_lightweight_check():
     """测试轻量级模型配置"""
-    from AuroraNLP.deep_learning.pretrained import PreTrainedModelConfig, PreTrainedModelType
+    from AuroraNLP.deep_learning.pretrained import (
+        PreTrainedModelConfig,
+        PreTrainedModelType,
+    )
 
     # ALBERT Tiny 是轻量级
     config_tiny = PreTrainedModelConfig(model_type=PreTrainedModelType.ALBERT_TINY)
@@ -76,6 +83,7 @@ def test_config_lightweight_check():
 def test_get_available_models():
     """测试获取可用模型列表"""
     from AuroraNLP.deep_learning.pretrained import get_available_pretrained_models
+
     models = get_available_pretrained_models()
     assert len(models) > 0
     assert "bert-base-chinese" in models
@@ -84,6 +92,7 @@ def test_get_available_models():
 def test_get_lightweight_models():
     """测试获取轻量级模型列表"""
     from AuroraNLP.deep_learning.pretrained import get_lightweight_models
+
     models = get_lightweight_models()
     assert len(models) > 0
     # 检查返回格式
@@ -93,7 +102,11 @@ def test_get_lightweight_models():
 
 def test_segmentor_init():
     """测试 BERT 分词器初始化"""
-    from AuroraNLP.deep_learning.pretrained import BERTChineseSegmentor, PreTrainedModelType
+    from AuroraNLP.deep_learning.pretrained import (
+        BERTChineseSegmentor,
+        PreTrainedModelType,
+    )
+
     # 初始化
     seg = BERTChineseSegmentor(model_type=PreTrainedModelType.BERT_CHINESE)
     assert seg is not None
@@ -103,6 +116,7 @@ def test_segmentor_init():
 def test_bert_segmentor_available_check():
     """测试可用性检查"""
     from AuroraNLP.deep_learning.pretrained import PreTrainedBERT, PreTrainedModelConfig
+
     config = PreTrainedModelConfig()
     model = PreTrainedBERT(config)
     # 检查可用（可能返回 False 或 True，取决于环境）
@@ -111,7 +125,10 @@ def test_bert_segmentor_available_check():
 
 def test_lightweight_segmentor_factory():
     """测试轻量级分词器工厂"""
-    from AuroraNLP.deep_learning.pretrained import LightweightSegmentor, PreTrainedModelType
+    from AuroraNLP.deep_learning.pretrained import (
+        LightweightSegmentor,
+        PreTrainedModelType,
+    )
 
     # 测试创建 ALBERT Tiny
     seg = LightweightSegmentor.create_albert_tiny()
@@ -182,7 +199,10 @@ def test_model_recommend():
 def test_pretrained_model_integration():
     """完整集成测试（需要 PyTorch 和 Transformers）"""
     try:
-        from AuroraNLP.deep_learning.pretrained import BERTChineseSegmentor, PreTrainedModelType
+        from AuroraNLP.deep_learning.pretrained import (
+            BERTChineseSegmentor,
+            PreTrainedModelType,
+        )
 
         # 使用一个轻量级的测试
         seg = BERTChineseSegmentor(model_type=PreTrainedModelType.ALBERT)
@@ -190,8 +210,8 @@ def test_pretrained_model_integration():
         # 检查是否可加载
         if seg.is_available():
             # 我们不实际加载（避免长下载时间），但确保函数存在
-            assert hasattr(seg, 'load')
-            assert hasattr(seg, 'segment')
+            assert hasattr(seg, "load")
+            assert hasattr(seg, "segment")
         else:
             print("Pre-trained models not available (missing dependencies)")
             pass
@@ -203,10 +223,11 @@ def test_pretrained_model_integration():
 def test_create_bert_segmentor_function():
     """测试便捷函数创建分词器"""
     from AuroraNLP.deep_learning.pretrained import create_bert_segmentor
+
     try:
         seg = create_bert_segmentor(model_name_or_path="bert-base-chinese")
         assert seg is not None
-        assert hasattr(seg, 'is_available')
+        assert hasattr(seg, "is_available")
     except Exception:
         pytest.skip("Missing dependencies or network error")
 
@@ -258,7 +279,11 @@ def test_bmes_decode_multichar():
 
 def test_pretrained_config_dict():
     """测试模型配置字典"""
-    from AuroraNLP.deep_learning.pretrained import PreTrainedModelConfig, PreTrainedModelType
+    from AuroraNLP.deep_learning.pretrained import (
+        PreTrainedModelConfig,
+        PreTrainedModelType,
+    )
+
     config = PreTrainedModelConfig(model_type=PreTrainedModelType.BERT_CHINESE)
 
     # 检查默认模型路径
@@ -268,7 +293,10 @@ def test_pretrained_config_dict():
 
 def test_model_config_info():
     """测试模型配置信息"""
-    from AuroraNLP.deep_learning.pretrained import PreTrainedModelConfig, PreTrainedModelType
+    from AuroraNLP.deep_learning.pretrained import (
+        PreTrainedModelConfig,
+        PreTrainedModelType,
+    )
 
     # 测试 ALBERT Tiny 配置
     config = PreTrainedModelConfig(model_type=PreTrainedModelType.ALBERT_TINY)
@@ -284,18 +312,19 @@ def test_model_config_info():
 
 # ==================== NER 测试（步骤 40） ====================
 
+
 def test_ner_entity_types():
     """测试 NER 实体类型"""
     from AuroraNLP.deep_learning.pretrained import NER_ENTITY_TYPES, NER_LABELS
 
     assert len(NER_ENTITY_TYPES) > 0
-    assert 'PER' in NER_ENTITY_TYPES
-    assert 'LOC' in NER_ENTITY_TYPES
-    assert 'ORG' in NER_ENTITY_TYPES
+    assert "PER" in NER_ENTITY_TYPES
+    assert "LOC" in NER_ENTITY_TYPES
+    assert "ORG" in NER_ENTITY_TYPES
 
     assert len(NER_LABELS) > 0
-    assert 'O' in NER_LABELS
-    assert 'B-PER' in NER_LABELS
+    assert "O" in NER_LABELS
+    assert "B-PER" in NER_LABELS
 
 
 def test_ner_entity():
@@ -311,21 +340,25 @@ def test_ner_entity():
 
     # 测试 to_dict
     entity_dict = entity.to_dict()
-    assert entity_dict['text'] == "张三"
-    assert entity_dict['type'] == "PER"
-    assert entity_dict['type_name'] == "人名"
+    assert entity_dict["text"] == "张三"
+    assert entity_dict["type"] == "PER"
+    assert entity_dict["type_name"] == "人名"
 
 
 def test_bert_ner_init():
     """测试 BERT-NER 初始化"""
-    from AuroraNLP.deep_learning.pretrained import BERTNER, PreTrainedModelType, create_bert_ner
+    from AuroraNLP.deep_learning.pretrained import (
+        BERTNER,
+        PreTrainedModelType,
+        create_bert_ner,
+    )
 
     ner = BERTNER(model_type=PreTrainedModelType.ALBERT_TINY)
     assert ner is not None
-    assert hasattr(ner, 'is_available')
-    assert hasattr(ner, 'is_loaded')
-    assert hasattr(ner, 'load')
-    assert hasattr(ner, 'predict')
+    assert hasattr(ner, "is_available")
+    assert hasattr(ner, "is_loaded")
+    assert hasattr(ner, "load")
+    assert hasattr(ner, "predict")
 
     # 测试便捷函数
     ner2 = create_bert_ner()
@@ -356,18 +389,19 @@ def test_ner_parse_label():
 
 # ==================== POS 测试（步骤 41） ====================
 
+
 def test_pos_labels():
     """测试词性标签"""
     from AuroraNLP.deep_learning.pretrained import POS_LABEL_NAMES, POS_LABELS
 
     assert len(POS_LABELS) > 0
-    assert 'n' in POS_LABELS
-    assert 'v' in POS_LABELS
-    assert 'a' in POS_LABELS
+    assert "n" in POS_LABELS
+    assert "v" in POS_LABELS
+    assert "a" in POS_LABELS
 
     assert len(POS_LABEL_NAMES) > 0
-    assert POS_LABEL_NAMES['n'] == "名词"
-    assert POS_LABEL_NAMES['v'] == "动词"
+    assert POS_LABEL_NAMES["n"] == "名词"
+    assert POS_LABEL_NAMES["v"] == "动词"
 
 
 def test_pos_result():
@@ -382,22 +416,26 @@ def test_pos_result():
 
     # 测试 to_dict
     pos_dict = pos.to_dict()
-    assert pos_dict['word'] == "测试"
-    assert pos_dict['tag'] == "n"
-    assert pos_dict['tag_name'] == "名词"
+    assert pos_dict["word"] == "测试"
+    assert pos_dict["tag"] == "n"
+    assert pos_dict["tag_name"] == "名词"
 
 
 def test_bert_pos_init():
     """测试 BERT-POS 初始化"""
-    from AuroraNLP.deep_learning.pretrained import BERTPOS, PreTrainedModelType, create_bert_pos
+    from AuroraNLP.deep_learning.pretrained import (
+        BERTPOS,
+        PreTrainedModelType,
+        create_bert_pos,
+    )
 
     pos = BERTPOS(model_type=PreTrainedModelType.ALBERT_TINY)
     assert pos is not None
-    assert hasattr(pos, 'is_available')
-    assert hasattr(pos, 'is_loaded')
-    assert hasattr(pos, 'load')
-    assert hasattr(pos, 'tag')
-    assert hasattr(pos, 'tag_text')
+    assert hasattr(pos, "is_available")
+    assert hasattr(pos, "is_loaded")
+    assert hasattr(pos, "load")
+    assert hasattr(pos, "tag")
+    assert hasattr(pos, "tag_text")
 
     # 测试便捷函数
     pos2 = create_bert_pos()
@@ -423,16 +461,14 @@ def test_pos_tag_single_word():
 
 # ==================== 情感分析测试（步骤 42）====================
 
+
 def test_sentiment_result():
     """测试 SentimentResult 类"""
     from AuroraNLP.deep_learning.pretrained import SentimentResult
 
     # 正面情感测试
     result = SentimentResult(
-        text="今天真开心",
-        label="positive",
-        score=0.9,
-        confidence=0.9
+        text="今天真开心", label="positive", score=0.9, confidence=0.9
     )
     assert result.text == "今天真开心"
     assert result.label == "positive"
@@ -454,7 +490,11 @@ def test_sentiment_result():
 
 def test_bert_sentiment_init():
     """测试 BERT 情感分析器初始化"""
-    from AuroraNLP.deep_learning.pretrained import BERTSentiment, PreTrainedModelType, create_bert_sentiment
+    from AuroraNLP.deep_learning.pretrained import (
+        BERTSentiment,
+        PreTrainedModelType,
+        create_bert_sentiment,
+    )
 
     # 默认初始化
     sa = BERTSentiment()
@@ -496,6 +536,7 @@ def test_bert_sentiment_predict():
 
 # ==================== 文本分类测试（步骤 43）====================
 
+
 def test_classification_result():
     """测试 ClassificationResult 类"""
     from AuroraNLP.deep_learning.pretrained import ClassificationResult
@@ -504,11 +545,7 @@ def test_classification_result():
         text="这个产品真好用",
         label="tech",
         score=0.92,
-        all_scores={
-            "tech": 0.92,
-            "business": 0.05,
-            "entertainment": 0.03
-        }
+        all_scores={"tech": 0.92, "business": 0.05, "entertainment": 0.03},
     )
 
     assert result.text == "这个产品真好用"
@@ -580,7 +617,10 @@ def test_bert_classifier_labels():
 # ==================== 步骤44: 模型微调接口测试
 def test_finetuning_config():
     """测试微调配置"""
-    from AuroraNLP.deep_learning.pretrained import FineTuningConfig, create_finetuning_config
+    from AuroraNLP.deep_learning.pretrained import (
+        FineTuningConfig,
+        create_finetuning_config,
+    )
 
     # 默认配置
     config = FineTuningConfig()
@@ -597,14 +637,14 @@ def test_finetuning_config():
 
 def test_finetuning_trainer():
     """测试微调训练器"""
-    from AuroraNLP.deep_learning.pretrained import FineTuningConfig, FineTuningTrainer, PreTrainedModelType
+    from AuroraNLP.deep_learning.pretrained import (
+        FineTuningConfig,
+        FineTuningTrainer,
+        PreTrainedModelType,
+    )
 
     config = FineTuningConfig()
-    trainer = FineTuningTrainer(
-        None,
-        config,
-        PreTrainedModelType.BERT_CHINESE
-    )
+    trainer = FineTuningTrainer(None, config, PreTrainedModelType.BERT_CHINESE)
 
     assert trainer is not None
     assert trainer.is_available is not None
@@ -616,7 +656,11 @@ def test_finetuning_trainer():
 
 def test_training_history():
     """测试训练历史记录"""
-    from AuroraNLP.deep_learning.pretrained import FineTuningConfig, FineTuningTrainer, PreTrainedModelType
+    from AuroraNLP.deep_learning.pretrained import (
+        FineTuningConfig,
+        FineTuningTrainer,
+        PreTrainedModelType,
+    )
 
     config = FineTuningConfig(epochs=2)
     trainer = FineTuningTrainer(None, config, PreTrainedModelType.BERT_CHINESE)
@@ -644,7 +688,11 @@ def test_fewshot_config():
 
 def test_fewshot_learner():
     """测试FewShot学习器"""
-    from AuroraNLP.deep_learning.pretrained import FewShotLearner, FewShotLearningConfig, create_fewshot_learner
+    from AuroraNLP.deep_learning.pretrained import (
+        FewShotLearner,
+        FewShotLearningConfig,
+        create_fewshot_learner,
+    )
 
     # 创建学习器
     learner = FewShotLearner(FewShotLearningConfig())
@@ -708,7 +756,11 @@ def test_quantization_config():
 
 def test_model_quantizer():
     """测试模型量化器"""
-    from AuroraNLP.deep_learning.pretrained import ModelQuantizer, QuantizationConfig, create_quantizer
+    from AuroraNLP.deep_learning.pretrained import (
+        ModelQuantizer,
+        QuantizationConfig,
+        create_quantizer,
+    )
 
     # 创建量化器
     config = QuantizationConfig()
@@ -739,7 +791,11 @@ def test_onnx_config():
 
 def test_onnx_exporter():
     """测试ONNX导出器"""
-    from AuroraNLP.deep_learning.pretrained import ONNXExportConfig, ONNXExporter, create_onnx_exporter
+    from AuroraNLP.deep_learning.pretrained import (
+        ONNXExportConfig,
+        ONNXExporter,
+        create_onnx_exporter,
+    )
 
     # 创建导出器
     config = ONNXExportConfig(export_path="test.onnx")
@@ -766,7 +822,11 @@ def test_hot_load_config():
 
 def test_hot_model_loader():
     """测试热加载器"""
-    from AuroraNLP.deep_learning.pretrained import HotLoadConfig, HotModelLoader, create_hot_loader
+    from AuroraNLP.deep_learning.pretrained import (
+        HotLoadConfig,
+        HotModelLoader,
+        create_hot_loader,
+    )
 
     # 创建加载器
     model = None
@@ -826,7 +886,11 @@ def test_model_cache_config():
 
 def test_model_manager():
     """测试模型管理器"""
-    from AuroraNLP.deep_learning.pretrained import ModelCacheConfig, ModelManager, create_model_manager
+    from AuroraNLP.deep_learning.pretrained import (
+        ModelCacheConfig,
+        ModelManager,
+        create_model_manager,
+    )
 
     # 创建管理器
     config = ModelCacheConfig(max_versions=10)

@@ -27,7 +27,10 @@ from .core.performance import (
 from .core.performance import BatchProcessor as PerformanceBatchProcessor
 from .core.performance import ProcessPoolExecutor as NLPProcessPoolExecutor
 from .core.performance import ThreadPoolExecutor as NLPThreadPoolExecutor
-from .core.traditional_chinese import TraditionalChineseConverter, TraditionalChineseDictionary
+from .core.traditional_chinese import (
+    TraditionalChineseConverter,
+    TraditionalChineseDictionary,
+)
 from .corpus.corpus_annotator import (
     ActiveLearningStrategy,
     AnnotationManager,
@@ -35,7 +38,14 @@ from .corpus.corpus_annotator import (
     CorpusAnnotator,
 )
 from .corpus.corpus_builder import CorpusBuilder, CorpusManager
-from .deep_learning import BiLSTMCRF, Framework, FrameworkType, PyTorchBackend, TensorFlowBackend, get_framework
+from .deep_learning import (
+    BiLSTMCRF,
+    Framework,
+    FrameworkType,
+    PyTorchBackend,
+    TensorFlowBackend,
+    get_framework,
+)
 from .dictionary.dictionary import Dictionary, DictionaryManager, UserDictionary
 from .dictionary.dictionary_version import (
     DictionaryVersion,
@@ -54,7 +64,11 @@ from .dictionary.incremental_dictionary import (
 )
 from .dictionary.network_dictionary import NetworkDictionary
 from .dictionary.scel_parser import ScelBatchParser, ScelMetadata, ScelParser, ScelWord
-from .dictionary.sogou_dict import ScelConverter, SogouDictionary, SogouDictionaryManager
+from .dictionary.sogou_dict import (
+    ScelConverter,
+    SogouDictionary,
+    SogouDictionaryManager,
+)
 from .dictionary.stopwords import StopWords
 from .dictionary.terminology import (
     DOMAIN_SCEL_MAPPING,
@@ -227,7 +241,13 @@ from .parsing.dependency_parser import (
     create_sample_dependency_corpus,
     train_dependency_parser_from_file,
 )
-from .parsing.pos_tagger import DEFAULT_TAGS, POS_TAGS, CRFPOSTagger, HMMPOSTagger, train_pos_from_file
+from .parsing.pos_tagger import (
+    DEFAULT_TAGS,
+    POS_TAGS,
+    CRFPOSTagger,
+    HMMPOSTagger,
+    train_pos_from_file,
+)
 from .pipeline.pipeline import (
     APIServer,
     AsyncPipeline,
@@ -255,7 +275,12 @@ from .pipeline.pipeline import (
     StringStore,
 )
 from .pipeline.pipeline import Token as PipelineToken
-from .segmentation.ambiguity import AmbiguityDetector, AmbiguityRegion, AmbiguityResult, AmbiguityType
+from .segmentation.ambiguity import (
+    AmbiguityDetector,
+    AmbiguityRegion,
+    AmbiguityResult,
+    AmbiguityType,
+)
 from .segmentation.crf import CRFFeatureTemplate, CRFModel, CRFSegmentor
 from .segmentation.hmm import HMMSegmentor, train_from_file
 from .segmentation.hybrid import (
@@ -280,10 +305,25 @@ from .segmentation.hybrid import (
     WeightedFusionStrategy,
     WordQualityConfidenceEstimator,
 )
-from .segmentation.lattice import Lattice, LatticeBuilder, LatticeEdge, LatticeNode, LatticeSegmentor, PathScorer
-from .segmentation.new_word_detector import EntropyCalculator, MutualInformation, NewWordDetector
+from .segmentation.lattice import (
+    Lattice,
+    LatticeBuilder,
+    LatticeEdge,
+    LatticeNode,
+    LatticeSegmentor,
+    PathScorer,
+)
+from .segmentation.new_word_detector import (
+    EntropyCalculator,
+    MutualInformation,
+    NewWordDetector,
+)
 from .segmentation.ngram import BigramModel, NGramModel, TrigramModel
-from .segmentation.perceptron import PerceptronFeatureTemplate, PerceptronSegmentor, StructuredPerceptron
+from .segmentation.perceptron import (
+    PerceptronFeatureTemplate,
+    PerceptronSegmentor,
+    StructuredPerceptron,
+)
 from .segmentation.segmentor import Segmentor
 from .text_analysis.keyword_extractor import KeywordExtractor
 from .text_analysis.similarity import Similarity

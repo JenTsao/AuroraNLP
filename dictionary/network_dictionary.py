@@ -12,7 +12,9 @@ from AuroraNLP.dictionary.dictionary import Dictionary
 
 
 class NetworkDictionary(Dictionary):
-    DEFAULT_NETWORK_DICT_PATH = os.path.join(os.path.dirname(__file__), 'data', 'network_words.json')
+    DEFAULT_NETWORK_DICT_PATH = os.path.join(
+        os.path.dirname(__file__), "data", "network_words.json"
+    )
     DEFAULT_UPDATE_INTERVAL = 24 * 60 * 60  # 24小时
     DEFAULT_EXPIRY_DAYS = 30  # 30天过期
 
@@ -25,10 +27,12 @@ class NetworkDictionary(Dictionary):
         self._words_with_timestamp: Dict[str, Dict[str, Any]] = {}
 
         # 配置日志
-        self.logger = logging.getLogger('AuroraNLP.NetworkDictionary')
+        self.logger = logging.getLogger("AuroraNLP.NetworkDictionary")
         if not self.logger.handlers:
             handler = logging.StreamHandler()
-            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            formatter = logging.Formatter(
+                "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+            )
             handler.setFormatter(formatter)
             self.logger.addHandler(handler)
             self.logger.setLevel(logging.INFO)
@@ -60,30 +64,27 @@ class NetworkDictionary(Dictionary):
     def _load_network_dictionary(self) -> None:
         if os.path.exists(self.DEFAULT_NETWORK_DICT_PATH):
             try:
-                with open(self.DEFAULT_NETWORK_DICT_PATH, encoding='utf-8') as f:
+                with open(self.DEFAULT_NETWORK_DICT_PATH, encoding="utf-8") as f:
                     data = json.load(f)
-                    self._words_with_timestamp = data.get('words', {})
-                    self._last_update = data.get('last_update', 0)
+                    self._words_with_timestamp = data.get("words", {})
+                    self._last_update = data.get("last_update", 0)
 
                 # 加载到Trie树
                 for word, info in self._words_with_timestamp.items():
-                    pos_tag = info.get('pos_tag', 'x')
-                    weight = info.get('weight', 1.0)
-                    priority = info.get('priority', self._priority)
+                    pos_tag = info.get("pos_tag", "x")
+                    weight = info.get("weight", 1.0)
+                    priority = info.get("priority", self._priority)
                     self._trie.insert(word, pos_tag, weight, priority)
 
             except Exception as e:
                 self.logger.error(f"加载网络词典失败: {e}")
 
     def save_network_dictionary(self) -> None:
-        data = {
-            'words': self._words_with_timestamp,
-            'last_update': self._last_update
-        }
+        data = {"words": self._words_with_timestamp, "last_update": self._last_update}
 
         try:
             os.makedirs(os.path.dirname(self.DEFAULT_NETWORK_DICT_PATH), exist_ok=True)
-            with open(self.DEFAULT_NETWORK_DICT_PATH, 'w', encoding='utf-8') as f:
+            with open(self.DEFAULT_NETWORK_DICT_PATH, "w", encoding="utf-8") as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
         except Exception as e:
             self.logger.error(f"保存网络词典失败: {e}")
@@ -94,7 +95,7 @@ class NetworkDictionary(Dictionary):
         pos_tag: Optional[str] = None,
         weight: float = 1.0,
         priority: Optional[int] = None,
-        timestamp: Optional[int] = None
+        timestamp: Optional[int] = None,
     ) -> None:
         if priority is None:
             priority = self._priority
@@ -104,10 +105,10 @@ class NetworkDictionary(Dictionary):
         super().add_word(word, pos_tag, weight, priority)
 
         self._words_with_timestamp[word] = {
-            'pos_tag': pos_tag or 'x',
-            'weight': weight,
-            'priority': priority,
-            'timestamp': timestamp
+            "pos_tag": pos_tag or "x",
+            "weight": weight,
+            "priority": priority,
+            "timestamp": timestamp,
         }
 
     def remove_word(self, word: str) -> bool:
@@ -116,7 +117,9 @@ class NetworkDictionary(Dictionary):
             del self._words_with_timestamp[word]
         return result
 
-    def _make_request(self, url: str, max_retries: int = 3, backoff_factor: float = 0.5) -> Optional[Dict]:
+    def _make_request(
+        self, url: str, max_retries: int = 3, backoff_factor: float = 0.5
+    ) -> Optional[Dict]:
         """发送HTTP请求，支持重试机制
 
         Args:
@@ -131,7 +134,7 @@ class NetworkDictionary(Dictionary):
             try:
                 # 添加请求头，模拟浏览器
                 headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
                 }
                 response = requests.get(url, timeout=10, headers=headers)
 
@@ -149,7 +152,7 @@ class NetworkDictionary(Dictionary):
 
                 # 指数退避策略
                 if attempt < max_retries - 1:
-                    sleep_time = backoff_factor * (2 ** attempt)
+                    sleep_time = backoff_factor * (2**attempt)
                     time.sleep(sleep_time)
                     continue
 
@@ -160,34 +163,36 @@ class NetworkDictionary(Dictionary):
 
         # 爬取微博热词
         self.logger.info("开始爬取微博热词")
-        data = self._make_request('https://api.weibo.com/2/trends/hot.json')
-        if data and 'trends' in data:
+        data = self._make_request("https://api.weibo.com/2/trends/hot.json")
+        if data and "trends" in data:
             try:
-                hotwords.extend([item['name'] for item in data['trends'][:20]])
+                hotwords.extend([item["name"] for item in data["trends"][:20]])
                 self.logger.info(f"成功爬取微博热词 {len(data['trends'][:20])} 个")
             except (KeyError, TypeError) as e:
                 self.logger.warning(f"处理微博热词数据失败: {e}")
 
         # 爬取百度热词
         self.logger.info("开始爬取百度热词")
-        data = self._make_request('https://top.baidu.com/api/board')
-        if data and 'data' in data and 'cards' in data['data']:
+        data = self._make_request("https://top.baidu.com/api/board")
+        if data and "data" in data and "cards" in data["data"]:
             try:
-                for card in data['data']['cards']:
-                    if 'content' in card:
-                        hotwords.extend([item['word'] for item in card['content'][:20]])
+                for card in data["data"]["cards"]:
+                    if "content" in card:
+                        hotwords.extend([item["word"] for item in card["content"][:20]])
                 self.logger.info("成功爬取百度热词")
             except (KeyError, TypeError) as e:
                 self.logger.warning(f"处理百度热词数据失败: {e}")
 
         # 爬取知乎热词
         self.logger.info("开始爬取知乎热词")
-        data = self._make_request('https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total')
-        if data and 'data' in data:
+        data = self._make_request(
+            "https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total"
+        )
+        if data and "data" in data:
             try:
-                for item in data['data'][:20]:
-                    if 'target' in item and 'title' in item['target']:
-                        hotwords.extend([item['target']['title']])
+                for item in data["data"][:20]:
+                    if "target" in item and "title" in item["target"]:
+                        hotwords.extend([item["target"]["title"]])
                 self.logger.info(f"成功爬取知乎热词 {len(data['data'][:20])} 个")
             except (KeyError, TypeError) as e:
                 self.logger.warning(f"处理知乎热词数据失败: {e}")
@@ -203,7 +208,7 @@ class NetworkDictionary(Dictionary):
 
         for word in hotwords:
             if word and word not in self._words_with_timestamp:
-                self.add_word(word, pos_tag='x', weight=5.0, priority=self._priority)
+                self.add_word(word, pos_tag="x", weight=5.0, priority=self._priority)
                 added_count += 1
 
         self._last_update = int(time.time())
@@ -217,7 +222,7 @@ class NetworkDictionary(Dictionary):
 
         expired_words = []
         for word, info in self._words_with_timestamp.items():
-            if info.get('timestamp', 0) < expiry_timestamp:
+            if info.get("timestamp", 0) < expiry_timestamp:
                 expired_words.append(word)
 
         for word in expired_words:
@@ -236,7 +241,9 @@ class NetworkDictionary(Dictionary):
                 if current_time - self._last_update >= self._update_interval:
                     added = self.update_hotwords()
                     expired = self.cleanup_expired_words()
-                    self.logger.info(f"网络新词库自动更新: 添加{added}个新词, 清理{expired}个过期词")
+                    self.logger.info(
+                        f"网络新词库自动更新: 添加{added}个新词, 清理{expired}个过期词"
+                    )
             except Exception as e:
                 self.logger.error(f"自动更新任务失败: {e}")
             finally:
@@ -254,7 +261,7 @@ class NetworkDictionary(Dictionary):
         recent_words = []
 
         for word, info in self._words_with_timestamp.items():
-            if info.get('timestamp', 0) >= recent_timestamp:
+            if info.get("timestamp", 0) >= recent_timestamp:
                 recent_words.append(word)
 
         return recent_words
@@ -265,7 +272,7 @@ class NetworkDictionary(Dictionary):
         expired_words = []
 
         for word, info in self._words_with_timestamp.items():
-            if info.get('timestamp', 0) < expiry_timestamp:
+            if info.get("timestamp", 0) < expiry_timestamp:
                 expired_words.append(word)
 
         return expired_words
@@ -279,16 +286,16 @@ class NetworkDictionary(Dictionary):
         expired_words = 0
 
         for info in self._words_with_timestamp.values():
-            if info.get('timestamp', 0) >= current_time - (7 * 24 * 60 * 60):
+            if info.get("timestamp", 0) >= current_time - (7 * 24 * 60 * 60):
                 recent_words += 1
-            if info.get('timestamp', 0) < expiry_timestamp:
+            if info.get("timestamp", 0) < expiry_timestamp:
                 expired_words += 1
 
         return {
-            'total_words': total_words,
-            'recent_words': recent_words,
-            'expired_words': expired_words,
-            'last_update': self._last_update,
-            'update_interval': self._update_interval,
-            'expiry_days': self._expiry_days
+            "total_words": total_words,
+            "recent_words": recent_words,
+            "expired_words": expired_words,
+            "last_update": self._last_update,
+            "update_interval": self._update_interval,
+            "expiry_days": self._expiry_days,
         }

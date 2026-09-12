@@ -111,11 +111,9 @@ class Term:
 
 class TerminologyDatabase:
     DEFAULT_DATA_PATH = os.path.join(
-        os.path.dirname(__file__), 'data', 'terminology.txt'
+        os.path.dirname(__file__), "data", "terminology.txt"
     )
-    DEFAULT_SOGOU_PATH = os.path.join(
-        os.path.dirname(__file__), 'data', 'sogou'
-    )
+    DEFAULT_SOGOU_PATH = os.path.join(os.path.dirname(__file__), "data", "sogou")
     DOMAIN_VALUES = [domain.value for domain in TermDomain]
 
     def __init__(self, load_default: bool = True, load_sogou: bool = True):
@@ -145,7 +143,7 @@ class TerminologyDatabase:
             return
 
         for filename in os.listdir(self.DEFAULT_SOGOU_PATH):
-            if not filename.endswith('.scel'):
+            if not filename.endswith(".scel"):
                 continue
 
             domain = self._guess_domain_from_filename(filename)
@@ -172,11 +170,11 @@ class TerminologyDatabase:
 
         current_section = None
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith('#'):
-                    if line.startswith('# @'):
+                if not line or line.startswith("#"):
+                    if line.startswith("# @"):
                         section = line[3:].strip()
                         if section in self.DOMAIN_VALUES:
                             current_section = section
@@ -187,7 +185,7 @@ class TerminologyDatabase:
         self._loaded = True
 
     def _parse_term(self, line: str, section: Optional[str]) -> None:
-        parts = line.split('\t')
+        parts = line.split("\t")
         if len(parts) < 3:
             return
 
@@ -205,8 +203,8 @@ class TerminologyDatabase:
             # 处理中文逗号和英文逗号
             alias_str = parts[5].strip()
             # 先将中文逗号替换为英文逗号，然后分割
-            alias_str = alias_str.replace('、', ',')
-            aliases = [a.strip() for a in alias_str.split(',') if a.strip()]
+            alias_str = alias_str.replace("、", ",")
+            aliases = [a.strip() for a in alias_str.split(",") if a.strip()]
 
         definition = parts[6].strip() if len(parts) > 6 and parts[6].strip() else None
         source = parts[7].strip() if len(parts) > 7 and parts[7].strip() else None
@@ -226,24 +224,24 @@ class TerminologyDatabase:
 
     def _parse_domain(self, domain_str: str) -> TermDomain:
         mapping = {
-            'medical': TermDomain.MEDICAL,
-            '医学': TermDomain.MEDICAL,
-            'legal': TermDomain.LEGAL,
-            '法律': TermDomain.LEGAL,
-            'finance': TermDomain.FINANCE,
-            '金融': TermDomain.FINANCE,
-            'it': TermDomain.IT,
-            '信息技术': TermDomain.IT,
-            'automotive': TermDomain.AUTOMOTIVE,
-            '汽车': TermDomain.AUTOMOTIVE,
-            'food': TermDomain.FOOD,
-            '饮食': TermDomain.FOOD,
-            'entertainment': TermDomain.ENTERTAINMENT,
-            '娱乐': TermDomain.ENTERTAINMENT,
-            'government': TermDomain.GOVERNMENT,
-            '政府': TermDomain.GOVERNMENT,
-            'ecommerce': TermDomain.ECOMMERCE,
-            '电商': TermDomain.ECOMMERCE,
+            "medical": TermDomain.MEDICAL,
+            "医学": TermDomain.MEDICAL,
+            "legal": TermDomain.LEGAL,
+            "法律": TermDomain.LEGAL,
+            "finance": TermDomain.FINANCE,
+            "金融": TermDomain.FINANCE,
+            "it": TermDomain.IT,
+            "信息技术": TermDomain.IT,
+            "automotive": TermDomain.AUTOMOTIVE,
+            "汽车": TermDomain.AUTOMOTIVE,
+            "food": TermDomain.FOOD,
+            "饮食": TermDomain.FOOD,
+            "entertainment": TermDomain.ENTERTAINMENT,
+            "娱乐": TermDomain.ENTERTAINMENT,
+            "government": TermDomain.GOVERNMENT,
+            "政府": TermDomain.GOVERNMENT,
+            "ecommerce": TermDomain.ECOMMERCE,
+            "电商": TermDomain.ECOMMERCE,
         }
         return mapping.get(domain_str.lower(), TermDomain.OTHER)
 
@@ -273,7 +271,7 @@ class TerminologyDatabase:
         scel_path: str,
         domain: TermDomain,
         sub_domain: Optional[str] = None,
-        source: Optional[str] = None
+        source: Optional[str] = None,
     ) -> int:
         parser = ScelParser()
         words = parser.parse(scel_path)
@@ -308,15 +306,15 @@ class TerminologyDatabase:
         txt_path: str,
         domain: TermDomain,
         sub_domain: Optional[str] = None,
-        source: Optional[str] = None
+        source: Optional[str] = None,
     ) -> int:
         loaded_count = 0
         base_id = f"{domain.value}_{os.path.basename(txt_path)[:10]}"
 
-        with open(txt_path, encoding='utf-8') as f:
+        with open(txt_path, encoding="utf-8") as f:
             for i, line in enumerate(f):
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
 
                 term_id = f"{base_id}_{i:06d}"
@@ -467,9 +465,7 @@ class TerminologyDatabase:
         return results
 
     def recognize_terms_by_domain(
-        self,
-        text: str,
-        domain: TermDomain
+        self, text: str, domain: TermDomain
     ) -> List[Tuple[Term, int, int]]:
         all_results = self.recognize_terms(text)
         return [(t, s, e) for t, s, e in all_results if t.domain == domain]
@@ -533,7 +529,7 @@ class TerminologyDatabase:
         self._add_term(term)
 
     def save_data(self, path: str) -> None:
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write("# 专业术语库数据文件\n")
             f.write("# 格式说明:\n")
             f.write("# 术语ID\\t名称\\t领域\\t子领域\\t英文\\t别名\\t解释\\t来源\n")
@@ -554,11 +550,11 @@ class TerminologyDatabase:
                             term.domain.value,
                             term.sub_domain or "",
                             term.english or "",
-                            ','.join(term.aliases) if term.aliases else "",
+                            ",".join(term.aliases) if term.aliases else "",
                             term.definition or "",
                             term.source or "",
                         ]
-                        f.write('\t'.join(parts) + '\n')
+                        f.write("\t".join(parts) + "\n")
 
     def load_sogou_data(self) -> None:
         self._load_sogou_data()
@@ -585,15 +581,11 @@ class TerminologyManager:
         self._database: Optional[TerminologyDatabase] = None
         if load_default or load_sogou:
             self._database = TerminologyDatabase(
-                load_default=load_default,
-                load_sogou=load_sogou
+                load_default=load_default, load_sogou=load_sogou
             )
 
     def load(self, path: Optional[str] = None, load_sogou: bool = True) -> None:
-        self._database = TerminologyDatabase(
-            load_default=False,
-            load_sogou=False
-        )
+        self._database = TerminologyDatabase(load_default=False, load_sogou=False)
         if path:
             self._database.load_data(path)
         if load_sogou:
@@ -668,9 +660,7 @@ class TerminologyManager:
         return self._database.recognize_terms(text)
 
     def recognize_terms_by_domain(
-        self,
-        text: str,
-        domain: TermDomain
+        self, text: str, domain: TermDomain
     ) -> List[Tuple[Term, int, int]]:
         if self._database is None:
             return []

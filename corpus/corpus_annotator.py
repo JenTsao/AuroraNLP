@@ -18,51 +18,64 @@ class CorpusAnnotator:
             self.load_corpus(corpus_path)
 
     def load_corpus(self, corpus_path: str):
-        with open(corpus_path, encoding='utf-8') as f:
+        with open(corpus_path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if line:
                     self.unannotated_data.add(line)
 
     def save_annotated_corpus(self, output_path: str):
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             for item in self.annotated_data:
                 if isinstance(item, dict):
-                    f.write(json.dumps(item, ensure_ascii=False) + '\n')
+                    f.write(json.dumps(item, ensure_ascii=False) + "\n")
                 else:
-                    f.write(item + '\n')
+                    f.write(item + "\n")
 
-    def semi_supervised_annotate(self, model, sample_size: int = 100, confidence_threshold: float = 0.8):
+    def semi_supervised_annotate(
+        self, model, sample_size: int = 100, confidence_threshold: float = 0.8
+    ):
         if not self.unannotated_data:
             return []
 
         unannotated_list = list(self.unannotated_data)
-        samples = random.sample(unannotated_list, min(sample_size, len(unannotated_list)))
+        samples = random.sample(
+            unannotated_list, min(sample_size, len(unannotated_list))
+        )
         annotated_samples = []
 
         for sample in samples:
             try:
                 result = model.analyze(sample)
-                if hasattr(result, 'confidence') and result.confidence >= confidence_threshold:
-                    annotated_samples.append({
-                        'text': sample,
-                        'annotation': result.to_dict(),
-                        'confidence': result.confidence,
-                        'method': 'semi_supervised'
-                    })
-                    self.annotated_data.append({
-                        'text': sample,
-                        'annotation': result.to_dict(),
-                        'confidence': result.confidence,
-                        'method': 'semi_supervised'
-                    })
+                if (
+                    hasattr(result, "confidence")
+                    and result.confidence >= confidence_threshold
+                ):
+                    annotated_samples.append(
+                        {
+                            "text": sample,
+                            "annotation": result.to_dict(),
+                            "confidence": result.confidence,
+                            "method": "semi_supervised",
+                        }
+                    )
+                    self.annotated_data.append(
+                        {
+                            "text": sample,
+                            "annotation": result.to_dict(),
+                            "confidence": result.confidence,
+                            "method": "semi_supervised",
+                        }
+                    )
                     self.unannotated_data.remove(sample)
             except Exception as e:
                 continue
 
         return annotated_samples
 
-    def active_learning_sample(self, model, sample_size: int = 50, strategy: str = 'uncertainty'):
+    def active_learning_sample(
+        self, model, sample_size: int = 50, strategy: str = "uncertainty"
+    ):
         if not self.unannotated_data:
             return []
 
@@ -70,12 +83,12 @@ class CorpusAnnotator:
         scores = []
         for i, sample in enumerate(unannotated_list):
             try:
-                if strategy == 'uncertainty':
+                if strategy == "uncertainty":
                     result = model.analyze(sample)
-                    if hasattr(result, 'confidence'):
+                    if hasattr(result, "confidence"):
                         uncertainty = 1 - result.confidence
                         scores.append((i, uncertainty))
-                elif strategy == 'diversity':
+                elif strategy == "diversity":
                     diversity_score = self._calculate_diversity(sample)
                     scores.append((i, diversity_score))
             except Exception as e:
@@ -99,25 +112,31 @@ class CorpusAnnotator:
             return {}
 
         metrics = {
-            'average_confidence': 0.0,
-            'confidence_std': 0.0,
-            'annotation_coverage': 0.0,
-            'method_distribution': {}
+            "average_confidence": 0.0,
+            "confidence_std": 0.0,
+            "annotation_coverage": 0.0,
+            "method_distribution": {},
         }
 
         confidences = []
         for item in annotated_data:
-            if isinstance(item, dict) and 'confidence' in item:
-                confidences.append(item['confidence'])
-            if isinstance(item, dict) and 'method' in item:
-                method = item['method']
-                metrics['method_distribution'][method] = metrics['method_distribution'].get(method, 0) + 1
+            if isinstance(item, dict) and "confidence" in item:
+                confidences.append(item["confidence"])
+            if isinstance(item, dict) and "method" in item:
+                method = item["method"]
+                metrics["method_distribution"][method] = (
+                    metrics["method_distribution"].get(method, 0) + 1
+                )
 
         if confidences:
-            metrics['average_confidence'] = np.mean(confidences)
-            metrics['confidence_std'] = np.std(confidences)
+            metrics["average_confidence"] = np.mean(confidences)
+            metrics["confidence_std"] = np.std(confidences)
 
-        metrics['annotation_coverage'] = len(annotated_data) / (len(annotated_data) + len(self.unannotated_data)) if (len(annotated_data) + len(self.unannotated_data)) > 0 else 0
+        metrics["annotation_coverage"] = (
+            len(annotated_data) / (len(annotated_data) + len(self.unannotated_data))
+            if (len(annotated_data) + len(self.unannotated_data)) > 0
+            else 0
+        )
 
         for key, value in metrics.items():
             self.quality_metrics[key].append(value)
@@ -129,43 +148,53 @@ class CorpusAnnotator:
         for key, values in self.quality_metrics.items():
             if values:
                 if isinstance(values[0], (int, float, np.number)):
-                    report[f'{key}_mean'] = np.mean(values)
-                    report[f'{key}_std'] = np.std(values)
-                    report[f'{key}_latest'] = values[-1]
+                    report[f"{key}_mean"] = np.mean(values)
+                    report[f"{key}_std"] = np.std(values)
+                    report[f"{key}_latest"] = values[-1]
                 elif isinstance(values[0], dict):
                     merged_dist = {}
                     for v in values:
                         for method, count in v.items():
                             merged_dist[method] = merged_dist.get(method, 0) + count
-                    report[f'{key}_accumulated'] = merged_dist
-                    report[f'{key}_latest'] = values[-1]
+                    report[f"{key}_accumulated"] = merged_dist
+                    report[f"{key}_latest"] = values[-1]
                     if len(values) > 1:
                         avg_dist = {}
                         for method in merged_dist:
                             total = sum(v.get(method, 0) for v in values)
                             avg_dist[method] = total / len(values)
-                        report[f'{key}_mean'] = avg_dist
+                        report[f"{key}_mean"] = avg_dist
                 else:
-                    report[f'{key}_latest'] = values[-1]
+                    report[f"{key}_latest"] = values[-1]
         return report
 
-    def add_manual_annotation(self, text: str, annotation: Dict, confidence: float = 1.0):
-        self.annotated_data.append({
-            'text': text,
-            'annotation': annotation,
-            'confidence': confidence,
-            'method': 'manual'
-        })
+    def add_manual_annotation(
+        self, text: str, annotation: Dict, confidence: float = 1.0
+    ):
+        self.annotated_data.append(
+            {
+                "text": text,
+                "annotation": annotation,
+                "confidence": confidence,
+                "method": "manual",
+            }
+        )
         if text in self.unannotated_data:
             self.unannotated_data.remove(text)
 
     def get_statistics(self):
         return {
-            'total_samples': len(self.annotated_data) + len(self.unannotated_data),
-            'annotated_samples': len(self.annotated_data),
-            'unannotated_samples': len(self.unannotated_data),
-            'annotation_rate': len(self.annotated_data) / (len(self.annotated_data) + len(self.unannotated_data)) if (len(self.annotated_data) + len(self.unannotated_data)) > 0 else 0
+            "total_samples": len(self.annotated_data) + len(self.unannotated_data),
+            "annotated_samples": len(self.annotated_data),
+            "unannotated_samples": len(self.unannotated_data),
+            "annotation_rate": (
+                len(self.annotated_data)
+                / (len(self.annotated_data) + len(self.unannotated_data))
+                if (len(self.annotated_data) + len(self.unannotated_data)) > 0
+                else 0
+            ),
         }
+
 
 class AnnotationManager:
     def __init__(self):
@@ -194,24 +223,24 @@ class AnnotationManager:
         for key, values in self.global_metrics.items():
             if values:
                 if isinstance(values[0], (int, float, np.number)):
-                    report[f'{key}_mean'] = np.mean(values)
-                    report[f'{key}_std'] = np.std(values)
-                    report[f'{key}_latest'] = values[-1]
+                    report[f"{key}_mean"] = np.mean(values)
+                    report[f"{key}_std"] = np.std(values)
+                    report[f"{key}_latest"] = values[-1]
                 elif isinstance(values[0], dict):
                     merged_dist = {}
                     for v in values:
                         for method, count in v.items():
                             merged_dist[method] = merged_dist.get(method, 0) + count
-                    report[f'{key}_accumulated'] = merged_dist
-                    report[f'{key}_latest'] = values[-1]
+                    report[f"{key}_accumulated"] = merged_dist
+                    report[f"{key}_latest"] = values[-1]
                     if len(values) > 1:
                         avg_dist = {}
                         for method in merged_dist:
                             total = sum(v.get(method, 0) for v in values)
                             avg_dist[method] = total / len(values)
-                        report[f'{key}_mean'] = avg_dist
+                        report[f"{key}_mean"] = avg_dist
                 else:
-                    report[f'{key}_latest'] = values[-1]
+                    report[f"{key}_latest"] = values[-1]
         return report
 
     def save_all_annotations(self, output_dir: str):
@@ -219,8 +248,9 @@ class AnnotationManager:
             os.makedirs(output_dir)
 
         for name, annotator in self.annotators.items():
-            output_path = os.path.join(output_dir, f'{name}_annotated.jsonl')
+            output_path = os.path.join(output_dir, f"{name}_annotated.jsonl")
             annotator.save_annotated_corpus(output_path)
+
 
 class ActiveLearningStrategy:
     @staticmethod
@@ -229,7 +259,7 @@ class ActiveLearningStrategy:
         for sample in samples:
             try:
                 result = model.analyze(sample)
-                if hasattr(result, 'confidence'):
+                if hasattr(result, "confidence"):
                     uncertainty = 1 - result.confidence
                     scores.append((sample, uncertainty))
             except Exception as e:
@@ -249,12 +279,14 @@ class ActiveLearningStrategy:
         return [sample for sample, _ in scores[:n]]
 
     @staticmethod
-    def combination_sampling(model, samples: List[str], n: int = 10, alpha: float = 0.5):
+    def combination_sampling(
+        model, samples: List[str], n: int = 10, alpha: float = 0.5
+    ):
         scores = []
         for sample in samples:
             try:
                 result = model.analyze(sample)
-                if hasattr(result, 'confidence'):
+                if hasattr(result, "confidence"):
                     uncertainty = 1 - result.confidence
                     diversity = len(set(sample)) / len(sample) if sample else 0
                     combined = alpha * uncertainty + (1 - alpha) * diversity
@@ -264,6 +296,7 @@ class ActiveLearningStrategy:
 
         scores.sort(key=lambda x: x[1], reverse=True)
         return [sample for sample, _ in scores[:n]]
+
 
 class AnnotationQualityEvaluator:
     @staticmethod
@@ -297,23 +330,23 @@ class AnnotationQualityEvaluator:
         return 2 * (precision * recall) / (precision + recall)
 
     @staticmethod
-    def evaluate_annotations(annotated_data: List[Dict], ground_truth: List[Dict]) -> Dict:
+    def evaluate_annotations(
+        annotated_data: List[Dict], ground_truth: List[Dict]
+    ) -> Dict:
         if len(annotated_data) != len(ground_truth):
-            raise ValueError(f"Length mismatch: annotated_data={len(annotated_data)}, ground_truth={len(ground_truth)}")
+            raise ValueError(
+                f"Length mismatch: annotated_data={len(annotated_data)}, ground_truth={len(ground_truth)}"
+            )
 
         predicted = []
         truth = []
         for item, gt in zip(annotated_data, ground_truth):
-            if isinstance(item, dict) and 'annotation' in item:
-                predicted.append(item['annotation'])
+            if isinstance(item, dict) and "annotation" in item:
+                predicted.append(item["annotation"])
                 truth.append(gt)
 
         precision = AnnotationQualityEvaluator.calculate_precision(predicted, truth)
         recall = AnnotationQualityEvaluator.calculate_recall(predicted, truth)
         f1 = AnnotationQualityEvaluator.calculate_f1_score(precision, recall)
 
-        return {
-            'precision': precision,
-            'recall': recall,
-            'f1_score': f1
-        }
+        return {"precision": precision, "recall": recall, "f1_score": f1}

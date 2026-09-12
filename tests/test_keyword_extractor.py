@@ -53,7 +53,9 @@ class TestKeywordExtractorExtract:
     def test_extract_keywords_tfidf(self, trained_extractor, mock_segmentor):
         """测试 TF-IDF 提取"""
         text = "自然语言处理和深度学习是人工智能的重要方向"
-        keywords = trained_extractor.extract_keywords_tfidf(text, mock_segmentor, top_k=5)
+        keywords = trained_extractor.extract_keywords_tfidf(
+            text, mock_segmentor, top_k=5
+        )
         assert isinstance(keywords, list)
         assert len(keywords) <= 5
         for kw, score in keywords:
@@ -111,7 +113,9 @@ class TestKeywordExtractorEdge:
         """测试带停用词提取"""
         text = "自然语言的处理的"
         stopwords = {"的"}
-        keywords = extractor.extract_keywords_tfidf(text, mock_segmentor, top_k=5, stopwords=stopwords)
+        keywords = extractor.extract_keywords_tfidf(
+            text, mock_segmentor, top_k=5, stopwords=stopwords
+        )
         for kw, score in keywords:
             assert kw not in stopwords
 

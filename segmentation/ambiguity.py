@@ -32,13 +32,13 @@ class AmbiguityRegion:
 
     def to_dict(self) -> Dict:
         return {
-            'start': self.start,
-            'end': self.end,
-            'text': self.text,
-            'type': self.ambiguity_type.value,
-            'segmentations': self.segmentations,
-            'edges': self.edges,
-            'confidence': self.confidence
+            "start": self.start,
+            "end": self.end,
+            "text": self.text,
+            "type": self.ambiguity_type.value,
+            "segmentations": self.segmentations,
+            "edges": self.edges,
+            "confidence": self.confidence,
         }
 
 
@@ -54,22 +54,24 @@ class AmbiguityResult:
     def has_ambiguity(self) -> bool:
         return self.total_ambiguities > 0
 
-    def get_regions_by_type(self, ambiguity_type: AmbiguityType) -> List[AmbiguityRegion]:
+    def get_regions_by_type(
+        self, ambiguity_type: AmbiguityType
+    ) -> List[AmbiguityRegion]:
         return [r for r in self.regions if r.ambiguity_type == ambiguity_type]
 
     def to_dict(self) -> Dict:
         return {
-            'text': self.text,
-            'total_ambiguities': self.total_ambiguities,
-            'cross_count': self.cross_count,
-            'combination_count': self.combination_count,
-            'overlap_count': self.overlap_count,
-            'regions': [r.to_dict() for r in self.regions]
+            "text": self.text,
+            "total_ambiguities": self.total_ambiguities,
+            "cross_count": self.cross_count,
+            "combination_count": self.combination_count,
+            "overlap_count": self.overlap_count,
+            "regions": [r.to_dict() for r in self.regions],
         }
 
 
 class AmbiguityDetector:
-    def __init__(self, dictionary: 'Dictionary', max_word_len: int = 15):
+    def __init__(self, dictionary: "Dictionary", max_word_len: int = 15):
         self.dictionary = dictionary
         self.max_word_len = max_word_len
 
@@ -88,8 +90,12 @@ class AmbiguityDetector:
         regions = self._merge_overlapping_regions(regions)
 
         cross_count = sum(1 for r in regions if r.ambiguity_type == AmbiguityType.CROSS)
-        combination_count = sum(1 for r in regions if r.ambiguity_type == AmbiguityType.COMBINATION)
-        overlap_count = sum(1 for r in regions if r.ambiguity_type == AmbiguityType.OVERLAP)
+        combination_count = sum(
+            1 for r in regions if r.ambiguity_type == AmbiguityType.COMBINATION
+        )
+        overlap_count = sum(
+            1 for r in regions if r.ambiguity_type == AmbiguityType.OVERLAP
+        )
 
         return AmbiguityResult(
             text=text,
@@ -97,7 +103,7 @@ class AmbiguityDetector:
             cross_count=cross_count,
             combination_count=combination_count,
             overlap_count=overlap_count,
-            regions=regions
+            regions=regions,
         )
 
     def _get_all_word_matches(self, text: str) -> Dict[int, List[Tuple[int, str]]]:
@@ -107,13 +113,15 @@ class AmbiguityDetector:
         for start in range(text_len):
             max_len = min(self.max_word_len, text_len - start)
             for length in range(1, max_len + 1):
-                word = text[start:start + length]
+                word = text[start : start + length]
                 if self.dictionary.search_in_dict(word):
                     matches[start].append((start + length, word))
 
         return matches
 
-    def _detect_cross_ambiguity(self, text: str, matches: Dict[int, List[Tuple[int, str]]]) -> List[AmbiguityRegion]:
+    def _detect_cross_ambiguity(
+        self, text: str, matches: Dict[int, List[Tuple[int, str]]]
+    ) -> List[AmbiguityRegion]:
         regions = []
         text_len = len(text)
         processed = set()
@@ -128,7 +136,7 @@ class AmbiguityDetector:
 
             cross_edges = []
             for i, (end1, word1) in enumerate(edges):
-                for end2, word2 in edges[i + 1:]:
+                for end2, word2 in edges[i + 1 :]:
                     if end1 != end2:
                         cross_edges.append((start, end1, word1))
                         cross_edges.append((start, end2, word2))
@@ -141,7 +149,9 @@ class AmbiguityDetector:
             max_end = max(e[1] for e in cross_edges)
             region_text = text[start:max_end]
 
-            segmentations = self._generate_cross_segmentations(start, max_end, matches, text)
+            segmentations = self._generate_cross_segmentations(
+                start, max_end, matches, text
+            )
 
             if len(segmentations) > 1:
                 region = AmbiguityRegion(
@@ -151,7 +161,7 @@ class AmbiguityDetector:
                     ambiguity_type=AmbiguityType.CROSS,
                     segmentations=segmentations,
                     edges=cross_edges,
-                    confidence=self._calculate_confidence(segmentations)
+                    confidence=self._calculate_confidence(segmentations),
                 )
                 regions.append(region)
                 for i in range(start, max_end):
@@ -159,7 +169,9 @@ class AmbiguityDetector:
 
         return regions
 
-    def _detect_combination_ambiguity(self, text: str, matches: Dict[int, List[Tuple[int, str]]]) -> List[AmbiguityRegion]:
+    def _detect_combination_ambiguity(
+        self, text: str, matches: Dict[int, List[Tuple[int, str]]]
+    ) -> List[AmbiguityRegion]:
         regions = []
         text_len = len(text)
         processed = set()
@@ -177,7 +189,7 @@ class AmbiguityDetector:
 
             has_cross = False
             for i, (end1, word1) in enumerate(edges):
-                for end2, word2 in edges[i + 1:]:
+                for end2, word2 in edges[i + 1 :]:
                     if end1 != end2:
                         has_cross = True
                         break
@@ -202,14 +214,16 @@ class AmbiguityDetector:
                     ambiguity_type=AmbiguityType.COMBINATION,
                     segmentations=segmentations,
                     edges=[(start, end, word) for end, word in edges],
-                    confidence=self._calculate_confidence(segmentations)
+                    confidence=self._calculate_confidence(segmentations),
                 )
                 regions.append(region)
                 processed.add(start)
 
         return regions
 
-    def _detect_overlap_ambiguity(self, text: str, matches: Dict[int, List[Tuple[int, str]]]) -> List[AmbiguityRegion]:
+    def _detect_overlap_ambiguity(
+        self, text: str, matches: Dict[int, List[Tuple[int, str]]]
+    ) -> List[AmbiguityRegion]:
         regions = []
         text_len = len(text)
         processed = set()
@@ -228,14 +242,18 @@ class AmbiguityDetector:
                             if next_end > end:
                                 region_text = text[start:next_end]
 
-                                seg1 = self._build_segmentation(start, end, text, matches)
-                                seg2 = self._build_segmentation(next_start, next_end, text, matches)
+                                seg1 = self._build_segmentation(
+                                    start, end, text, matches
+                                )
+                                seg2 = self._build_segmentation(
+                                    next_start, next_end, text, matches
+                                )
 
                                 if seg1 and seg2:
                                     segmentations = [seg1, seg2]
                                     edges_list = [
                                         (start, end, word),
-                                        (next_start, next_end, next_word)
+                                        (next_start, next_end, next_word),
                                     ]
 
                                     region = AmbiguityRegion(
@@ -245,7 +263,9 @@ class AmbiguityDetector:
                                         ambiguity_type=AmbiguityType.OVERLAP,
                                         segmentations=segmentations,
                                         edges=edges_list,
-                                        confidence=self._calculate_confidence(segmentations)
+                                        confidence=self._calculate_confidence(
+                                            segmentations
+                                        ),
                                     )
                                     regions.append(region)
                                     for i in range(start, next_end):
@@ -254,11 +274,7 @@ class AmbiguityDetector:
         return regions
 
     def _generate_cross_segmentations(
-        self,
-        start: int,
-        end: int,
-        matches: Dict[int, List[Tuple[int, str]]],
-        text: str
+        self, start: int, end: int, matches: Dict[int, List[Tuple[int, str]]], text: str
     ) -> List[List[str]]:
         segmentations = []
         self._dfs_segmentations(start, end, matches, [], segmentations, text)
@@ -271,7 +287,7 @@ class AmbiguityDetector:
         matches: Dict[int, List[Tuple[int, str]]],
         current_seg: List[str],
         all_segs: List[List[str]],
-        text: str
+        text: str,
     ) -> None:
         if current_pos == target_end:
             all_segs.append(current_seg.copy())
@@ -282,8 +298,12 @@ class AmbiguityDetector:
 
         if current_pos not in matches:
             self._dfs_segmentations(
-                current_pos + 1, target_end, matches,
-                [*current_seg, text[current_pos]], all_segs, text
+                current_pos + 1,
+                target_end,
+                matches,
+                [*current_seg, text[current_pos]],
+                all_segs,
+                text,
             )
             return
 
@@ -291,16 +311,11 @@ class AmbiguityDetector:
         for next_end, word in edges:
             if next_end <= target_end:
                 self._dfs_segmentations(
-                    next_end, target_end, matches,
-                    [*current_seg, word], all_segs, text
+                    next_end, target_end, matches, [*current_seg, word], all_segs, text
                 )
 
     def _build_segmentation(
-        self,
-        start: int,
-        end: int,
-        text: str,
-        matches: Dict[int, List[Tuple[int, str]]]
+        self, start: int, end: int, text: str, matches: Dict[int, List[Tuple[int, str]]]
     ) -> List[str]:
         segmentation = []
         pos = start
@@ -327,13 +342,17 @@ class AmbiguityDetector:
         total_words = sum(len(seg) for seg in segmentations)
         avg_words = total_words / len(segmentations)
 
-        variance = sum((len(seg) - avg_words) ** 2 for seg in segmentations) / len(segmentations)
+        variance = sum((len(seg) - avg_words) ** 2 for seg in segmentations) / len(
+            segmentations
+        )
 
         confidence = 1.0 / (1.0 + variance)
 
         return round(confidence, 4)
 
-    def _merge_overlapping_regions(self, regions: List[AmbiguityRegion]) -> List[AmbiguityRegion]:
+    def _merge_overlapping_regions(
+        self, regions: List[AmbiguityRegion]
+    ) -> List[AmbiguityRegion]:
         if not regions:
             return []
 
@@ -354,17 +373,17 @@ class AmbiguityDetector:
                     new_region = AmbiguityRegion(
                         start=last.start,
                         end=region.end,
-                        text=last.text + region.text[last.end - region.start:],
+                        text=last.text + region.text[last.end - region.start :],
                         ambiguity_type=last.ambiguity_type,
                         segmentations=last.segmentations + region.segmentations,
                         edges=list(set(last.edges + region.edges)),
-                        confidence=min(last.confidence, region.confidence)
+                        confidence=min(last.confidence, region.confidence),
                     )
                     merged[-1] = new_region
 
         return merged
 
-    def detect_from_lattice(self, lattice: 'Lattice') -> AmbiguityResult:
+    def detect_from_lattice(self, lattice: "Lattice") -> AmbiguityResult:
         regions = []
         processed = set()
 
@@ -380,7 +399,7 @@ class AmbiguityDetector:
             cross_edges = []
 
             for i, edge1 in enumerate(outgoing):
-                for edge2 in outgoing[i + 1:]:
+                for edge2 in outgoing[i + 1 :]:
                     if edge1.end != edge2.end:
                         cross_edges.append(edge1)
                         cross_edges.append(edge2)
@@ -399,7 +418,7 @@ class AmbiguityDetector:
                     ambiguity_type=AmbiguityType.CROSS,
                     segmentations=segmentations,
                     edges=[(e.start, e.end, e.word) for e in cross_edges],
-                    confidence=self._calculate_confidence(segmentations)
+                    confidence=self._calculate_confidence(segmentations),
                 )
                 regions.append(region)
                 for i in range(pos, max_end):
@@ -421,7 +440,7 @@ class AmbiguityDetector:
                     ambiguity_type=AmbiguityType.COMBINATION,
                     segmentations=segmentations,
                     edges=[(e.start, e.end, e.word) for e in outgoing],
-                    confidence=self._calculate_confidence(segmentations)
+                    confidence=self._calculate_confidence(segmentations),
                 )
                 regions.append(region)
 
@@ -431,8 +450,12 @@ class AmbiguityDetector:
         regions = self._merge_overlapping_regions(regions)
 
         cross_count = sum(1 for r in regions if r.ambiguity_type == AmbiguityType.CROSS)
-        combination_count = sum(1 for r in regions if r.ambiguity_type == AmbiguityType.COMBINATION)
-        overlap_count = sum(1 for r in regions if r.ambiguity_type == AmbiguityType.OVERLAP)
+        combination_count = sum(
+            1 for r in regions if r.ambiguity_type == AmbiguityType.COMBINATION
+        )
+        overlap_count = sum(
+            1 for r in regions if r.ambiguity_type == AmbiguityType.OVERLAP
+        )
 
         return AmbiguityResult(
             text=lattice.text,
@@ -440,10 +463,12 @@ class AmbiguityDetector:
             cross_count=cross_count,
             combination_count=combination_count,
             overlap_count=overlap_count,
-            regions=regions
+            regions=regions,
         )
 
-    def _detect_overlap_from_lattice(self, lattice: 'Lattice', processed: Set[int]) -> List[AmbiguityRegion]:
+    def _detect_overlap_from_lattice(
+        self, lattice: "Lattice", processed: Set[int]
+    ) -> List[AmbiguityRegion]:
         regions = []
 
         for pos in range(lattice.length):
@@ -461,16 +486,20 @@ class AmbiguityDetector:
 
                     for next_edge in next_outgoing:
                         if next_edge.end > edge.end:
-                            region_text = lattice.text[pos:next_edge.end]
+                            region_text = lattice.text[pos : next_edge.end]
 
-                            seg1 = self._build_lattice_segmentation(lattice, pos, edge.end)
-                            seg2 = self._build_lattice_segmentation(lattice, next_pos, next_edge.end)
+                            seg1 = self._build_lattice_segmentation(
+                                lattice, pos, edge.end
+                            )
+                            seg2 = self._build_lattice_segmentation(
+                                lattice, next_pos, next_edge.end
+                            )
 
                             if seg1 and seg2:
                                 segmentations = [seg1, seg2]
                                 edges_list = [
                                     (edge.start, edge.end, edge.word),
-                                    (next_edge.start, next_edge.end, next_edge.word)
+                                    (next_edge.start, next_edge.end, next_edge.word),
                                 ]
 
                                 region = AmbiguityRegion(
@@ -480,13 +509,17 @@ class AmbiguityDetector:
                                     ambiguity_type=AmbiguityType.OVERLAP,
                                     segmentations=segmentations,
                                     edges=edges_list,
-                                    confidence=self._calculate_confidence(segmentations)
+                                    confidence=self._calculate_confidence(
+                                        segmentations
+                                    ),
                                 )
                                 regions.append(region)
 
         return regions
 
-    def _build_lattice_segmentation(self, lattice: 'Lattice', start: int, end: int) -> List[str]:
+    def _build_lattice_segmentation(
+        self, lattice: "Lattice", start: int, end: int
+    ) -> List[str]:
         segmentation = []
         pos = start
 
@@ -507,7 +540,9 @@ class AmbiguityDetector:
 
         return segmentation
 
-    def _get_lattice_segmentations(self, lattice: 'Lattice', start: int, end: int) -> List[List[str]]:
+    def _get_lattice_segmentations(
+        self, lattice: "Lattice", start: int, end: int
+    ) -> List[List[str]]:
         segmentations = []
 
         def dfs(current_pos: int, current_seg: List[str]):
@@ -536,31 +571,26 @@ class AmbiguityDetector:
         result = self.detect(text)
 
         stats = {
-            'text_length': len(text),
-            'total_ambiguities': result.total_ambiguities,
-            'ambiguity_density': result.total_ambiguities / len(text) if text else 0,
-            'by_type': {
-                'cross': result.cross_count,
-                'combination': result.combination_count,
-                'overlap': result.overlap_count
+            "text_length": len(text),
+            "total_ambiguities": result.total_ambiguities,
+            "ambiguity_density": result.total_ambiguities / len(text) if text else 0,
+            "by_type": {
+                "cross": result.cross_count,
+                "combination": result.combination_count,
+                "overlap": result.overlap_count,
             },
-            'avg_confidence': 0.0,
-            'min_confidence': 1.0,
-            'max_confidence': 0.0
+            "avg_confidence": 0.0,
+            "min_confidence": 1.0,
+            "max_confidence": 0.0,
         }
 
         if result.regions:
             confidences = [r.confidence for r in result.regions]
-            stats['avg_confidence'] = sum(confidences) / len(confidences)
-            stats['min_confidence'] = min(confidences)
-            stats['max_confidence'] = max(confidences)
+            stats["avg_confidence"] = sum(confidences) / len(confidences)
+            stats["min_confidence"] = min(confidences)
+            stats["max_confidence"] = max(confidences)
 
         return stats
 
 
-__all__ = [
-    'AmbiguityDetector',
-    'AmbiguityRegion',
-    'AmbiguityResult',
-    'AmbiguityType'
-]
+__all__ = ["AmbiguityDetector", "AmbiguityRegion", "AmbiguityResult", "AmbiguityType"]

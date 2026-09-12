@@ -1,4 +1,5 @@
 """PerformanceBenchmark 性能基准测试"""
+
 import pytest
 
 from AuroraNLP.core.benchmark import BenchmarkResult, PerformanceBenchmark, measure_time
@@ -29,13 +30,13 @@ class TestPerformanceBenchmark:
         """BenchmarkResult 字段完整性"""
         benchmark = PerformanceBenchmark(sample_segmentor)
         result = benchmark.benchmark_segment("自然语言处理", iterations=5)
-        assert hasattr(result, 'operation')
-        assert hasattr(result, 'total_time')
-        assert hasattr(result, 'iterations')
-        assert hasattr(result, 'avg_time')
-        assert hasattr(result, 'min_time')
-        assert hasattr(result, 'max_time')
-        assert hasattr(result, 'ops_per_second')
+        assert hasattr(result, "operation")
+        assert hasattr(result, "total_time")
+        assert hasattr(result, "iterations")
+        assert hasattr(result, "avg_time")
+        assert hasattr(result, "min_time")
+        assert hasattr(result, "max_time")
+        assert hasattr(result, "ops_per_second")
         assert isinstance(result.operation, str)
         assert isinstance(result.total_time, float)
         assert isinstance(result.iterations, int)
@@ -46,6 +47,7 @@ class TestPerformanceBenchmark:
 
     def test_measure_time(self):
         """measure_time 装饰器/函数"""
+
         @measure_time
         def simple_func(x, y):
             return x + y
@@ -55,6 +57,7 @@ class TestPerformanceBenchmark:
 
     def test_measure_time_on_method(self):
         """measure_time 装饰方法"""
+
         class MyClass:
             @measure_time
             def compute(self, a, b):

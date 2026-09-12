@@ -1,4 +1,5 @@
 """HMM 模型测试"""
+
 import pytest
 
 from AuroraNLP.segmentation.hmm import HMMSegmentor, train_from_file
@@ -10,7 +11,7 @@ class TestHMMInit:
     def test_hmm_init(self):
         """测试 HMMSegmentor 初始化状态"""
         model = HMMSegmentor()
-        assert model.STATES == ['B', 'M', 'E', 'S']
+        assert model.STATES == ["B", "M", "E", "S"]
         assert model.init_prob == {}
         assert model.trans_prob == {}
         assert model.emit_prob == {}
@@ -40,7 +41,7 @@ class TestHMMSegment:
         result = model.segment("我爱中国")
         assert isinstance(result, list)
         assert len(result) > 0
-        assert ''.join(result) == "我爱中国"
+        assert "".join(result) == "我爱中国"
 
     def test_hmm_viterbi(self, sample_corpus):
         """测试 Viterbi 解码"""
@@ -98,15 +99,15 @@ class TestHMMModelInfo:
         """测试获取模型信息"""
         model = HMMSegmentor()
         info = model.get_model_info()
-        assert info['trained'] is False
+        assert info["trained"] is False
 
         model.train(sample_corpus)
         info = model.get_model_info()
-        assert info['trained'] is True
-        assert 'total_states' in info
-        assert 'state_counts' in info
-        assert 'vocabulary_sizes' in info
-        assert 'smooth' in info
+        assert info["trained"] is True
+        assert "total_states" in info
+        assert "state_counts" in info
+        assert "vocabulary_sizes" in info
+        assert "smooth" in info
 
 
 class TestHMMIsTrained:
@@ -126,8 +127,8 @@ class TestTrainFromFile:
     def test_train_from_file(self, sample_corpus, tmp_path):
         """测试从文件训练"""
         corpus_file = tmp_path / "corpus.txt"
-        lines = [' '.join(sentence) for sentence in sample_corpus]
-        corpus_file.write_text('\n'.join(lines), encoding='utf-8')
+        lines = [" ".join(sentence) for sentence in sample_corpus]
+        corpus_file.write_text("\n".join(lines), encoding="utf-8")
 
         model = HMMSegmentor()
         train_from_file(model, str(corpus_file))

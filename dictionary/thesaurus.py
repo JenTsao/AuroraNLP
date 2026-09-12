@@ -177,7 +177,7 @@ class SemanticCategory:
 
 class Thesaurus:
     DEFAULT_THESAURUS_PATH = os.path.join(
-        os.path.dirname(__file__), '..', 'data', 'thesaurus.txt'
+        os.path.dirname(__file__), "..", "data", "thesaurus.txt"
     )
 
     def __init__(self, load_default: bool = True):
@@ -207,13 +207,13 @@ class Thesaurus:
         self._word_count = 0
         self._entry_count = 0
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
-                if not line or line.startswith('#'):
+                if not line or line.startswith("#"):
                     continue
 
-                parts = line.split('\t')
+                parts = line.split("\t")
                 if len(parts) < 2:
                     continue
 
@@ -231,11 +231,7 @@ class Thesaurus:
                 if not words:
                     continue
 
-                entry = ThesaurusEntry(
-                    code=clean_code,
-                    words=words,
-                    relation=relation
-                )
+                entry = ThesaurusEntry(code=clean_code, words=words, relation=relation)
 
                 self._entries[clean_code] = entry
                 self._entry_count += 1
@@ -256,26 +252,23 @@ class Thesaurus:
         self._loaded = True
 
     def _parse_relation(self, code: str) -> WordRelation:
-        if code.endswith('='):
+        if code.endswith("="):
             return WordRelation.SYNONYM
-        elif code.endswith('#'):
+        elif code.endswith("#"):
             return WordRelation.RELATED
-        elif code.endswith('@'):
+        elif code.endswith("@"):
             return WordRelation.INDEPENDENT
         return WordRelation.RELATED
 
     def _clean_code(self, code: str) -> str:
-        if code and code[-1] in '=#@':
+        if code and code[-1] in "=#@":
             return code[:-1]
         return code
 
     def _build_category_tree(self) -> None:
         for cat_code, cat_name in CATEGORY_NAMES.items():
             self._categories[cat_code] = SemanticCategory(
-                code=cat_code,
-                name=cat_name,
-                level=1,
-                parent_code=None
+                code=cat_code, name=cat_name, level=1, parent_code=None
             )
 
         for entry in self._entries.values():
@@ -290,10 +283,7 @@ class Thesaurus:
 
                     if sub_code not in self._categories:
                         self._categories[sub_code] = SemanticCategory(
-                            code=sub_code,
-                            name=sub_name,
-                            level=2,
-                            parent_code=cat_code
+                            code=sub_code, name=sub_name, level=2, parent_code=cat_code
                         )
                         if cat_code in self._categories:
                             self._categories[cat_code].children.append(sub_code)
@@ -518,18 +508,11 @@ class Thesaurus:
         return self._loaded
 
     def add_entry(
-        self,
-        code: str,
-        words: List[str],
-        relation: WordRelation = WordRelation.RELATED
+        self, code: str, words: List[str], relation: WordRelation = WordRelation.RELATED
     ) -> None:
         clean_code = self._clean_code(code)
 
-        entry = ThesaurusEntry(
-            code=clean_code,
-            words=words,
-            relation=relation
-        )
+        entry = ThesaurusEntry(code=clean_code, words=words, relation=relation)
 
         self._entries[clean_code] = entry
         self._entry_count += 1
@@ -546,16 +529,18 @@ class Thesaurus:
             self._synonym_groups[group_key].update(words)
 
     def save_thesaurus(self, path: str) -> None:
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write("# 同义词词林数据文件\n")
-            f.write("# 编码格式: 大类(1位)中类(1位)小类(2位)词群(1位)编号(2位)标记(1位)\n")
+            f.write(
+                "# 编码格式: 大类(1位)中类(1位)小类(2位)词群(1位)编号(2位)标记(1位)\n"
+            )
             f.write("# 标记: = 同义词, # 相关词, @ 独立词\n")
             f.write("#\n")
 
             for code, entry in sorted(self._entries.items()):
                 relation_char = entry.relation.value
                 full_code = code + relation_char
-                words_str = ' '.join(entry.words)
+                words_str = " ".join(entry.words)
                 f.write(f"{full_code}\t{words_str}\n")
 
     def __len__(self) -> int:

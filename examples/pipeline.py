@@ -48,7 +48,9 @@ def doc_span_token():
 
     print("Token 对象:")
     for i, token in enumerate(doc.tokens):
-        print(f"  Token {i}: {token.text} (POS: {token.pos}, 索引: [{token.start}-{token.end}])")
+        print(
+            f"  Token {i}: {token.text} (POS: {token.pos}, 索引: [{token.start}-{token.end}])"
+        )
     print()
 
     print("Span 对象:")
@@ -101,13 +103,15 @@ def pipeline_config():
 
     from AuroraNLP import PipelineConfig
 
-    config = PipelineConfig({
-        "components": [
-            {"name": "segmentor", "enabled": True},
-            {"name": "pos_tagger", "enabled": True},
-            {"name": "ner", "enabled": True},
-        ]
-    })
+    config = PipelineConfig(
+        {
+            "components": [
+                {"name": "segmentor", "enabled": True},
+                {"name": "pos_tagger", "enabled": True},
+                {"name": "ner", "enabled": True},
+            ]
+        }
+    )
 
     nlp = Pipeline(config=config)
     nlp.add_component(Segmentor(), name="segmentor")

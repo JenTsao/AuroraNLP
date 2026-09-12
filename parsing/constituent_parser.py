@@ -6,60 +6,60 @@ from dataclasses import dataclass, field
 from typing import Dict, Iterator, List, Optional, Set, Tuple
 
 CONSTITUENT_LABELS = {
-    'S': '句子',
-    'NP': '名词短语',
-    'VP': '动词短语',
-    'PP': '介词短语',
-    'ADJP': '形容词短语',
-    'ADVP': '副词短语',
-    'QP': '量词短语',
-    'CP': '从句',
-    'IP': '简单句',
-    'DP': '限定词短语',
-    'LCP': '方位短语',
-    'DNP': '的字短语',
-    'DVP': '地字短语',
-    'M': '数词短语',
-    'PRN': '插入语',
-    'INTJ': '感叹词',
-    'FRAG': '片段',
-    'ROOT': '根节点',
-    'TOP': '顶层节点',
+    "S": "句子",
+    "NP": "名词短语",
+    "VP": "动词短语",
+    "PP": "介词短语",
+    "ADJP": "形容词短语",
+    "ADVP": "副词短语",
+    "QP": "量词短语",
+    "CP": "从句",
+    "IP": "简单句",
+    "DP": "限定词短语",
+    "LCP": "方位短语",
+    "DNP": "的字短语",
+    "DVP": "地字短语",
+    "M": "数词短语",
+    "PRN": "插入语",
+    "INTJ": "感叹词",
+    "FRAG": "片段",
+    "ROOT": "根节点",
+    "TOP": "顶层节点",
 }
 
 POS_LABELS = {
-    'NN': '普通名词',
-    'NR': '专有名词',
-    'NT': '时间名词',
-    'VV': '动词',
-    'VA': '形容词动词',
-    'VC': '系动词',
-    'VE': '存在动词',
-    'AD': '副词',
-    'JJ': '形容词',
-    'DT': '限定词',
-    'CD': '基数词',
-    'OD': '序数词',
-    'M': '量词',
-    'PN': '代词',
-    'P': '介词',
-    'CC': '并列连词',
-    'CS': '从属连词',
-    'DEC': '的(补语标记)',
-    'DEG': '的(领属标记)',
-    'DER': '得(补语标记)',
-    'DEV': '地(状语标记)',
-    'SP': '句末助词',
-    'AS': '动态助词',
-    'ETC': '等',
-    'MSP': '其他助词',
-    'IJ': '感叹词',
-    'ON': '拟声词',
-    'PU': '标点',
-    'FW': '外来词',
-    'LB': '被字句标记',
-    'SB': '被字句动词',
-    'BA': '把字句标记',
+    "NN": "普通名词",
+    "NR": "专有名词",
+    "NT": "时间名词",
+    "VV": "动词",
+    "VA": "形容词动词",
+    "VC": "系动词",
+    "VE": "存在动词",
+    "AD": "副词",
+    "JJ": "形容词",
+    "DT": "限定词",
+    "CD": "基数词",
+    "OD": "序数词",
+    "M": "量词",
+    "PN": "代词",
+    "P": "介词",
+    "CC": "并列连词",
+    "CS": "从属连词",
+    "DEC": "的(补语标记)",
+    "DEG": "的(领属标记)",
+    "DER": "得(补语标记)",
+    "DEV": "地(状语标记)",
+    "SP": "句末助词",
+    "AS": "动态助词",
+    "ETC": "等",
+    "MSP": "其他助词",
+    "IJ": "感叹词",
+    "ON": "拟声词",
+    "PU": "标点",
+    "FW": "外来词",
+    "LB": "被字句标记",
+    "SB": "被字句动词",
+    "BA": "把字句标记",
 }
 
 DEFAULT_NON_TERMINALS = list(CONSTITUENT_LABELS.keys())
@@ -74,7 +74,7 @@ class GrammarRule:
     count: int = 0
 
     def __repr__(self) -> str:
-        rhs_str = ' '.join(self.rhs)
+        rhs_str = " ".join(self.rhs)
         return f"GrammarRule({self.lhs} -> {rhs_str}, prob={self.probability:.4f})"
 
     def __eq__(self, other) -> bool:
@@ -103,8 +103,8 @@ class GrammarRule:
         return f"{self.lhs} -> {' '.join(self.rhs)}"
 
     @classmethod
-    def from_string(cls, rule_str: str, probability: float = 1.0) -> 'GrammarRule':
-        parts = rule_str.split('->')
+    def from_string(cls, rule_str: str, probability: float = 1.0) -> "GrammarRule":
+        parts = rule_str.split("->")
         if len(parts) != 2:
             raise ValueError(f"Invalid rule format: {rule_str}")
 
@@ -117,8 +117,8 @@ class GrammarRule:
 @dataclass
 class ConstituentNode:
     label: str
-    children: List['ConstituentNode'] = field(default_factory=list)
-    word: str = ''
+    children: List["ConstituentNode"] = field(default_factory=list)
+    word: str = ""
     start: int = 0
     end: int = 0
 
@@ -142,9 +142,9 @@ class ConstituentNode:
         return words
 
     def get_text(self) -> str:
-        return ''.join(self.get_words())
+        return "".join(self.get_words())
 
-    def get_yield(self) -> List['ConstituentNode']:
+    def get_yield(self) -> List["ConstituentNode"]:
         if self.is_terminal():
             return [self]
         result = []
@@ -152,7 +152,7 @@ class ConstituentNode:
             result.extend(child.get_yield())
         return result
 
-    def get_preterminals(self) -> List['ConstituentNode']:
+    def get_preterminals(self) -> List["ConstituentNode"]:
         if self.is_preterminal():
             return [self]
         result = []
@@ -170,29 +170,29 @@ class ConstituentNode:
 
     def to_penn_treebank(self, indent: int = 0) -> str:
         if self.is_terminal():
-            return ' ' * indent + self.word
+            return " " * indent + self.word
 
         if self.is_preterminal():
-            return ' ' * indent + f"({self.label} {self.children[0].word})"
+            return " " * indent + f"({self.label} {self.children[0].word})"
 
-        lines = [' ' * indent + f"({self.label}"]
+        lines = [" " * indent + f"({self.label}"]
         for child in self.children:
             child_str = child.to_penn_treebank(indent + 2)
             if child_str.strip():
                 lines.append(child_str)
-        lines.append(' ' * indent + ')')
+        lines.append(" " * indent + ")")
 
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
     def to_lisp_string(self) -> str:
         if self.is_terminal():
             return self.word
         if self.is_preterminal():
             return f"({self.label} {self.children[0].word})"
-        children_str = ' '.join(child.to_lisp_string() for child in self.children)
+        children_str = " ".join(child.to_lisp_string() for child in self.children)
         return f"({self.label} {children_str})"
 
-    def get_subtrees(self, label: Optional[str] = None) -> List['ConstituentNode']:
+    def get_subtrees(self, label: Optional[str] = None) -> List["ConstituentNode"]:
         result = []
         if label is None or self.label == label:
             result.append(self)
@@ -200,19 +200,19 @@ class ConstituentNode:
             result.extend(child.get_subtrees(label))
         return result
 
-    def get_phrases(self, phrase_type: str) -> List['ConstituentNode']:
+    def get_phrases(self, phrase_type: str) -> List["ConstituentNode"]:
         return self.get_subtrees(phrase_type)
 
-    def get_noun_phrases(self) -> List['ConstituentNode']:
-        return self.get_phrases('NP')
+    def get_noun_phrases(self) -> List["ConstituentNode"]:
+        return self.get_phrases("NP")
 
-    def get_verb_phrases(self) -> List['ConstituentNode']:
-        return self.get_phrases('VP')
+    def get_verb_phrases(self) -> List["ConstituentNode"]:
+        return self.get_phrases("VP")
 
-    def get_prep_phrases(self) -> List['ConstituentNode']:
-        return self.get_phrases('PP')
+    def get_prep_phrases(self) -> List["ConstituentNode"]:
+        return self.get_phrases("PP")
 
-    def find_node_at(self, start: int, end: int) -> Optional['ConstituentNode']:
+    def find_node_at(self, start: int, end: int) -> Optional["ConstituentNode"]:
         if self.start == start and self.end == end:
             return self
         for child in self.children:
@@ -224,26 +224,26 @@ class ConstituentNode:
 
     def to_dict(self) -> Dict:
         result = {
-            'label': self.label,
-            'start': self.start,
-            'end': self.end,
+            "label": self.label,
+            "start": self.start,
+            "end": self.end,
         }
         if self.is_terminal():
-            result['word'] = self.word
+            result["word"] = self.word
         else:
-            result['children'] = [child.to_dict() for child in self.children]
+            result["children"] = [child.to_dict() for child in self.children]
         return result
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'ConstituentNode':
+    def from_dict(cls, data: Dict) -> "ConstituentNode":
         node = cls(
-            label=data['label'],
-            word=data.get('word', ''),
-            start=data['start'],
-            end=data['end']
+            label=data["label"],
+            word=data.get("word", ""),
+            start=data["start"],
+            end=data["end"],
         )
-        if 'children' in data:
-            node.children = [cls.from_dict(c) for c in data['children']]
+        if "children" in data:
+            node.children = [cls.from_dict(c) for c in data["children"]]
         return node
 
 
@@ -253,7 +253,9 @@ class ConstituentTree:
 
     def __repr__(self) -> str:
         if self.root:
-            return f"ConstituentTree(root={self.root.label}, height={self.get_height()})"
+            return (
+                f"ConstituentTree(root={self.root.label}, height={self.get_height()})"
+            )
         return "ConstituentTree(empty)"
 
     def __len__(self) -> int:
@@ -272,7 +274,7 @@ class ConstituentTree:
         return self.root.get_words() if self.root else []
 
     def get_text(self) -> str:
-        return self.root.get_text() if self.root else ''
+        return self.root.get_text() if self.root else ""
 
     def get_height(self) -> int:
         return self.root.get_height() if self.root else 0
@@ -285,13 +287,16 @@ class ConstituentTree:
 
     def get_pos_tags(self) -> List[Tuple[str, str]]:
         preterminals = self.get_preterminals()
-        return [(node.label, node.children[0].word if node.children else '') for node in preterminals]
+        return [
+            (node.label, node.children[0].word if node.children else "")
+            for node in preterminals
+        ]
 
     def to_penn_treebank(self) -> str:
-        return self.root.to_penn_treebank() if self.root else ''
+        return self.root.to_penn_treebank() if self.root else ""
 
     def to_lisp_string(self) -> str:
-        return self.root.to_lisp_string() if self.root else ''
+        return self.root.to_lisp_string() if self.root else ""
 
     def get_phrases(self, phrase_type: str) -> List[ConstituentNode]:
         return self.root.get_phrases(phrase_type) if self.root else []
@@ -309,11 +314,11 @@ class ConstituentTree:
         return self.root.to_dict() if self.root else {}
 
     @classmethod
-    def from_dict(cls, data: Dict) -> 'ConstituentTree':
+    def from_dict(cls, data: Dict) -> "ConstituentTree":
         return cls(ConstituentNode.from_dict(data))
 
     @classmethod
-    def from_penn_treebank(cls, tree_str: str) -> 'ConstituentTree':
+    def from_penn_treebank(cls, tree_str: str) -> "ConstituentTree":
         tree_str = tree_str.strip()
         if not tree_str:
             return cls()
@@ -328,25 +333,27 @@ class ConstituentTree:
         i = 0
         while i < len(tree_str):
             c = tree_str[i]
-            if c == '(':
-                tokens.append('(')
+            if c == "(":
+                tokens.append("(")
                 i += 1
-            elif c == ')':
-                tokens.append(')')
+            elif c == ")":
+                tokens.append(")")
                 i += 1
             elif c.isspace():
                 i += 1
             else:
                 j = i
-                while j < len(tree_str) and tree_str[j] not in '() \t\n\r':
+                while j < len(tree_str) and tree_str[j] not in "() \t\n\r":
                     j += 1
                 tokens.append(tree_str[i:j])
                 i = j
         return tokens
 
     @staticmethod
-    def _parse_tokens(tokens: List[str], pos: int) -> Tuple[Optional[ConstituentNode], int]:
-        if pos >= len(tokens) or tokens[pos] != '(':
+    def _parse_tokens(
+        tokens: List[str], pos: int
+    ) -> Tuple[Optional[ConstituentNode], int]:
+        if pos >= len(tokens) or tokens[pos] != "(":
             return None, pos
 
         pos += 1
@@ -360,19 +367,21 @@ class ConstituentTree:
         start = 0
         end = 0
 
-        while pos < len(tokens) and tokens[pos] != ')':
-            if tokens[pos] == '(':
+        while pos < len(tokens) and tokens[pos] != ")":
+            if tokens[pos] == "(":
                 child, pos = ConstituentTree._parse_tokens(tokens, pos)
                 if child:
                     children.append(child)
             else:
                 word = tokens[pos]
                 pos += 1
-                word_node = ConstituentNode(label=word, word=word, start=end, end=end + 1)
+                word_node = ConstituentNode(
+                    label=word, word=word, start=end, end=end + 1
+                )
                 children.append(word_node)
                 end += 1
 
-        if pos < len(tokens) and tokens[pos] == ')':
+        if pos < len(tokens) and tokens[pos] == ")":
             pos += 1
 
         if children:
@@ -394,20 +403,12 @@ class ConstituentTree:
 
         if node.is_preterminal():
             rule = GrammarRule(
-                lhs=node.label,
-                rhs=(node.children[0].word,),
-                probability=1.0,
-                count=1
+                lhs=node.label, rhs=(node.children[0].word,), probability=1.0, count=1
             )
             rules.append(rule)
         else:
             rhs = tuple(child.label for child in node.children)
-            rule = GrammarRule(
-                lhs=node.label,
-                rhs=rhs,
-                probability=1.0,
-                count=1
-            )
+            rule = GrammarRule(lhs=node.label, rhs=rhs, probability=1.0, count=1)
             rules.append(rule)
 
             for child in node.children:
@@ -419,7 +420,7 @@ class PCFG:
         self.rules: Dict[str, List[GrammarRule]] = defaultdict(list)
         self.non_terminals: Set[str] = set()
         self.terminals: Set[str] = set()
-        self.start_symbol: str = 'S'
+        self.start_symbol: str = "S"
         self._rule_index: Dict[Tuple[str, Tuple[str, ...]], int] = {}
         self._trained = False
 
@@ -473,14 +474,11 @@ class PCFG:
 
         for (lhs, rhs), count in rule_counts.items():
             total = lhs_counts[lhs]
-            prob = (count + smooth) / (total + smooth * len([k for k in rule_counts if k[0] == lhs]))
-
-            rule = GrammarRule(
-                lhs=lhs,
-                rhs=rhs,
-                probability=prob,
-                count=count
+            prob = (count + smooth) / (
+                total + smooth * len([k for k in rule_counts if k[0] == lhs])
             )
+
+            rule = GrammarRule(lhs=lhs, rhs=rhs, probability=prob, count=count)
             self.add_rule(rule)
 
         self._trained = True
@@ -524,47 +522,49 @@ class PCFG:
 
     def save(self, filepath: str):
         model_data = {
-            'rules': {lhs: [(r.rhs, r.probability, r.count) for r in rules]
-                     for lhs, rules in self.rules.items()},
-            'non_terminals': list(self.non_terminals),
-            'terminals': list(self.terminals),
-            'start_symbol': self.start_symbol,
-            'trained': self._trained
+            "rules": {
+                lhs: [(r.rhs, r.probability, r.count) for r in rules]
+                for lhs, rules in self.rules.items()
+            },
+            "non_terminals": list(self.non_terminals),
+            "terminals": list(self.terminals),
+            "start_symbol": self.start_symbol,
+            "trained": self._trained,
         }
 
         dir_path = os.path.dirname(filepath)
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
 
-        with open(filepath, 'wb') as f:
+        with open(filepath, "wb") as f:
             pickle.dump(model_data, f)
 
     def load(self, filepath: str):
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             model_data = pickle.load(f)
 
         self.rules.clear()
         self._rule_index.clear()
 
-        for lhs, rule_data in model_data['rules'].items():
+        for lhs, rule_data in model_data["rules"].items():
             for rhs, prob, count in rule_data:
                 rule = GrammarRule(lhs=lhs, rhs=rhs, probability=prob, count=count)
                 self.add_rule(rule)
 
-        self.non_terminals = set(model_data['non_terminals'])
-        self.terminals = set(model_data['terminals'])
-        self.start_symbol = model_data['start_symbol']
-        self._trained = model_data['trained']
+        self.non_terminals = set(model_data["non_terminals"])
+        self.terminals = set(model_data["terminals"])
+        self.start_symbol = model_data["start_symbol"]
+        self._trained = model_data["trained"]
 
     def get_model_info(self) -> Dict:
         return {
-            'trained': self._trained,
-            'num_rules': sum(len(rules) for rules in self.rules.values()),
-            'num_non_terminals': len(self.non_terminals),
-            'num_terminals': len(self.terminals),
-            'start_symbol': self.start_symbol,
-            'non_terminals': sorted(list(self.non_terminals)),
-            'terminals': sorted(list(self.terminals))[:100]
+            "trained": self._trained,
+            "num_rules": sum(len(rules) for rules in self.rules.values()),
+            "num_non_terminals": len(self.non_terminals),
+            "num_terminals": len(self.terminals),
+            "start_symbol": self.start_symbol,
+            "non_terminals": sorted(list(self.non_terminals)),
+            "terminals": sorted(list(self.terminals))[:100],
         }
 
 
@@ -578,14 +578,19 @@ class CKYParser:
 
         n = len(words)
 
-        chart: Dict[Tuple[int, int], Dict[str, Tuple[float, Optional[Tuple]]]] = defaultdict(dict)
+        chart: Dict[Tuple[int, int], Dict[str, Tuple[float, Optional[Tuple]]]] = (
+            defaultdict(dict)
+        )
 
         for i, word in enumerate(words):
             for lhs, rules in self.grammar.rules.items():
                 for rule in rules:
                     if rule.is_unary() and rule.rhs[0] == word:
                         if lhs not in chart[(i, i + 1)]:
-                            chart[(i, i + 1)][lhs] = (math.log(rule.probability), (word,))
+                            chart[(i, i + 1)][lhs] = (
+                                math.log(rule.probability),
+                                (word,),
+                            )
                         else:
                             current_prob = chart[(i, i + 1)][lhs][0]
                             new_prob = math.log(rule.probability)
@@ -608,10 +613,20 @@ class CKYParser:
                                 if (k, j) in chart and right_sym in chart[(k, j)]:
                                     left_prob = chart[(i, k)][left_sym][0]
                                     right_prob = chart[(k, j)][right_sym][0]
-                                    new_prob = left_prob + right_prob + math.log(rule.probability)
+                                    new_prob = (
+                                        left_prob
+                                        + right_prob
+                                        + math.log(rule.probability)
+                                    )
 
-                                    if lhs not in chart[(i, j)] or new_prob > chart[(i, j)][lhs][0]:
-                                        chart[(i, j)][lhs] = (new_prob, (k, left_sym, right_sym))
+                                    if (
+                                        lhs not in chart[(i, j)]
+                                        or new_prob > chart[(i, j)][lhs][0]
+                                    ):
+                                        chart[(i, j)][lhs] = (
+                                            new_prob,
+                                            (k, left_sym, right_sym),
+                                        )
 
         start = self.grammar.start_symbol
         if (0, n) in chart and start in chart[(0, n)]:
@@ -627,17 +642,16 @@ class CKYParser:
             if len(backpointer) != 3:
                 return False
             split, left_sym, right_sym = backpointer
-            return isinstance(split, int) and isinstance(left_sym, str) and isinstance(right_sym, str)
+            return (
+                isinstance(split, int)
+                and isinstance(left_sym, str)
+                and isinstance(right_sym, str)
+            )
         except (TypeError, ValueError):
             return False
 
     def _build_tree(
-        self,
-        chart: Dict,
-        start: int,
-        end: int,
-        symbol: str,
-        words: List[str]
+        self, chart: Dict, start: int, end: int, symbol: str, words: List[str]
     ) -> Optional[ConstituentNode]:
         if (start, end) not in chart or symbol not in chart[(start, end)]:
             return None
@@ -647,7 +661,9 @@ class CKYParser:
         if backpointer and len(backpointer) == 1 and isinstance(backpointer[0], str):
             word = backpointer[0]
             word_node = ConstituentNode(label=word, word=word, start=start, end=end)
-            return ConstituentNode(label=symbol, children=[word_node], start=start, end=end)
+            return ConstituentNode(
+                label=symbol, children=[word_node], start=start, end=end
+            )
 
         if backpointer and len(backpointer) == 3:
             split, left_sym, right_sym = backpointer
@@ -663,18 +679,22 @@ class CKYParser:
                     label=symbol,
                     children=[left_child, right_child],
                     start=start,
-                    end=end
+                    end=end,
                 )
 
         return None
 
-    def parse_k_best(self, words: List[str], k: int = 5) -> List[Tuple[ConstituentTree, float]]:
+    def parse_k_best(
+        self, words: List[str], k: int = 5
+    ) -> List[Tuple[ConstituentTree, float]]:
         if not words:
             return []
 
         n = len(words)
 
-        chart: Dict[Tuple[int, int], Dict[str, List[Tuple[float, Optional[Tuple]]]]] = defaultdict(dict)
+        chart: Dict[Tuple[int, int], Dict[str, List[Tuple[float, Optional[Tuple]]]]] = (
+            defaultdict(dict)
+        )
 
         for i, word in enumerate(words):
             for lhs, rules in self.grammar.rules.items():
@@ -694,7 +714,9 @@ class CKYParser:
             for i in range(n - length + 1):
                 j = i + length
 
-                candidates: Dict[str, List[Tuple[float, Optional[Tuple]]]] = defaultdict(list)
+                candidates: Dict[str, List[Tuple[float, Optional[Tuple]]]] = (
+                    defaultdict(list)
+                )
 
                 for split in range(i + 1, j):
                     for lhs, rules in self.grammar.rules.items():
@@ -705,11 +727,21 @@ class CKYParser:
                             left_sym, right_sym = rule.rhs
 
                             if (i, split) in chart and left_sym in chart[(i, split)]:
-                                if (split, j) in chart and right_sym in chart[(split, j)]:
+                                if (split, j) in chart and right_sym in chart[
+                                    (split, j)
+                                ]:
                                     for left_prob, _ in chart[(i, split)][left_sym]:
-                                        for right_prob, _ in chart[(split, j)][right_sym]:
-                                            new_prob = left_prob + right_prob + math.log(rule.probability)
-                                            candidates[lhs].append((new_prob, (split, left_sym, right_sym)))
+                                        for right_prob, _ in chart[(split, j)][
+                                            right_sym
+                                        ]:
+                                            new_prob = (
+                                                left_prob
+                                                + right_prob
+                                                + math.log(rule.probability)
+                                            )
+                                            candidates[lhs].append(
+                                                (new_prob, (split, left_sym, right_sym))
+                                            )
 
                 for sym, entries in candidates.items():
                     entries.sort(reverse=True, key=lambda x: x[0])
@@ -734,7 +766,7 @@ class CKYParser:
         end: int,
         symbol: str,
         words: List[str],
-        rank: int
+        rank: int,
     ) -> Optional[ConstituentNode]:
         if (start, end) not in chart or symbol not in chart[(start, end)]:
             return None
@@ -747,7 +779,9 @@ class CKYParser:
         if backpointer and len(backpointer) == 1 and isinstance(backpointer[0], str):
             word = backpointer[0]
             word_node = ConstituentNode(label=word, word=word, start=start, end=end)
-            return ConstituentNode(label=symbol, children=[word_node], start=start, end=end)
+            return ConstituentNode(
+                label=symbol, children=[word_node], start=start, end=end
+            )
 
         if backpointer and len(backpointer) == 3:
             split, left_sym, right_sym = backpointer
@@ -755,26 +789,26 @@ class CKYParser:
             if not self._validate_backpointer(backpointer):
                 return None
 
-            left_child = self._build_tree_k_best(chart, start, split, left_sym, words, 0)
-            right_child = self._build_tree_k_best(chart, split, end, right_sym, words, 0)
+            left_child = self._build_tree_k_best(
+                chart, start, split, left_sym, words, 0
+            )
+            right_child = self._build_tree_k_best(
+                chart, split, end, right_sym, words, 0
+            )
 
             if left_child and right_child:
                 return ConstituentNode(
                     label=symbol,
                     children=[left_child, right_child],
                     start=start,
-                    end=end
+                    end=end,
                 )
 
         return None
 
 
 class ConstituentParser:
-    def __init__(
-        self,
-        start_symbol: str = 'S',
-        use_pos: bool = True
-    ):
+    def __init__(self, start_symbol: str = "S", use_pos: bool = True):
         self.grammar = PCFG()
         self.grammar.start_symbol = start_symbol
         self.cky_parser = CKYParser(self.grammar)
@@ -789,13 +823,13 @@ class ConstituentParser:
         self.grammar.train(trees, smooth)
         self._trained = True
 
-    def train_from_file(self, filepath: str, encoding: str = 'utf-8'):
+    def train_from_file(self, filepath: str, encoding: str = "utf-8"):
         trees = []
 
         with open(filepath, encoding=encoding) as f:
             content = f.read()
 
-        tree_strings = content.strip().split('\n\n')
+        tree_strings = content.strip().split("\n\n")
 
         for tree_str in tree_strings:
             if tree_str.strip():
@@ -815,7 +849,9 @@ class ConstituentParser:
 
         return self.cky_parser.parse(words)
 
-    def parse_k_best(self, words: List[str], k: int = 5) -> List[Tuple[ConstituentTree, float]]:
+    def parse_k_best(
+        self, words: List[str], k: int = 5
+    ) -> List[Tuple[ConstituentTree, float]]:
         if not words:
             return []
 
@@ -840,58 +876,62 @@ class ConstituentParser:
 
     def save_model(self, filepath: str):
         if not self._trained:
-            raise RuntimeError("Model has not been trained. Call train() first before saving.")
+            raise RuntimeError(
+                "Model has not been trained. Call train() first before saving."
+            )
 
         model_data = {
-            'grammar': {
-                'rules': {lhs: [(r.rhs, r.probability, r.count) for r in rules]
-                         for lhs, rules in self.grammar.rules.items()},
-                'non_terminals': list(self.grammar.non_terminals),
-                'terminals': list(self.grammar.terminals),
-                'start_symbol': self.grammar.start_symbol,
+            "grammar": {
+                "rules": {
+                    lhs: [(r.rhs, r.probability, r.count) for r in rules]
+                    for lhs, rules in self.grammar.rules.items()
+                },
+                "non_terminals": list(self.grammar.non_terminals),
+                "terminals": list(self.grammar.terminals),
+                "start_symbol": self.grammar.start_symbol,
             },
-            'use_pos': self.use_pos,
-            'trained': self._trained
+            "use_pos": self.use_pos,
+            "trained": self._trained,
         }
 
         dir_path = os.path.dirname(filepath)
         if dir_path:
             os.makedirs(dir_path, exist_ok=True)
 
-        with open(filepath, 'wb') as f:
+        with open(filepath, "wb") as f:
             pickle.dump(model_data, f)
 
     def load_model(self, filepath: str):
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             model_data = pickle.load(f)
 
         self.grammar = PCFG()
-        grammar_data = model_data['grammar']
+        grammar_data = model_data["grammar"]
 
-        for lhs, rule_data in grammar_data['rules'].items():
+        for lhs, rule_data in grammar_data["rules"].items():
             for rhs, prob, count in rule_data:
                 rule = GrammarRule(lhs=lhs, rhs=rhs, probability=prob, count=count)
                 self.grammar.add_rule(rule)
 
-        self.grammar.non_terminals = set(grammar_data['non_terminals'])
-        self.grammar.terminals = set(grammar_data['terminals'])
-        self.grammar.start_symbol = grammar_data['start_symbol']
+        self.grammar.non_terminals = set(grammar_data["non_terminals"])
+        self.grammar.terminals = set(grammar_data["terminals"])
+        self.grammar.start_symbol = grammar_data["start_symbol"]
 
         self.cky_parser = CKYParser(self.grammar)
-        self.use_pos = model_data['use_pos']
-        self._trained = model_data['trained']
+        self.use_pos = model_data["use_pos"]
+        self._trained = model_data["trained"]
 
     def is_trained(self) -> bool:
         return self._trained
 
     def get_model_info(self) -> Dict:
         if not self._trained:
-            return {'trained': False}
+            return {"trained": False}
 
         return {
-            'trained': True,
-            'grammar': self.grammar.get_model_info(),
-            'use_pos': self.use_pos
+            "trained": True,
+            "grammar": self.grammar.get_model_info(),
+            "use_pos": self.use_pos,
         }
 
 
@@ -985,24 +1025,22 @@ def create_sample_constituent_trees() -> List[ConstituentTree]:
 
 
 def train_constituent_parser_from_file(
-    parser: ConstituentParser,
-    filepath: str,
-    encoding: str = 'utf-8'
+    parser: ConstituentParser, filepath: str, encoding: str = "utf-8"
 ) -> None:
     parser.train_from_file(filepath, encoding)
 
 
 __all__ = [
-    'CONSTITUENT_LABELS',
-    'DEFAULT_NON_TERMINALS',
-    'DEFAULT_TERMINALS',
-    'PCFG',
-    'POS_LABELS',
-    'CKYParser',
-    'ConstituentNode',
-    'ConstituentParser',
-    'ConstituentTree',
-    'GrammarRule',
-    'create_sample_constituent_trees',
-    'train_constituent_parser_from_file',
+    "CONSTITUENT_LABELS",
+    "DEFAULT_NON_TERMINALS",
+    "DEFAULT_TERMINALS",
+    "PCFG",
+    "POS_LABELS",
+    "CKYParser",
+    "ConstituentNode",
+    "ConstituentParser",
+    "ConstituentTree",
+    "GrammarRule",
+    "create_sample_constituent_trees",
+    "train_constituent_parser_from_file",
 ]

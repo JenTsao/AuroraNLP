@@ -2,7 +2,12 @@
 
 import pytest
 
-from AuroraNLP.parsing.pos_tagger import DEFAULT_TAGS, POS_TAGS, CRFPOSTagger, HMMPOSTagger
+from AuroraNLP.parsing.pos_tagger import (
+    DEFAULT_TAGS,
+    POS_TAGS,
+    CRFPOSTagger,
+    HMMPOSTagger,
+)
 
 
 @pytest.fixture
@@ -16,7 +21,10 @@ def pos_corpus():
         (["中国", "是", "伟大", "的", "国家"], ["ns", "v", "a", "u", "n"]),
         (["北京", "是", "中国", "的", "首都"], ["ns", "v", "ns", "u", "n"]),
         (["我", "在", "北京", "大学", "学习"], ["r", "p", "ns", "n", "v"]),
-        (["自然语言", "处理", "是", "人工智能", "的", "方向"], ["n", "v", "v", "n", "u", "n"]),
+        (
+            ["自然语言", "处理", "是", "人工智能", "的", "方向"],
+            ["n", "v", "v", "n", "u", "n"],
+        ),
         (["我", "爱", "自然语言", "处理"], ["r", "v", "n", "v"]),
         (["中国", "人", "很", "好"], ["ns", "n", "d", "a"]),
         (["研究", "生", "在", "研究", "生命"], ["v", "n", "p", "v", "n"]),
@@ -45,9 +53,9 @@ class TestHMMPOSTaggerTrain:
         tagger.train(pos_corpus)
         assert tagger.is_trained() is True
         info = tagger.get_model_info()
-        assert info['trained'] is True
-        assert info['num_tags'] > 0
-        assert info['word_count'] > 0
+        assert info["trained"] is True
+        assert info["num_tags"] > 0
+        assert info["word_count"] > 0
 
 
 class TestHMMPOSTaggerTag:
@@ -84,9 +92,9 @@ class TestPOSTagsConstants:
         assert isinstance(POS_TAGS, dict)
         assert len(POS_TAGS) > 0
         # 验证常见标签
-        assert 'n' in POS_TAGS
-        assert 'v' in POS_TAGS
-        assert 'a' in POS_TAGS
+        assert "n" in POS_TAGS
+        assert "v" in POS_TAGS
+        assert "a" in POS_TAGS
 
     def test_default_tags_defined(self):
         """测试 DEFAULT_TAGS 常量存在"""

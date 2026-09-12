@@ -4,11 +4,11 @@ from setuptools import find_packages, setup
 with open("README.md", encoding="utf-8") as fh:
     long_description = fh.read()
 
-_found = find_packages(exclude=['tests', 'tests.*', 'examples', 'examples.*'])
-_packages = ['AuroraNLP'] + ['AuroraNLP.' + p for p in _found]
-_package_dir = {'AuroraNLP': '.'}
+_found = find_packages(exclude=["tests", "tests.*", "examples", "examples.*"])
+_packages = ["AuroraNLP"] + ["AuroraNLP." + p for p in _found]
+_package_dir = {"AuroraNLP": "."}
 for p in _found:
-    _package_dir['AuroraNLP.' + p] = p
+    _package_dir["AuroraNLP." + p] = p
 
 setup(
     name="auroranlp_core",
@@ -16,14 +16,14 @@ setup(
     packages=_packages,
     package_dir=_package_dir,
     package_data={
-        'AuroraNLP': [
-            'data/*.txt',
-            'data/*.json',
-            'data/*.dict',
-            'data/domain_dictionaries/*.txt',
-            'data/stopwords/**/*.txt',
-            'data/stopwords/**/*.json',
-            'data/sogou/*.scel',
+        "AuroraNLP": [
+            "data/*.txt",
+            "data/*.json",
+            "data/*.dict",
+            "data/domain_dictionaries/*.txt",
+            "data/stopwords/**/*.txt",
+            "data/stopwords/**/*.json",
+            "data/sogou/*.scel",
         ],
     },
     include_package_data=True,

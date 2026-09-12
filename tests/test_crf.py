@@ -1,4 +1,5 @@
 """CRF 模型测试"""
+
 import pytest
 
 from AuroraNLP.segmentation.crf import CRFFeatureTemplate, CRFModel, CRFSegmentor
@@ -16,7 +17,7 @@ class TestCRFModelInit:
     def test_crf_segmentor_init(self):
         """测试 CRFSegmentor 初始化"""
         segmentor = CRFSegmentor()
-        assert segmentor.STATES == ['B', 'M', 'E', 'S']
+        assert segmentor.STATES == ["B", "M", "E", "S"]
         assert segmentor.is_trained() is False
 
     def test_crf_feature_template_init(self):
@@ -48,7 +49,7 @@ class TestCRFSegment:
         result = segmentor.segment("我爱中国")
         assert isinstance(result, list)
         assert len(result) > 0
-        assert ''.join(result) == "我爱中国"
+        assert "".join(result) == "我爱中国"
 
     @pytest.mark.slow
     def test_crf_segment_with_states(self, sample_corpus):
@@ -98,14 +99,14 @@ class TestCRFModelInfo:
         """测试模型信息"""
         segmentor = CRFSegmentor()
         info = segmentor.get_model_info()
-        assert info['trained'] is False
+        assert info["trained"] is False
 
         segmentor.train(sample_corpus, max_iter=5, verbose=False)
         info = segmentor.get_model_info()
-        assert info['trained'] is True
-        assert 'num_tags' in info
-        assert 'tags' in info
-        assert 'num_features' in info
+        assert info["trained"] is True
+        assert "num_tags" in info
+        assert "tags" in info
+        assert "num_features" in info
 
 
 class TestCRFIsTrained:

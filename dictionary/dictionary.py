@@ -7,7 +7,9 @@ from AuroraNLP.dictionary.trie import Trie
 
 
 class Dictionary:
-    DEFAULT_DICT_PATH = os.path.join(os.path.dirname(__file__), 'data', 'dictionary.txt')
+    DEFAULT_DICT_PATH = os.path.join(
+        os.path.dirname(__file__), "data", "dictionary.txt"
+    )
 
     def __init__(self, load_default: bool = True, priority: int = 0):
         self._trie = Trie()
@@ -38,10 +40,7 @@ class Dictionary:
             self.load_dictionary(self.DEFAULT_DICT_PATH)
 
     def load_dictionary(
-        self,
-        path: str,
-        priority: Optional[int] = None,
-        default_weight: float = 1.0
+        self, path: str, priority: Optional[int] = None, default_weight: float = 1.0
     ) -> None:
         if not os.path.exists(path):
             raise FileNotFoundError(f"词典文件不存在: {path}")
@@ -52,7 +51,7 @@ class Dictionary:
         loaded_count = 0
         error_count = 0
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
@@ -60,7 +59,12 @@ class Dictionary:
 
                 parts = line.split()
                 if len(parts) >= 4:
-                    word, pos_tag, weight_str, priority_str = parts[0], parts[1], parts[2], parts[3]
+                    word, pos_tag, weight_str, priority_str = (
+                        parts[0],
+                        parts[1],
+                        parts[2],
+                        parts[3],
+                    )
                     try:
                         weight = float(weight_str)
                         word_priority = int(priority_str)
@@ -68,7 +72,7 @@ class Dictionary:
                         warnings.warn(
                             f"第 {line_num} 行: 权重或优先级格式错误，使用默认值: {e}",
                             UserWarning,
-                            stacklevel=2
+                            stacklevel=2,
                         )
                         weight = default_weight
                         word_priority = priority
@@ -88,24 +92,24 @@ class Dictionary:
                         warnings.warn(
                             f"第 {line_num} 行: 空词汇将被跳过",
                             UserWarning,
-                            stacklevel=2
+                            stacklevel=2,
                         )
                         error_count += 1
                         continue
-                    if not pos_tag or not pos_tag.replace('/', '').isalpha():
+                    if not pos_tag or not pos_tag.replace("/", "").isalpha():
                         warnings.warn(
                             f"第 {line_num} 行: 无效的词性标签 '{pos_tag}'，将使用默认值",
                             UserWarning,
-                            stacklevel=2
+                            stacklevel=2,
                         )
-                        pos_tag = 'x'
+                        pos_tag = "x"
                     self._trie.insert(word, pos_tag, default_weight, priority)
                     loaded_count += 1
                     if len(parts) > 2:
                         warnings.warn(
                             f"词典行格式多余字段将被忽略: '{line}'",
                             UserWarning,
-                            stacklevel=2
+                            stacklevel=2,
                         )
                 elif len(parts) == 1:
                     word = parts[0]
@@ -116,7 +120,7 @@ class Dictionary:
                         warnings.warn(
                             f"第 {line_num} 行: 空词汇将被跳过",
                             UserWarning,
-                            stacklevel=2
+                            stacklevel=2,
                         )
                         error_count += 1
 
@@ -124,20 +128,18 @@ class Dictionary:
 
         if loaded_count == 0:
             warnings.warn(
-                f"词典文件 '{path}' 未加载任何有效词汇",
-                UserWarning,
-                stacklevel=2
+                f"词典文件 '{path}' 未加载任何有效词汇", UserWarning, stacklevel=2
             )
 
         if error_count > 0:
             warnings.warn(
                 f"词典加载完成，共加载 {loaded_count} 个词汇，跳过 {error_count} 个无效条目",
                 UserWarning,
-                stacklevel=2
+                stacklevel=2,
             )
 
     def save_dictionary(self, path: str, include_weight_priority: bool = False) -> None:
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             for word in self.get_words():
                 found, pos_tag, weight, priority = self._trie.search_with_info(word)
                 if include_weight_priority:
@@ -168,7 +170,7 @@ class Dictionary:
         word: str,
         pos_tag: Optional[str] = None,
         weight: float = 1.0,
-        priority: Optional[int] = None
+        priority: Optional[int] = None,
     ) -> None:
         if priority is None:
             priority = self._priority
@@ -212,22 +214,18 @@ class Dictionary:
     def get_max_match_length(self, text: str, start: int = 0, max_len: int = 15) -> int:
         return self._trie.get_max_match_length(text, start, max_len)
 
-    def get_max_match_with_pos(self, text: str, start: int = 0, max_len: int = 15) -> Tuple[int, Optional[str]]:
+    def get_max_match_with_pos(
+        self, text: str, start: int = 0, max_len: int = 15
+    ) -> Tuple[int, Optional[str]]:
         return self._trie.get_max_match_with_pos(text, start, max_len)
 
     def get_max_match_with_info(
-        self,
-        text: str,
-        start: int = 0,
-        max_len: int = 15
+        self, text: str, start: int = 0, max_len: int = 15
     ) -> Tuple[int, Optional[str], float, int]:
         return self._trie.get_max_match_with_info(text, start, max_len)
 
     def get_all_matches_with_info(
-        self,
-        text: str,
-        start: int = 0,
-        max_len: int = 15
+        self, text: str, start: int = 0, max_len: int = 15
     ) -> List[Tuple[int, str, Optional[str], float, int]]:
         return self._trie.get_all_matches_with_info(text, start, max_len)
 
@@ -274,7 +272,7 @@ class UserDictionary:
         self,
         path: str,
         priority: Optional[int] = None,
-        default_weight: Optional[float] = None
+        default_weight: Optional[float] = None,
     ) -> None:
         if not os.path.exists(path):
             raise FileNotFoundError(f"词典文件不存在: {path}")
@@ -287,7 +285,7 @@ class UserDictionary:
         loaded_count = 0
         error_count = 0
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line_num, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
@@ -295,7 +293,12 @@ class UserDictionary:
 
                 parts = line.split()
                 if len(parts) >= 4:
-                    word, pos_tag, weight_str, priority_str = parts[0], parts[1], parts[2], parts[3]
+                    word, pos_tag, weight_str, priority_str = (
+                        parts[0],
+                        parts[1],
+                        parts[2],
+                        parts[3],
+                    )
                     try:
                         weight = float(weight_str)
                         word_priority = int(priority_str)
@@ -326,10 +329,13 @@ class UserDictionary:
         self._words_cache = None
 
         if loaded_count > 0:
-            warnings.warn(f"用户词典 '{self._name}' 加载完成，共加载 {loaded_count} 个词汇", UserWarning)
+            warnings.warn(
+                f"用户词典 '{self._name}' 加载完成，共加载 {loaded_count} 个词汇",
+                UserWarning,
+            )
 
     def save_dictionary(self, path: str) -> None:
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             for word in self.get_words():
                 found, pos_tag, weight, priority = self._trie.search_with_info(word)
                 if pos_tag:
@@ -354,7 +360,7 @@ class UserDictionary:
         word: str,
         pos_tag: Optional[str] = None,
         weight: Optional[float] = None,
-        priority: Optional[int] = None
+        priority: Optional[int] = None,
     ) -> None:
         if weight is None:
             weight = self._default_weight
@@ -400,22 +406,18 @@ class UserDictionary:
     def get_max_match_length(self, text: str, start: int = 0, max_len: int = 15) -> int:
         return self._trie.get_max_match_length(text, start, max_len)
 
-    def get_max_match_with_pos(self, text: str, start: int = 0, max_len: int = 15) -> Tuple[int, Optional[str]]:
+    def get_max_match_with_pos(
+        self, text: str, start: int = 0, max_len: int = 15
+    ) -> Tuple[int, Optional[str]]:
         return self._trie.get_max_match_with_pos(text, start, max_len)
 
     def get_max_match_with_info(
-        self,
-        text: str,
-        start: int = 0,
-        max_len: int = 15
+        self, text: str, start: int = 0, max_len: int = 15
     ) -> Tuple[int, Optional[str], float, int]:
         return self._trie.get_max_match_with_info(text, start, max_len)
 
     def get_all_matches_with_info(
-        self,
-        text: str,
-        start: int = 0,
-        max_len: int = 15
+        self, text: str, start: int = 0, max_len: int = 15
     ) -> List[Tuple[int, str, Optional[str], float, int]]:
         return self._trie.get_all_matches_with_info(text, start, max_len)
 
@@ -445,7 +447,7 @@ class DictionaryManager:
             self._user_dictionaries[user_dict.name] = user_dict
             self._cache_valid = False
 
-    def register_domain_dictionary(self, domain_dict: 'DomainDictionary') -> None:
+    def register_domain_dictionary(self, domain_dict: "DomainDictionary") -> None:
         with self._lock:
             self._domain_dictionaries[domain_dict.domain] = domain_dict
             self._cache_valid = False
@@ -472,7 +474,7 @@ class DictionaryManager:
     def get_user_dictionary(self, name: str) -> Optional[UserDictionary]:
         return self._user_dictionaries.get(name)
 
-    def get_domain_dictionary(self, domain: str) -> Optional['DomainDictionary']:
+    def get_domain_dictionary(self, domain: str) -> Optional["DomainDictionary"]:
         return self._domain_dictionaries.get(domain)
 
     def _rebuild_cache(self) -> None:
@@ -526,26 +528,22 @@ class DictionaryManager:
             self._rebuild_cache()
             return self._merged_trie.get_max_match_length(text, start, max_len)
 
-    def get_max_match_with_pos(self, text: str, start: int = 0, max_len: int = 15) -> Tuple[int, Optional[str]]:
+    def get_max_match_with_pos(
+        self, text: str, start: int = 0, max_len: int = 15
+    ) -> Tuple[int, Optional[str]]:
         with self._lock:
             self._rebuild_cache()
             return self._merged_trie.get_max_match_with_pos(text, start, max_len)
 
     def get_max_match_with_info(
-        self,
-        text: str,
-        start: int = 0,
-        max_len: int = 15
+        self, text: str, start: int = 0, max_len: int = 15
     ) -> Tuple[int, Optional[str], float, int]:
         with self._lock:
             self._rebuild_cache()
             return self._merged_trie.get_max_match_with_info(text, start, max_len)
 
     def get_all_matches_with_info(
-        self,
-        text: str,
-        start: int = 0,
-        max_len: int = 15
+        self, text: str, start: int = 0, max_len: int = 15
     ) -> List[Tuple[int, str, Optional[str], float, int]]:
         with self._lock:
             self._rebuild_cache()
@@ -554,29 +552,35 @@ class DictionaryManager:
     def get_all_dictionaries_info(self) -> List[Dict[str, Any]]:
         result = []
         for name, d in self._dictionaries.items():
-            result.append({
-                'name': name,
-                'type': 'system',
-                'priority': d.priority,
-                'word_count': len(d)
-            })
+            result.append(
+                {
+                    "name": name,
+                    "type": "system",
+                    "priority": d.priority,
+                    "word_count": len(d),
+                }
+            )
         for name, d in self._user_dictionaries.items():
-            result.append({
-                'name': name,
-                'type': 'user',
-                'priority': d.priority,
-                'word_count': len(d)
-            })
+            result.append(
+                {
+                    "name": name,
+                    "type": "user",
+                    "priority": d.priority,
+                    "word_count": len(d),
+                }
+            )
         for domain, d in self._domain_dictionaries.items():
-            result.append({
-                'name': d.name,
-                'type': 'domain',
-                'domain': domain,
-                'domain_name': d.domain_name,
-                'priority': d.priority,
-                'word_count': len(d)
-            })
-        return sorted(result, key=lambda x: x['priority'], reverse=True)
+            result.append(
+                {
+                    "name": d.name,
+                    "type": "domain",
+                    "domain": domain,
+                    "domain_name": d.domain_name,
+                    "priority": d.priority,
+                    "word_count": len(d),
+                }
+            )
+        return sorted(result, key=lambda x: x["priority"], reverse=True)
 
     def invalidate_cache(self) -> None:
         self._cache_valid = False

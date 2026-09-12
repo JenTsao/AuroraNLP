@@ -25,7 +25,7 @@ def ner_corpus():
                 Entity("张三", "PER", 0, 2),
                 Entity("北京", "LOC", 3, 5),
                 Entity("清华大学", "ORG", 5, 9),
-            ]
+            ],
         ),
         (
             "李四在上海交通大学工作",
@@ -33,14 +33,14 @@ def ner_corpus():
                 Entity("李四", "PER", 0, 2),
                 Entity("上海", "LOC", 3, 5),
                 Entity("交通大学", "ORG", 5, 9),
-            ]
+            ],
         ),
         (
             "王五于二零二三年加入阿里巴巴集团",
             [
                 Entity("王五", "PER", 0, 2),
                 Entity("阿里巴巴集团", "ORG", 8, 14),
-            ]
+            ],
         ),
         (
             "小明在广州的腾讯公司上班",
@@ -48,7 +48,7 @@ def ner_corpus():
                 Entity("小明", "PER", 0, 2),
                 Entity("广州", "LOC", 3, 5),
                 Entity("腾讯公司", "ORG", 6, 10),
-            ]
+            ],
         ),
         (
             "刘医生在北京协和医院工作",
@@ -56,7 +56,7 @@ def ner_corpus():
                 Entity("刘医生", "PER", 0, 3),
                 Entity("北京", "LOC", 4, 6),
                 Entity("协和医院", "ORG", 6, 10),
-            ]
+            ],
         ),
     ]
 
@@ -95,10 +95,10 @@ class TestNERRecognizerRecognize:
         assert isinstance(entities, list)
         for entity in entities:
             assert isinstance(entity, Entity)
-            assert hasattr(entity, 'text')
-            assert hasattr(entity, 'entity_type')
-            assert hasattr(entity, 'start')
-            assert hasattr(entity, 'end')
+            assert hasattr(entity, "text")
+            assert hasattr(entity, "entity_type")
+            assert hasattr(entity, "start")
+            assert hasattr(entity, "end")
 
 
 class TestNERTagsConstants:
@@ -110,9 +110,9 @@ class TestNERTagsConstants:
         assert isinstance(NER_TAGS, list)
         assert len(NER_TAGS) > 0
         # 应包含 O 标签和 B-/I-/E-/S- 标签
-        assert 'O' in NER_TAGS
-        assert any(tag.startswith('B-') for tag in NER_TAGS)
-        assert any(tag.startswith('I-') for tag in NER_TAGS)
+        assert "O" in NER_TAGS
+        assert any(tag.startswith("B-") for tag in NER_TAGS)
+        assert any(tag.startswith("I-") for tag in NER_TAGS)
 
     def test_ner_entity_types_defined(self):
         """测试 NER_ENTITY_TYPES 常量存在"""
@@ -120,9 +120,9 @@ class TestNERTagsConstants:
         assert isinstance(NER_ENTITY_TYPES, dict)
         assert len(NER_ENTITY_TYPES) > 0
         # 验证常见实体类型
-        assert 'PER' in NER_ENTITY_TYPES
-        assert 'LOC' in NER_ENTITY_TYPES
-        assert 'ORG' in NER_ENTITY_TYPES
+        assert "PER" in NER_ENTITY_TYPES
+        assert "LOC" in NER_ENTITY_TYPES
+        assert "ORG" in NER_ENTITY_TYPES
 
 
 class TestEntity:
@@ -143,10 +143,10 @@ class TestEntity:
         entity = Entity(text="北京", entity_type="LOC", start=0, end=2)
         d = entity.to_dict()
         assert isinstance(d, dict)
-        assert d['text'] == "北京"
-        assert d['entity_type'] == "LOC"
-        assert d['start'] == 0
-        assert d['end'] == 2
+        assert d["text"] == "北京"
+        assert d["entity_type"] == "LOC"
+        assert d["start"] == 0
+        assert d["end"] == 2
 
     def test_entity_equality(self):
         """测试 Entity 相等性"""

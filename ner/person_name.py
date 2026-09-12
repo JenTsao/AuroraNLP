@@ -68,7 +68,9 @@ class NameChar:
             return Gender.MALE
         elif self.female_freq > self.male_freq and self.female_freq > self.neutral_freq:
             return Gender.FEMALE
-        elif self.neutral_freq > self.male_freq and self.neutral_freq > self.female_freq:
+        elif (
+            self.neutral_freq > self.male_freq and self.neutral_freq > self.female_freq
+        ):
             return Gender.NEUTRAL
         else:
             return Gender.NEUTRAL
@@ -115,7 +117,7 @@ NAME_CHAR_CATEGORIES: Dict[str, str] = {
 
 class PersonNameDictionary:
     DEFAULT_DATA_PATH = os.path.join(
-        os.path.dirname(__file__), 'data', 'person_names.txt'
+        os.path.dirname(__file__), "data", "person_names.txt"
     )
 
     def __init__(self, load_default: bool = True):
@@ -149,25 +151,25 @@ class PersonNameDictionary:
 
         current_section = None
 
-        with open(path, encoding='utf-8') as f:
+        with open(path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
-                if not line or line.startswith('#'):
-                    if line.startswith('# @'):
+                if not line or line.startswith("#"):
+                    if line.startswith("# @"):
                         section = line[3:].strip()
-                        if section == 'surnames':
-                            current_section = 'surnames'
-                        elif section == 'compound_surnames':
-                            current_section = 'compound_surnames'
-                        elif section == 'name_chars':
-                            current_section = 'name_chars'
+                        if section == "surnames":
+                            current_section = "surnames"
+                        elif section == "compound_surnames":
+                            current_section = "compound_surnames"
+                        elif section == "name_chars":
+                            current_section = "name_chars"
                     continue
 
-                if current_section == 'surnames':
+                if current_section == "surnames":
                     self._parse_surname(line, SurnameType.SINGLE)
-                elif current_section == 'compound_surnames':
+                elif current_section == "compound_surnames":
                     self._parse_surname(line, SurnameType.COMPOUND)
-                elif current_section == 'name_chars':
+                elif current_section == "name_chars":
                     self._parse_name_char(line)
 
         self._surname_set = set(self._surnames.keys())
@@ -175,7 +177,7 @@ class PersonNameDictionary:
         self._loaded = True
 
     def _parse_surname(self, line: str, surname_type: SurnameType) -> None:
-        parts = line.split('\t')
+        parts = line.split("\t")
         if len(parts) < 2:
             return
 
@@ -193,7 +195,7 @@ class PersonNameDictionary:
             frequency=frequency,
             surname_type=surname_type,
             pinyin=pinyin,
-            origin=origin
+            origin=origin,
         )
 
         if surname_type == SurnameType.SINGLE:
@@ -203,7 +205,7 @@ class PersonNameDictionary:
             self._compound_surnames[name] = surname
 
     def _parse_name_char(self, line: str) -> None:
-        parts = line.split('\t')
+        parts = line.split("\t")
         if len(parts) < 4:
             return
 
@@ -226,7 +228,7 @@ class PersonNameDictionary:
             neutral_freq=neutral_freq,
             category=category,
             meaning=meaning,
-            pinyin=pinyin
+            pinyin=pinyin,
         )
 
         self._name_chars[char] = name_char
@@ -272,7 +274,9 @@ class PersonNameDictionary:
     def get_name_chars_by_category(self, category: str) -> List[NameChar]:
         return [nc for nc in self._name_chars.values() if nc.category == category]
 
-    def get_name_chars_by_gender(self, gender: Gender, min_freq: float = 0.0, top_n: int = 100) -> List[NameChar]:
+    def get_name_chars_by_gender(
+        self, gender: Gender, min_freq: float = 0.0, top_n: int = 100
+    ) -> List[NameChar]:
         result = []
         for nc in self._name_chars.values():
             if gender == Gender.MALE:
@@ -365,7 +369,7 @@ class PersonNameDictionary:
             surname=surname,
             given_name=given_name,
             gender=gender,
-            confidence=confidence
+            confidence=confidence,
         )
 
     def is_person_name(self, text: str, min_given_name_len: int = 1) -> bool:
@@ -392,7 +396,7 @@ class PersonNameDictionary:
             found = False
 
             if i + 3 <= len(text):
-                two_char = text[i:i+2]
+                two_char = text[i : i + 2]
                 if two_char in self._compound_surname_set:
                     given_name_len = 0
                     for j in range(i + 2, min(i + 5, len(text))):
@@ -403,7 +407,7 @@ class PersonNameDictionary:
                             break
 
                     if given_name_len >= 1:
-                        candidate = text[i:i+2+given_name_len]
+                        candidate = text[i : i + 2 + given_name_len]
                         name = self.parse_name(candidate)
                         if name:
                             names.append(name)
@@ -422,7 +426,7 @@ class PersonNameDictionary:
                             break
 
                     if given_name_len >= 1:
-                        candidate = text[i:i+1+given_name_len]
+                        candidate = text[i : i + 1 + given_name_len]
                         name = self.parse_name(candidate)
                         if name:
                             names.append(name)
@@ -439,7 +443,7 @@ class PersonNameDictionary:
         surname: Optional[str] = None,
         gender: Optional[Gender] = None,
         given_name_len: int = 2,
-        category: Optional[str] = None
+        category: Optional[str] = None,
     ) -> str:
         if surname is None:
             surnames = self.get_single_surnames()
@@ -474,14 +478,12 @@ class PersonNameDictionary:
         count: int = 10,
         gender: Optional[Gender] = None,
         given_name_len: int = 2,
-        category: Optional[str] = None
+        category: Optional[str] = None,
     ) -> List[str]:
         names = []
         for _ in range(count):
             name = self.generate_name(
-                gender=gender,
-                given_name_len=given_name_len,
-                category=category
+                gender=gender, given_name_len=given_name_len, category=category
             )
             names.append(name)
         return names
@@ -502,7 +504,9 @@ class PersonNameDictionary:
             "compound_surname_count": len(self._compound_surnames),
             "total_surname_count": self.get_surname_count(),
             "name_char_count": self.get_name_char_count(),
-            "categories": list(set(nc.category for nc in self._name_chars.values() if nc.category)),
+            "categories": list(
+                set(nc.category for nc in self._name_chars.values() if nc.category)
+            ),
         }
 
     def add_surname(
@@ -511,14 +515,14 @@ class PersonNameDictionary:
         frequency: float = 0.0,
         surname_type: SurnameType = SurnameType.SINGLE,
         pinyin: Optional[str] = None,
-        origin: Optional[str] = None
+        origin: Optional[str] = None,
     ) -> None:
         surname = Surname(
             name=name,
             frequency=frequency,
             surname_type=surname_type,
             pinyin=pinyin,
-            origin=origin
+            origin=origin,
         )
 
         if surname_type == SurnameType.SINGLE:
@@ -536,7 +540,7 @@ class PersonNameDictionary:
         neutral_freq: float = 0.0,
         category: str = "",
         meaning: str = "",
-        pinyin: Optional[str] = None
+        pinyin: Optional[str] = None,
     ) -> None:
         name_char = NameChar(
             char=char,
@@ -545,49 +549,59 @@ class PersonNameDictionary:
             neutral_freq=neutral_freq,
             category=category,
             meaning=meaning,
-            pinyin=pinyin
+            pinyin=pinyin,
         )
         self._name_chars[char] = name_char
 
     def save_data(self, path: str) -> None:
-        with open(path, 'w', encoding='utf-8') as f:
+        with open(path, "w", encoding="utf-8") as f:
             f.write("# 人名词库数据文件\n")
             f.write("# 格式说明:\n")
             f.write("# 姓氏: 姓氏\\t频率\\t拼音\\t起源\n")
-            f.write("# 名字用字: 用字\\t男性频率\\t女性频率\\t中性频率\\t分类\\t含义\\t拼音\n")
+            f.write(
+                "# 名字用字: 用字\\t男性频率\\t女性频率\\t中性频率\\t分类\\t含义\\t拼音\n"
+            )
             f.write("#\n")
 
             f.write("# @surnames\n")
-            for surname in sorted(self._surnames.values(), key=lambda s: s.frequency, reverse=True):
+            for surname in sorted(
+                self._surnames.values(), key=lambda s: s.frequency, reverse=True
+            ):
                 parts = [surname.name, str(surname.frequency)]
                 if surname.pinyin:
                     parts.append(surname.pinyin)
                 if surname.origin:
                     parts.append(surname.origin)
-                f.write('\t'.join(parts) + '\n')
+                f.write("\t".join(parts) + "\n")
 
             f.write("\n# @compound_surnames\n")
-            for surname in sorted(self._compound_surnames.values(), key=lambda s: s.frequency, reverse=True):
+            for surname in sorted(
+                self._compound_surnames.values(),
+                key=lambda s: s.frequency,
+                reverse=True,
+            ):
                 parts = [surname.name, str(surname.frequency)]
                 if surname.pinyin:
                     parts.append(surname.pinyin)
                 if surname.origin:
                     parts.append(surname.origin)
-                f.write('\t'.join(parts) + '\n')
+                f.write("\t".join(parts) + "\n")
 
             f.write("\n# @name_chars\n")
-            for name_char in sorted(self._name_chars.values(), key=lambda nc: nc.total_freq, reverse=True):
+            for name_char in sorted(
+                self._name_chars.values(), key=lambda nc: nc.total_freq, reverse=True
+            ):
                 parts = [
                     name_char.char,
                     str(name_char.male_freq),
                     str(name_char.female_freq),
                     str(name_char.neutral_freq),
                     name_char.category,
-                    name_char.meaning
+                    name_char.meaning,
                 ]
                 if name_char.pinyin:
                     parts.append(name_char.pinyin)
-                f.write('\t'.join(parts) + '\n')
+                f.write("\t".join(parts) + "\n")
 
     def __len__(self) -> int:
         return self.get_surname_count() + self.get_name_char_count()
@@ -648,7 +662,9 @@ class PersonNameManager:
             return None
         return self._dictionary.get_name_char(char)
 
-    def get_name_chars_by_gender(self, gender: Gender, min_freq: float = 0.0) -> List[NameChar]:
+    def get_name_chars_by_gender(
+        self, gender: Gender, min_freq: float = 0.0
+    ) -> List[NameChar]:
         if self._dictionary is None:
             return []
         return self._dictionary.get_name_chars_by_gender(gender, min_freq)
@@ -678,7 +694,7 @@ class PersonNameManager:
         surname: Optional[str] = None,
         gender: Optional[Gender] = None,
         given_name_len: int = 2,
-        category: Optional[str] = None
+        category: Optional[str] = None,
     ) -> str:
         if self._dictionary is None:
             return ""
@@ -689,7 +705,7 @@ class PersonNameManager:
         count: int = 10,
         gender: Optional[Gender] = None,
         given_name_len: int = 2,
-        category: Optional[str] = None
+        category: Optional[str] = None,
     ) -> List[str]:
         if self._dictionary is None:
             return []

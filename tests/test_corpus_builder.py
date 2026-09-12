@@ -1,4 +1,5 @@
 """CorpusBuilder 语料构建测试"""
+
 import pytest
 
 from AuroraNLP.corpus.corpus_builder import CorpusBuilder, CorpusManager
@@ -23,10 +24,8 @@ class TestCorpusBuilder:
         """加载语料"""
         corpus_file = tmp_path / "test_corpus.txt"
         corpus_file.write_text(
-            "自然 语言 处理\n"
-            "机器 学习 是 人工智能\n"
-            "深度 学习 发展 迅速\n",
-            encoding='utf-8'
+            "自然 语言 处理\n" "机器 学习 是 人工智能\n" "深度 学习 发展 迅速\n",
+            encoding="utf-8",
         )
         builder = CorpusBuilder()
         lines = builder.load_corpus("custom", str(corpus_file))
@@ -56,10 +55,12 @@ class TestCorpusBuilder:
             "词性 标注 准确 率高\n"
             "命名 实体 识别 技术\n"
             "情感 分析 研究 热门\n",
-            encoding='utf-8'
+            encoding="utf-8",
         )
         builder = CorpusBuilder()
-        train_path, val_path, test_path = builder.split_corpus(str(corpus_file), train_ratio=0.8, val_ratio=0.1)
+        train_path, val_path, test_path = builder.split_corpus(
+            str(corpus_file), train_ratio=0.8, val_ratio=0.1
+        )
         assert train_path.endswith("_train.txt")
         assert val_path.endswith("_val.txt")
         assert test_path.endswith("_test.txt")
@@ -68,10 +69,8 @@ class TestCorpusBuilder:
         """语料统计"""
         corpus_file = tmp_path / "stats_corpus.txt"
         corpus_file.write_text(
-            "自然 语言 处理\n"
-            "机器 学习 是 人工智能\n"
-            "深度 学习 发展 迅速\n",
-            encoding='utf-8'
+            "自然 语言 处理\n" "机器 学习 是 人工智能\n" "深度 学习 发展 迅速\n",
+            encoding="utf-8",
         )
         builder = CorpusBuilder()
         stats = builder.statistics(str(corpus_file))
@@ -97,7 +96,7 @@ class TestCorpusManager:
     def test_corpus_manager_register_corpus(self, tmp_path):
         """注册语料"""
         corpus_file = tmp_path / "reg_corpus.txt"
-        corpus_file.write_text("自然 语言 处理\n", encoding='utf-8')
+        corpus_file.write_text("自然 语言 处理\n", encoding="utf-8")
         manager = CorpusManager(data_dir=str(tmp_path))
         manager.register_corpus("test_corpus", "custom", str(corpus_file), "测试语料")
         corpora = manager.list_corpora()
@@ -108,14 +107,16 @@ class TestCorpusManager:
     def test_corpus_manager_build_combined(self, tmp_path):
         """构建组合语料"""
         corpus_file1 = tmp_path / "combined1.txt"
-        corpus_file1.write_text("自然 语言 处理\n", encoding='utf-8')
+        corpus_file1.write_text("自然 语言 处理\n", encoding="utf-8")
         corpus_file2 = tmp_path / "combined2.txt"
-        corpus_file2.write_text("机器 学习 技术\n", encoding='utf-8')
+        corpus_file2.write_text("机器 学习 技术\n", encoding="utf-8")
 
         manager = CorpusManager(data_dir=str(tmp_path))
         manager.register_corpus("corpus_a", "custom", str(corpus_file1))
         manager.register_corpus("corpus_b", "custom", str(corpus_file2))
 
-        result_path = manager.build_combined_corpus("combined_test", ["corpus_a", "corpus_b"])
+        result_path = manager.build_combined_corpus(
+            "combined_test", ["corpus_a", "corpus_b"]
+        )
         assert result_path is not None
         assert "combined_test_corpus.txt" in result_path

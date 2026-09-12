@@ -1,4 +1,5 @@
 """词格分词测试"""
+
 import pytest
 
 from AuroraNLP.segmentation.lattice import (
@@ -45,7 +46,7 @@ class TestLatticeSegment:
         result = segmentor.segment("中国")
         assert isinstance(result, list)
         assert len(result) > 0
-        assert ''.join(result) == "中国"
+        assert "".join(result) == "中国"
 
 
 class TestLatticeAllSegmentations:
@@ -58,7 +59,7 @@ class TestLatticeAllSegmentations:
         assert isinstance(results, list)
         assert len(results) > 0
         for seg in results:
-            assert ''.join(seg) == "中国"
+            assert "".join(seg) == "中国"
 
 
 class TestLatticeAmbiguity:

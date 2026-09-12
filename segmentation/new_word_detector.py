@@ -11,7 +11,7 @@ class NewWordDetector:
         min_pmi: float = 1.0,
         min_entropy: float = 0.5,
         min_word_len: int = 2,
-        max_word_len: int = 6
+        max_word_len: int = 6,
     ):
         self.min_freq = min_freq
         self.min_pmi = min_pmi
@@ -21,8 +21,12 @@ class NewWordDetector:
 
         self._char_freq: Dict[str, int] = defaultdict(int)
         self._word_freq: Dict[str, int] = defaultdict(int)
-        self._left_context: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
-        self._right_context: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        self._left_context: Dict[str, Dict[str, int]] = defaultdict(
+            lambda: defaultdict(int)
+        )
+        self._right_context: Dict[str, Dict[str, int]] = defaultdict(
+            lambda: defaultdict(int)
+        )
         self._total_chars = 0
         self._total_candidates = 0
 
@@ -31,7 +35,7 @@ class NewWordDetector:
         self._right_entropy_cache: Dict[str, float] = {}
 
         self._trained = False
-        self._stop_chars: Set[str] = set('，。！？、；：""''（）【】《》\n\r\t ')
+        self._stop_chars: Set[str] = set('，。！？、；：""' "（）【】《》\n\r\t ")
         self._stop_patterns = None
 
     def _is_valid_word(self, word: str) -> bool:
@@ -51,8 +55,10 @@ class NewWordDetector:
         text_len = len(text)
 
         for i in range(text_len):
-            for length in range(self.min_word_len, min(self.max_word_len + 1, text_len - i + 1)):
-                candidate = text[i:i + length]
+            for length in range(
+                self.min_word_len, min(self.max_word_len + 1, text_len - i + 1)
+            ):
+                candidate = text[i : i + length]
                 if self._is_valid_word(candidate):
                     candidates.append(candidate)
 
@@ -96,7 +102,7 @@ class NewWordDetector:
 
         self._trained = True
 
-    def train_from_file(self, filepath: str, encoding: str = 'utf-8') -> None:
+    def train_from_file(self, filepath: str, encoding: str = "utf-8") -> None:
         corpus = []
         with open(filepath, encoding=encoding) as f:
             for line in f:
@@ -114,28 +120,28 @@ class NewWordDetector:
 
         word_freq = self._word_freq.get(word, 0)
         if word_freq == 0:
-            return float('-inf')
+            return float("-inf")
 
         if self._total_candidates == 0:
-            return float('-inf')
+            return float("-inf")
 
         p_word = word_freq / self._total_candidates
         if p_word == 0:
-            return float('-inf')
+            return float("-inf")
 
         if self._total_chars == 0:
-            return float('-inf')
+            return float("-inf")
 
         p_chars = 1.0
         for char in word:
             char_freq = self._char_freq.get(char, 0)
             if char_freq == 0:
-                return float('-inf')
+                return float("-inf")
             p_char = char_freq / self._total_chars
             p_chars *= p_char
 
         if p_chars == 0:
-            return float('-inf')
+            return float("-inf")
 
         pmi = math.log(p_word / p_chars)
 
@@ -211,12 +217,12 @@ class NewWordDetector:
         avg_entropy = (left_entropy + right_entropy) / 2
 
         return {
-            'word': word,
-            'frequency': freq,
-            'pmi': pmi,
-            'left_entropy': left_entropy,
-            'right_entropy': right_entropy,
-            'avg_entropy': avg_entropy
+            "word": word,
+            "frequency": freq,
+            "pmi": pmi,
+            "left_entropy": left_entropy,
+            "right_entropy": right_entropy,
+            "avg_entropy": avg_entropy,
         }
 
     def detect(
@@ -224,7 +230,7 @@ class NewWordDetector:
         top_k: int = 100,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> List[Tuple[str, Dict[str, float]]]:
         if not self._trained:
             raise RuntimeError("Model has not been trained. Call train() first.")
@@ -254,16 +260,19 @@ class NewWordDetector:
                 continue
 
             score_info = {
-                'frequency': freq,
-                'pmi': pmi,
-                'left_entropy': left_entropy,
-                'right_entropy': right_entropy,
-                'avg_entropy': avg_entropy
+                "frequency": freq,
+                "pmi": pmi,
+                "left_entropy": left_entropy,
+                "right_entropy": right_entropy,
+                "avg_entropy": avg_entropy,
             }
 
             candidates.append((word, score_info))
 
-        candidates.sort(key=lambda x: (x[1]['pmi'], x[1]['avg_entropy'], x[1]['frequency']), reverse=True)
+        candidates.sort(
+            key=lambda x: (x[1]["pmi"], x[1]["avg_entropy"], x[1]["frequency"]),
+            reverse=True,
+        )
 
         return candidates[:top_k]
 
@@ -273,7 +282,7 @@ class NewWordDetector:
         top_k: int = 20,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> List[Tuple[str, Dict[str, float]]]:
         if not self._trained:
             raise RuntimeError("Model has not been trained. Call train() first.")
@@ -289,7 +298,9 @@ class NewWordDetector:
 
             min_freq_val = min_freq if min_freq is not None else self.min_freq
             min_pmi_val = min_pmi if min_pmi is not None else self.min_pmi
-            min_entropy_val = min_entropy if min_entropy is not None else self.min_entropy
+            min_entropy_val = (
+                min_entropy if min_entropy is not None else self.min_entropy
+            )
 
             if freq < min_freq_val:
                 continue
@@ -306,16 +317,19 @@ class NewWordDetector:
                 continue
 
             score_info = {
-                'frequency': freq,
-                'pmi': pmi,
-                'left_entropy': left_entropy,
-                'right_entropy': right_entropy,
-                'avg_entropy': avg_entropy
+                "frequency": freq,
+                "pmi": pmi,
+                "left_entropy": left_entropy,
+                "right_entropy": right_entropy,
+                "avg_entropy": avg_entropy,
             }
 
             results.append((word, score_info))
 
-        results.sort(key=lambda x: (x[1]['pmi'], x[1]['avg_entropy'], x[1]['frequency']), reverse=True)
+        results.sort(
+            key=lambda x: (x[1]["pmi"], x[1]["avg_entropy"], x[1]["frequency"]),
+            reverse=True,
+        )
 
         return results[:top_k]
 
@@ -325,7 +339,7 @@ class NewWordDetector:
         top_k: int = 100,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> List[Tuple[str, Dict[str, float]]]:
         all_candidates = self.detect(top_k * 2, min_freq, min_pmi, min_entropy)
 
@@ -346,13 +360,15 @@ class NewWordDetector:
         min_pmi: Optional[float] = None,
         min_entropy: Optional[float] = None,
         pos_tag: Optional[str] = None,
-        weight: float = 1.0
+        weight: float = 1.0,
     ) -> List[Tuple[str, Dict[str, float]]]:
         if not self._trained:
             raise RuntimeError("Model has not been trained. Call train() first.")
 
-        if not (hasattr(dictionary, 'get_words') and hasattr(dictionary, 'add_word')):
-            raise TypeError("dictionary must have both 'get_words' and 'add_word' methods")
+        if not (hasattr(dictionary, "get_words") and hasattr(dictionary, "add_word")):
+            raise TypeError(
+                "dictionary must have both 'get_words' and 'add_word' methods"
+            )
 
         existing_words = dictionary.get_words()
 
@@ -361,7 +377,7 @@ class NewWordDetector:
             top_k=top_k,
             min_freq=min_freq,
             min_pmi=min_pmi,
-            min_entropy=min_entropy
+            min_entropy=min_entropy,
         )
 
         added_words = []
@@ -373,26 +389,26 @@ class NewWordDetector:
 
     def get_statistics(self) -> Dict:
         if not self._trained:
-            return {'trained': False}
+            return {"trained": False}
 
         return {
-            'trained': True,
-            'total_chars': self._total_chars,
-            'total_candidates': self._total_candidates,
-            'unique_chars': len(self._char_freq),
-            'unique_candidates': len(self._word_freq),
-            'min_freq': self.min_freq,
-            'min_pmi': self.min_pmi,
-            'min_entropy': self.min_entropy,
-            'min_word_len': self.min_word_len,
-            'max_word_len': self.max_word_len
+            "trained": True,
+            "total_chars": self._total_chars,
+            "total_candidates": self._total_candidates,
+            "unique_chars": len(self._char_freq),
+            "unique_candidates": len(self._word_freq),
+            "min_freq": self.min_freq,
+            "min_pmi": self.min_pmi,
+            "min_entropy": self.min_entropy,
+            "min_word_len": self.min_word_len,
+            "max_word_len": self.max_word_len,
         }
 
     def set_thresholds(
         self,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> None:
         if min_freq is not None:
             self.min_freq = min_freq
@@ -479,7 +495,7 @@ class MutualInformation:
         bigram_count = self._bigram_freq.get(bigram, 0)
 
         if bigram_count == 0:
-            return float('-inf')
+            return float("-inf")
 
         p_xy = bigram_count / self._total_bigrams if self._total_bigrams > 0 else 0
 
@@ -487,13 +503,13 @@ class MutualInformation:
         count_y = self._unigram_freq.get(char2, 0)
 
         if count_x == 0 or count_y == 0:
-            return float('-inf')
+            return float("-inf")
 
         p_x = count_x / self._total_unigrams
         p_y = count_y / self._total_unigrams
 
         if p_xy == 0 or p_x == 0 or p_y == 0:
-            return float('-inf')
+            return float("-inf")
 
         return math.log(p_xy / (p_x * p_y))
 
@@ -509,20 +525,17 @@ class MutualInformation:
 
         for i in range(len(word) - 1):
             pmi = self.calculate_pmi(word[i], word[i + 1])
-            if pmi != float('-inf'):
+            if pmi != float("-inf"):
                 total_pmi += pmi
                 count += 1
 
         if count == 0:
-            return float('-inf')
+            return float("-inf")
 
         return total_pmi / count
 
     def get_top_collocations(
-        self,
-        min_freq: int = 5,
-        min_pmi: float = 0.0,
-        top_k: int = 20
+        self, min_freq: int = 5, min_pmi: float = 0.0, top_k: int = 20
     ) -> List[Tuple[str, str, int, float]]:
         if not self._trained:
             raise RuntimeError("Model has not been trained. Call train() first.")
@@ -546,8 +559,12 @@ class MutualInformation:
 
 class EntropyCalculator:
     def __init__(self):
-        self._left_context: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
-        self._right_context: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
+        self._left_context: Dict[str, Dict[str, int]] = defaultdict(
+            lambda: defaultdict(int)
+        )
+        self._right_context: Dict[str, Dict[str, int]] = defaultdict(
+            lambda: defaultdict(int)
+        )
         self._trained = False
 
     def train(self, corpus: List[str]) -> None:
@@ -610,4 +627,4 @@ class EntropyCalculator:
         return self._trained
 
 
-__all__ = ['EntropyCalculator', 'MutualInformation', 'NewWordDetector']
+__all__ = ["EntropyCalculator", "MutualInformation", "NewWordDetector"]

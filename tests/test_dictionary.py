@@ -1,9 +1,14 @@
 """Dictionary 和 UserDictionary 测试"""
+
 import os
 
 import pytest
 
-from AuroraNLP.dictionary.dictionary import Dictionary, DictionaryManager, UserDictionary
+from AuroraNLP.dictionary.dictionary import (
+    Dictionary,
+    DictionaryManager,
+    UserDictionary,
+)
 
 
 class TestDictionary:
@@ -112,7 +117,9 @@ class TestDictionaryManager:
         # 用户词典中的词可以搜索到
         assert dm.search("人工智能") is True
 
-    def test_dictionary_manager_priority_order(self, sample_dictionary, sample_user_dictionary):
+    def test_dictionary_manager_priority_order(
+        self, sample_dictionary, sample_user_dictionary
+    ):
         """DictionaryManager 按优先级合并"""
         dm = DictionaryManager()
         dm.register_dictionary(sample_dictionary)

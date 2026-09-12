@@ -5,25 +5,29 @@ from AuroraNLP.dictionary.dictionary import Dictionary
 
 
 class DomainDictionary(Dictionary):
-    DOMAIN_DATA_DIR = os.path.join(os.path.dirname(__file__), '..', 'data', 'domain_dictionaries')
+    DOMAIN_DATA_DIR = os.path.join(
+        os.path.dirname(__file__), "..", "data", "domain_dictionaries"
+    )
 
     # 预定义领域及其默认优先级
     DOMAINS = {
-        'news': {'name': '新闻领域', 'priority': 50},
-        'medical': {'name': '医疗领域', 'priority': 50},
-        'legal': {'name': '法律领域', 'priority': 50},
-        'ecommerce': {'name': '电商领域', 'priority': 50}
+        "news": {"name": "新闻领域", "priority": 50},
+        "medical": {"name": "医疗领域", "priority": 50},
+        "legal": {"name": "法律领域", "priority": 50},
+        "ecommerce": {"name": "电商领域", "priority": 50},
     }
 
-    def __init__(self, domain: str, load_default: bool = True, priority: Optional[int] = None):
+    def __init__(
+        self, domain: str, load_default: bool = True, priority: Optional[int] = None
+    ):
         if domain not in self.DOMAINS:
             raise ValueError(f"不支持的领域: {domain}")
 
         self._domain = domain
-        self._domain_name = self.DOMAINS[domain]['name']
+        self._domain_name = self.DOMAINS[domain]["name"]
 
         if priority is None:
-            priority = self.DOMAINS[domain]['priority']
+            priority = self.DOMAINS[domain]["priority"]
 
         super().__init__(load_default=False, priority=priority)
         self.name = f"domain_{domain}"
@@ -46,11 +50,11 @@ class DomainDictionary(Dictionary):
 
     def get_domain_info(self) -> Dict[str, Any]:
         return {
-            'domain': self._domain,
-            'domain_name': self._domain_name,
-            'name': self.name,
-            'priority': self.priority,
-            'word_count': len(self)
+            "domain": self._domain,
+            "domain_name": self._domain_name,
+            "name": self.name,
+            "priority": self.priority,
+            "word_count": len(self),
         }
 
     @classmethod
@@ -58,7 +62,9 @@ class DomainDictionary(Dictionary):
         return list(cls.DOMAINS.keys())
 
     @classmethod
-    def create_domain_dictionary(cls, domain: str, priority: Optional[int] = None) -> 'DomainDictionary':
+    def create_domain_dictionary(
+        cls, domain: str, priority: Optional[int] = None
+    ) -> "DomainDictionary":
         return cls(domain, load_default=True, priority=priority)
 
 
@@ -88,7 +94,7 @@ class DomainDictionaryManager:
 
     def get_all_domains_info(self) -> List[Dict[str, Any]]:
         return [
-            dict({'type': 'domain'}, **dd.get_domain_info())
+            dict({"type": "domain"}, **dd.get_domain_info())
             for dd in self._domain_dictionaries.values()
         ]
 

@@ -4,7 +4,12 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set
 
 from AuroraNLP.dictionary.dictionary import Dictionary, UserDictionary
-from AuroraNLP.dictionary.scel_parser import ScelBatchParser, ScelMetadata, ScelParser, ScelWord
+from AuroraNLP.dictionary.scel_parser import (
+    ScelBatchParser,
+    ScelMetadata,
+    ScelParser,
+    ScelWord,
+)
 
 
 class ScelConverter:
@@ -18,13 +23,16 @@ class ScelConverter:
         include_pinyin: bool = False,
         include_frequency: bool = False,
         include_pos: bool = False,
-        default_pos: str = 'n'
+        default_pos: str = "n",
     ) -> int:
         words = self._parser.parse(input_path)
 
-        os.makedirs(os.path.dirname(output_path) if os.path.dirname(output_path) else '.', exist_ok=True)
+        os.makedirs(
+            os.path.dirname(output_path) if os.path.dirname(output_path) else ".",
+            exist_ok=True,
+        )
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             for w in words:
                 parts = [w.word]
 
@@ -37,7 +45,7 @@ class ScelConverter:
                 if include_pinyin:
                     parts.append(w.pinyin)
 
-                f.write('\t'.join(parts) + '\n')
+                f.write("\t".join(parts) + "\n")
 
         return len(words)
 
@@ -46,33 +54,32 @@ class ScelConverter:
         input_path: str,
         output_path: str,
         include_metadata: bool = True,
-        pretty: bool = False
+        pretty: bool = False,
     ) -> int:
         words = self._parser.parse(input_path)
 
         result: Dict = {
-            'words': [
-                {
-                    'word': w.word,
-                    'pinyin': w.pinyin,
-                    'frequency': w.frequency
-                }
+            "words": [
+                {"word": w.word, "pinyin": w.pinyin, "frequency": w.frequency}
                 for w in words
             ]
         }
 
         if include_metadata:
-            result['metadata'] = {
-                'name': self._parser.metadata.name,
-                'category': self._parser.metadata.category,
-                'description': self._parser.metadata.description,
-                'example': self._parser.metadata.example,
-                'word_count': self._parser.metadata.word_count
+            result["metadata"] = {
+                "name": self._parser.metadata.name,
+                "category": self._parser.metadata.category,
+                "description": self._parser.metadata.description,
+                "example": self._parser.metadata.example,
+                "word_count": self._parser.metadata.word_count,
             }
 
-        os.makedirs(os.path.dirname(output_path) if os.path.dirname(output_path) else '.', exist_ok=True)
+        os.makedirs(
+            os.path.dirname(output_path) if os.path.dirname(output_path) else ".",
+            exist_ok=True,
+        )
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             if pretty:
                 json.dump(result, f, ensure_ascii=False, indent=2)
             else:
@@ -86,13 +93,16 @@ class ScelConverter:
         output_path: str,
         default_weight: float = 1.0,
         default_priority: int = 50,
-        default_pos: str = 'n'
+        default_pos: str = "n",
     ) -> int:
         words = self._parser.parse(input_path)
 
-        os.makedirs(os.path.dirname(output_path) if os.path.dirname(output_path) else '.', exist_ok=True)
+        os.makedirs(
+            os.path.dirname(output_path) if os.path.dirname(output_path) else ".",
+            exist_ok=True,
+        )
 
-        with open(output_path, 'w', encoding='utf-8') as f:
+        with open(output_path, "w", encoding="utf-8") as f:
             for w in words:
                 pos = w.pos_tag or default_pos
                 weight = default_weight + (w.frequency / 10000.0)
@@ -104,8 +114,8 @@ class ScelConverter:
         self,
         input_dir: str,
         output_dir: str,
-        output_format: str = 'txt',
-        recursive: bool = False
+        output_format: str = "txt",
+        recursive: bool = False,
     ) -> Dict[str, int]:
         batch_parser = ScelBatchParser()
         batch_parser.parse_directory(input_dir, recursive)
@@ -114,32 +124,40 @@ class ScelConverter:
 
         results: Dict[str, int] = {}
 
-        if output_format == 'txt':
-            output_path = os.path.join(output_dir, 'merged_dict.txt')
-            with open(output_path, 'w', encoding='utf-8') as f:
+        if output_format == "txt":
+            output_path = os.path.join(output_dir, "merged_dict.txt")
+            with open(output_path, "w", encoding="utf-8") as f:
                 for w in batch_parser.get_unique_words():
                     f.write(f"{w.word}\n")
-            results['merged'] = len(batch_parser.get_unique_words())
-        elif output_format == 'json':
-            output_path = os.path.join(output_dir, 'merged_dict.json')
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump({
-                    'words': [
-                        {'word': w.word, 'pinyin': w.pinyin, 'frequency': w.frequency}
-                        for w in batch_parser.get_unique_words()
-                    ]
-                }, f, ensure_ascii=False)
-            results['merged'] = len(batch_parser.get_unique_words())
-        elif output_format == 'dict':
-            output_path = os.path.join(output_dir, 'merged_dict.txt')
-            with open(output_path, 'w', encoding='utf-8') as f:
+            results["merged"] = len(batch_parser.get_unique_words())
+        elif output_format == "json":
+            output_path = os.path.join(output_dir, "merged_dict.json")
+            with open(output_path, "w", encoding="utf-8") as f:
+                json.dump(
+                    {
+                        "words": [
+                            {
+                                "word": w.word,
+                                "pinyin": w.pinyin,
+                                "frequency": w.frequency,
+                            }
+                            for w in batch_parser.get_unique_words()
+                        ]
+                    },
+                    f,
+                    ensure_ascii=False,
+                )
+            results["merged"] = len(batch_parser.get_unique_words())
+        elif output_format == "dict":
+            output_path = os.path.join(output_dir, "merged_dict.txt")
+            with open(output_path, "w", encoding="utf-8") as f:
                 for w in batch_parser.get_unique_words():
                     weight = 1.0 + (w.frequency / 10000.0)
                     f.write(f"{w.word}\tn\t{weight:.4f}\t50\n")
-            results['merged'] = len(batch_parser.get_unique_words())
+            results["merged"] = len(batch_parser.get_unique_words())
 
-        results['total_files'] = batch_parser.parsed_files
-        results['total_words'] = batch_parser.total_words
+        results["total_files"] = batch_parser.parsed_files
+        results["total_words"] = batch_parser.total_words
 
         return results
 
@@ -151,10 +169,7 @@ class SogouDictionary(UserDictionary):
         self._metadata_list: List[ScelMetadata] = []
 
     def load_scel(
-        self,
-        scel_path: str,
-        default_weight: float = 5.0,
-        default_pos: str = 'n'
+        self, scel_path: str, default_weight: float = 5.0, default_pos: str = "n"
     ) -> int:
         parser = ScelParser()
         words = parser.parse(scel_path)
@@ -175,7 +190,7 @@ class SogouDictionary(UserDictionary):
         directory: str,
         recursive: bool = False,
         default_weight: float = 5.0,
-        default_pos: str = 'n'
+        default_pos: str = "n",
     ) -> Dict[str, int]:
         batch_parser = ScelBatchParser()
         batch_parser.parse_directory(directory, recursive)
@@ -189,25 +204,22 @@ class SogouDictionary(UserDictionary):
             loaded_count += 1
 
         return {
-            'loaded': loaded_count,
-            'total_files': batch_parser.parsed_files,
-            'total_words': batch_parser.total_words
+            "loaded": loaded_count,
+            "total_files": batch_parser.parsed_files,
+            "total_words": batch_parser.total_words,
         }
 
     def load_from_txt(
-        self,
-        txt_path: str,
-        default_weight: float = 5.0,
-        default_pos: str = 'n'
+        self, txt_path: str, default_weight: float = 5.0, default_pos: str = "n"
     ) -> int:
         loaded_count = 0
-        with open(txt_path, encoding='utf-8') as f:
+        with open(txt_path, encoding="utf-8") as f:
             for line in f:
                 line = line.strip()
                 if not line:
                     continue
 
-                parts = line.split('\t')
+                parts = line.split("\t")
                 word = parts[0]
 
                 if len(parts) >= 2:
@@ -230,23 +242,20 @@ class SogouDictionary(UserDictionary):
         return loaded_count
 
     def load_from_json(
-        self,
-        json_path: str,
-        default_weight: float = 5.0,
-        default_pos: str = 'n'
+        self, json_path: str, default_weight: float = 5.0, default_pos: str = "n"
     ) -> int:
-        with open(json_path, encoding='utf-8') as f:
+        with open(json_path, encoding="utf-8") as f:
             data = json.load(f)
 
         loaded_count = 0
-        words = data.get('words', [])
+        words = data.get("words", [])
 
         for item in words:
-            word = item.get('word', '')
+            word = item.get("word", "")
             if not word:
                 continue
 
-            frequency = item.get('frequency', 0)
+            frequency = item.get("frequency", 0)
             weight = default_weight + (frequency / 10000.0)
 
             self.add_word(word, default_pos, weight, self._priority)
@@ -262,27 +271,23 @@ class SogouDictionary(UserDictionary):
     def get_metadata(self) -> List[Dict]:
         return [
             {
-                'name': m.name,
-                'category': m.category,
-                'description': m.description,
-                'word_count': m.word_count
+                "name": m.name,
+                "category": m.category,
+                "description": m.description,
+                "word_count": m.word_count,
             }
             for m in self._metadata_list
         ]
 
 
 class SogouDictionaryManager:
-    DEFAULT_SOGOU_DICT_PATH = os.path.join(os.path.dirname(__file__), 'data', 'sogou')
+    DEFAULT_SOGOU_DICT_PATH = os.path.join(os.path.dirname(__file__), "data", "sogou")
 
     def __init__(self):
         self._dictionaries: Dict[str, SogouDictionary] = {}
         self._converter = ScelConverter()
 
-    def create_dictionary(
-        self,
-        name: str,
-        priority: int = 80
-    ) -> SogouDictionary:
+    def create_dictionary(self, name: str, priority: int = 80) -> SogouDictionary:
         if name in self._dictionaries:
             raise ValueError(f"词典 '{name}' 已存在")
 
@@ -302,20 +307,15 @@ class SogouDictionaryManager:
     def list_dictionaries(self) -> List[Dict]:
         return [
             {
-                'name': name,
-                'priority': d.priority,
-                'word_count': len(d),
-                'source_files': d.source_files
+                "name": name,
+                "priority": d.priority,
+                "word_count": len(d),
+                "source_files": d.source_files,
             }
             for name, d in self._dictionaries.items()
         ]
 
-    def import_scel(
-        self,
-        dict_name: str,
-        scel_path: str,
-        priority: int = 80
-    ) -> int:
+    def import_scel(self, dict_name: str, scel_path: str, priority: int = 80) -> int:
         if dict_name not in self._dictionaries:
             self.create_dictionary(dict_name, priority)
 
@@ -326,7 +326,7 @@ class SogouDictionaryManager:
         dict_name: str,
         directory: str,
         recursive: bool = False,
-        priority: int = 80
+        priority: int = 80,
     ) -> Dict[str, int]:
         if dict_name not in self._dictionaries:
             self.create_dictionary(dict_name, priority)
@@ -334,18 +334,12 @@ class SogouDictionaryManager:
         return self._dictionaries[dict_name].load_scel_directory(directory, recursive)
 
     def convert_scel_to_txt(
-        self,
-        input_path: str,
-        output_path: str,
-        include_pinyin: bool = False
+        self, input_path: str, output_path: str, include_pinyin: bool = False
     ) -> int:
         return self._converter.to_txt(input_path, output_path, include_pinyin)
 
     def convert_scel_to_json(
-        self,
-        input_path: str,
-        output_path: str,
-        pretty: bool = False
+        self, input_path: str, output_path: str, pretty: bool = False
     ) -> int:
         return self._converter.to_json(input_path, output_path, pretty=pretty)
 
@@ -360,11 +354,13 @@ class SogouDictionaryManager:
         for name, d in self._dictionaries.items():
             found, pos_tag, weight, priority = d.search_with_info(word)
             if found:
-                results.append({
-                    'dictionary': name,
-                    'word': word,
-                    'pos_tag': pos_tag,
-                    'weight': weight,
-                    'priority': priority
-                })
+                results.append(
+                    {
+                        "dictionary": name,
+                        "word": word,
+                        "pos_tag": pos_tag,
+                        "weight": weight,
+                        "priority": priority,
+                    }
+                )
         return results

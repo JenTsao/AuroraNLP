@@ -1,9 +1,18 @@
 from typing import Any, Dict, List, Optional, Set, Tuple
 
-from AuroraNLP.dictionary.dictionary import Dictionary, DictionaryManager, UserDictionary
+from AuroraNLP.dictionary.dictionary import (
+    Dictionary,
+    DictionaryManager,
+    UserDictionary,
+)
 from AuroraNLP.dictionary.network_dictionary import NetworkDictionary
 from AuroraNLP.dictionary.stopwords import StopWords
-from AuroraNLP.segmentation.ambiguity import AmbiguityDetector, AmbiguityRegion, AmbiguityResult, AmbiguityType
+from AuroraNLP.segmentation.ambiguity import (
+    AmbiguityDetector,
+    AmbiguityRegion,
+    AmbiguityResult,
+    AmbiguityType,
+)
 from AuroraNLP.segmentation.crf import CRFSegmentor
 from AuroraNLP.segmentation.hmm import HMMSegmentor
 from AuroraNLP.segmentation.hybrid import HybridConfig, HybridSegmentor
@@ -15,7 +24,9 @@ from AuroraNLP.text_analysis.similarity import Similarity
 
 
 class DictionaryService:
-    def __init__(self, dictionary: Optional[Dictionary] = None, load_default_dict: bool = True):
+    def __init__(
+        self, dictionary: Optional[Dictionary] = None, load_default_dict: bool = True
+    ):
         self._dict_manager = DictionaryManager()
 
         if dictionary is not None:
@@ -29,10 +40,7 @@ class DictionaryService:
         self._network_dictionary: Optional[NetworkDictionary] = None
 
     def create_user_dictionary(
-        self,
-        name: str,
-        priority: int = 100,
-        default_weight: float = 10.0
+        self, name: str, priority: int = 100, default_weight: float = 10.0
     ) -> UserDictionary:
         user_dict = UserDictionary(name=name, priority=priority)
         user_dict.default_weight = default_weight
@@ -44,7 +52,7 @@ class DictionaryService:
         self,
         priority: int = 50,
         update_interval: Optional[int] = None,
-        expiry_days: Optional[int] = None
+        expiry_days: Optional[int] = None,
     ) -> NetworkDictionary:
         network_dict = NetworkDictionary(load_default=True, priority=priority)
         if update_interval is not None:
@@ -88,13 +96,15 @@ class DictionaryService:
         path: str,
         name: Optional[str] = None,
         priority: int = 100,
-        default_weight: float = 10.0
+        default_weight: float = 10.0,
     ) -> UserDictionary:
         if name is None:
             name = f"user_{len(self._user_dictionaries)}"
 
         user_dict = self.create_user_dictionary(name, priority, default_weight)
-        user_dict.load_dictionary(path, priority=priority, default_weight=default_weight)
+        user_dict.load_dictionary(
+            path, priority=priority, default_weight=default_weight
+        )
         return user_dict
 
     def add_user_word(
@@ -103,7 +113,7 @@ class DictionaryService:
         pos_tag: Optional[str] = None,
         weight: Optional[float] = None,
         priority: Optional[int] = None,
-        dict_name: Optional[str] = None
+        dict_name: Optional[str] = None,
     ) -> None:
         if dict_name:
             user_dict = self._user_dictionaries.get(dict_name)
@@ -122,10 +132,7 @@ class DictionaryService:
             self._dict_manager.invalidate_cache()
 
     def set_word_weight(
-        self,
-        word: str,
-        weight: float,
-        dict_name: Optional[str] = None
+        self, word: str, weight: float, dict_name: Optional[str] = None
     ) -> bool:
         if dict_name:
             user_dict = self._user_dictionaries.get(dict_name)
@@ -140,10 +147,7 @@ class DictionaryService:
         return self.dictionary.set_weight(word, weight)
 
     def set_word_priority(
-        self,
-        word: str,
-        priority: int,
-        dict_name: Optional[str] = None
+        self, word: str, priority: int, dict_name: Optional[str] = None
     ) -> bool:
         if dict_name:
             user_dict = self._user_dictionaries.get(dict_name)
@@ -158,31 +162,35 @@ class DictionaryService:
         return self.dictionary.set_priority(word, priority)
 
     def get_word_info(self, word: str) -> Dict[str, Any]:
-        result = {'word': word, 'found': False}
+        result = {"word": word, "found": False}
 
         for name, user_dict in self._user_dictionaries.items():
             found, pos_tag, weight, priority = user_dict.search_with_info(word)
             if found:
-                result.update({
-                    'found': True,
-                    'pos_tag': pos_tag,
-                    'weight': weight,
-                    'priority': priority,
-                    'dictionary': name,
-                    'dictionary_type': 'user'
-                })
+                result.update(
+                    {
+                        "found": True,
+                        "pos_tag": pos_tag,
+                        "weight": weight,
+                        "priority": priority,
+                        "dictionary": name,
+                        "dictionary_type": "user",
+                    }
+                )
                 return result
 
         found, pos_tag, weight, priority = self.dictionary.search_with_info(word)
         if found:
-            result.update({
-                'found': True,
-                'pos_tag': pos_tag,
-                'weight': weight,
-                'priority': priority,
-                'dictionary': self.dictionary.name,
-                'dictionary_type': 'system'
-            })
+            result.update(
+                {
+                    "found": True,
+                    "pos_tag": pos_tag,
+                    "weight": weight,
+                    "priority": priority,
+                    "dictionary": self.dictionary.name,
+                    "dictionary_type": "system",
+                }
+            )
 
         return result
 
@@ -200,7 +208,7 @@ class DictionaryService:
         word: str,
         pos_tag: Optional[str] = None,
         weight: float = 1.0,
-        priority: Optional[int] = None
+        priority: Optional[int] = None,
     ) -> None:
         self.dictionary.add_word(word, pos_tag, weight, priority)
 
@@ -245,7 +253,9 @@ class StopWordsManager:
     def filter(self, words: List[str]) -> List[str]:
         return self.stopwords.filter(words)
 
-    def filter_with_pos(self, words_with_pos: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+    def filter_with_pos(
+        self, words_with_pos: List[Tuple[str, str]]
+    ) -> List[Tuple[str, str]]:
         return self.stopwords.filter_with_pos(words_with_pos)
 
 
@@ -256,29 +266,31 @@ class KeywordExtractorManager:
     def extract_keywords(
         self,
         text: str,
-        segmentor: 'Segmentor',
+        segmentor: "Segmentor",
         top_k: int = 10,
-        method: str = 'tfidf',
+        method: str = "tfidf",
         stopwords: Optional[Set[str]] = None,
-        min_length: int = 1
+        min_length: int = 1,
     ) -> List[Tuple[str, float]]:
-        if method == 'tfidf':
+        if method == "tfidf":
             return self.keyword_extractor.extract_keywords_tfidf(
                 text, segmentor, top_k, stopwords
             )
-        elif method == 'freq':
+        elif method == "freq":
             result = self.keyword_extractor.extract_keywords_freq(
                 text, segmentor, top_k, stopwords, min_length
             )
             return [(word, float(count)) for word, count in result]
-        elif method == 'textrank':
+        elif method == "textrank":
             return self.keyword_extractor.extract_keywords_textrank(
                 text, segmentor, top_k, stopwords=stopwords
             )
         else:
-            raise ValueError(f"Unknown method: {method}. Use 'tfidf', 'freq', or 'textrank'.")
+            raise ValueError(
+                f"Unknown method: {method}. Use 'tfidf', 'freq', or 'textrank'."
+            )
 
-    def build_idf_corpus(self, documents: List[str], segmentor: 'Segmentor') -> None:
+    def build_idf_corpus(self, documents: List[str], segmentor: "Segmentor") -> None:
         self.keyword_extractor.build_idf_corpus(documents, segmentor)
 
 
@@ -290,39 +302,45 @@ class SimilarityManager:
         self,
         text1: str,
         text2: str,
-        segmentor: 'Segmentor',
-        method: str = 'cosine',
-        stopwords: Optional[Set[str]] = None
+        segmentor: "Segmentor",
+        method: str = "cosine",
+        stopwords: Optional[Set[str]] = None,
     ) -> float:
         method_func = {
-            'cosine': self.similarity.cosine_similarity,
-            'jaccard': self.similarity.jaccard_similarity,
-            'dice': self.similarity.dice_similarity,
-            'overlap': self.similarity.overlap_similarity,
-            'edit': self.similarity.edit_similarity
+            "cosine": self.similarity.cosine_similarity,
+            "jaccard": self.similarity.jaccard_similarity,
+            "dice": self.similarity.dice_similarity,
+            "overlap": self.similarity.overlap_similarity,
+            "edit": self.similarity.edit_similarity,
         }
 
         if method not in method_func:
-            raise ValueError(f"Unknown method: {method}. Use 'cosine', 'jaccard', 'dice', 'overlap', or 'edit'.")
+            raise ValueError(
+                f"Unknown method: {method}. Use 'cosine', 'jaccard', 'dice', 'overlap', or 'edit'."
+            )
 
         return method_func[method](text1, text2, segmentor, stopwords)
 
-    def build_idf_corpus(self, documents: List[str], segmentor: 'Segmentor') -> None:
+    def build_idf_corpus(self, documents: List[str], segmentor: "Segmentor") -> None:
         self.similarity.build_idf_corpus(documents, segmentor)
 
     def batch_similarity(
         self,
         query: str,
         documents: List[str],
-        segmentor: 'Segmentor',
-        method: str = 'cosine',
-        stopwords: Optional[Set[str]] = None
+        segmentor: "Segmentor",
+        method: str = "cosine",
+        stopwords: Optional[Set[str]] = None,
     ) -> List[Tuple[str, float]]:
-        return self.similarity.batch_similarity(query, documents, segmentor, method, stopwords)
+        return self.similarity.batch_similarity(
+            query, documents, segmentor, method, stopwords
+        )
 
 
 class MLSegmentorManager:
-    def __init__(self, use_hmm: bool = False, use_crf: bool = False, use_perceptron: bool = False):
+    def __init__(
+        self, use_hmm: bool = False, use_crf: bool = False, use_perceptron: bool = False
+    ):
         self.use_hmm = use_hmm
         self.hmm_segmentor = HMMSegmentor()
 
@@ -335,11 +353,14 @@ class MLSegmentorManager:
     def train_hmm(self, corpus: List[List[str]], smooth: float = 1.0) -> None:
         self.hmm_segmentor.train(corpus, smooth)
 
-    def train_hmm_from_file(self, filepath: str, encoding: str = 'utf-8') -> None:
+    def train_hmm_from_file(self, filepath: str, encoding: str = "utf-8") -> None:
         from AuroraNLP.segmentation.hmm import train_from_file
+
         train_from_file(self.hmm_segmentor, filepath, encoding)
 
-    def load_hmm_model(self, filepath: str, key: Optional[str] = None, verify: bool = True) -> None:
+    def load_hmm_model(
+        self, filepath: str, key: Optional[str] = None, verify: bool = True
+    ) -> None:
         self.hmm_segmentor.load_model(filepath, key, verify)
 
     def save_hmm_model(self, filepath: str, key: Optional[str] = None) -> None:
@@ -347,12 +368,16 @@ class MLSegmentorManager:
 
     def segment_hmm(self, text: str) -> List[str]:
         if not self.hmm_segmentor.is_trained():
-            raise RuntimeError("HMM model has not been trained. Call train_hmm() or load_hmm_model() first.")
+            raise RuntimeError(
+                "HMM model has not been trained. Call train_hmm() or load_hmm_model() first."
+            )
         return self.hmm_segmentor.segment(text)
 
     def segment_with_hmm_states(self, text: str) -> List[Tuple[str, str]]:
         if not self.hmm_segmentor.is_trained():
-            raise RuntimeError("HMM model has not been trained. Call train_hmm() or load_hmm_model() first.")
+            raise RuntimeError(
+                "HMM model has not been trained. Call train_hmm() or load_hmm_model() first."
+            )
         return self.hmm_segmentor.segment_with_states(text)
 
     def get_hmm_model_info(self) -> dict:
@@ -371,7 +396,7 @@ class MLSegmentorManager:
         l2_reg: float = 0.01,
         max_iter: int = 100,
         epsilon: float = 1e-6,
-        verbose: bool = True
+        verbose: bool = True,
     ) -> None:
         self.crf_segmentor.train(
             corpus,
@@ -379,10 +404,10 @@ class MLSegmentorManager:
             l2_reg=l2_reg,
             max_iter=max_iter,
             epsilon=epsilon,
-            verbose=verbose
+            verbose=verbose,
         )
 
-    def train_crf_from_file(self, filepath: str, encoding: str = 'utf-8') -> None:
+    def train_crf_from_file(self, filepath: str, encoding: str = "utf-8") -> None:
         corpus = []
 
         with open(filepath, encoding=encoding) as f:
@@ -405,12 +430,16 @@ class MLSegmentorManager:
 
     def segment_crf(self, text: str) -> List[str]:
         if not self.crf_segmentor.is_trained():
-            raise RuntimeError("CRF model has not been trained. Call train_crf() or load_crf_model() first.")
+            raise RuntimeError(
+                "CRF model has not been trained. Call train_crf() or load_crf_model() first."
+            )
         return self.crf_segmentor.segment(text)
 
     def segment_with_crf_states(self, text: str) -> List[Tuple[str, str]]:
         if not self.crf_segmentor.is_trained():
-            raise RuntimeError("CRF model has not been trained. Call train_crf() or load_crf_model() first.")
+            raise RuntimeError(
+                "CRF model has not been trained. Call train_crf() or load_crf_model() first."
+            )
         return self.crf_segmentor.segment_with_states(text)
 
     def get_crf_model_info(self) -> dict:
@@ -428,29 +457,36 @@ class MLSegmentorManager:
         learning_rate: float = 1.0,
         max_iter: int = 10,
         averaged: bool = True,
-        verbose: bool = True
+        verbose: bool = True,
     ) -> None:
         self.perceptron_segmentor.train(
             corpus,
             learning_rate=learning_rate,
             max_iter=max_iter,
             averaged=averaged,
-            verbose=verbose
+            verbose=verbose,
         )
 
-    def train_perceptron_online(self, tokens: List[str], update_weights: bool = True) -> Tuple[bool, float]:
+    def train_perceptron_online(
+        self, tokens: List[str], update_weights: bool = True
+    ) -> Tuple[bool, float]:
         return self.perceptron_segmentor.train_online(tokens, update_weights)
 
     def partial_fit_perceptron(
         self,
         corpus: List[List[str]],
         learning_rate: Optional[float] = None,
-        verbose: bool = False
+        verbose: bool = False,
     ) -> None:
         self.perceptron_segmentor.partial_fit(corpus, learning_rate, verbose)
 
-    def train_perceptron_from_file(self, filepath: str, encoding: str = 'utf-8') -> None:
-        from AuroraNLP.segmentation.perceptron import train_from_file as perceptron_train_from_file
+    def train_perceptron_from_file(
+        self, filepath: str, encoding: str = "utf-8"
+    ) -> None:
+        from AuroraNLP.segmentation.perceptron import (
+            train_from_file as perceptron_train_from_file,
+        )
+
         perceptron_train_from_file(self.perceptron_segmentor, filepath, encoding)
 
     def load_perceptron_model(self, filepath: str) -> None:
@@ -461,12 +497,16 @@ class MLSegmentorManager:
 
     def segment_perceptron(self, text: str) -> List[str]:
         if not self.perceptron_segmentor.is_trained():
-            raise RuntimeError("Perceptron model has not been trained. Call train_perceptron() or load_perceptron_model() first.")
+            raise RuntimeError(
+                "Perceptron model has not been trained. Call train_perceptron() or load_perceptron_model() first."
+            )
         return self.perceptron_segmentor.segment(text)
 
     def segment_with_perceptron_states(self, text: str) -> List[Tuple[str, str]]:
         if not self.perceptron_segmentor.is_trained():
-            raise RuntimeError("Perceptron model has not been trained. Call train_perceptron() or load_perceptron_model() first.")
+            raise RuntimeError(
+                "Perceptron model has not been trained. Call train_perceptron() or load_perceptron_model() first."
+            )
         return self.perceptron_segmentor.segment_with_states(text)
 
     def get_perceptron_model_info(self) -> dict:
@@ -505,7 +545,9 @@ class LatticeSegmentorManager:
     def set_word_frequency(self, freq_dict: Dict[str, int]) -> None:
         self.lattice_segmentor.set_word_frequency(freq_dict)
 
-    def get_all_segmentations(self, text: str, max_results: int = 10) -> List[List[str]]:
+    def get_all_segmentations(
+        self, text: str, max_results: int = 10
+    ) -> List[List[str]]:
         return self.lattice_segmentor.get_all_segmentations(text, max_results)
 
     def detect_ambiguity(self, text: str) -> List[Dict]:
@@ -562,7 +604,7 @@ class NewWordDetectorManager:
         corpus: List[str],
         min_freq: int = 5,
         min_pmi: float = 1.0,
-        min_entropy: float = 0.5
+        min_entropy: float = 0.5,
     ) -> None:
         self.new_word_detector.min_freq = min_freq
         self.new_word_detector.min_pmi = min_pmi
@@ -572,10 +614,10 @@ class NewWordDetectorManager:
     def train_from_file(
         self,
         filepath: str,
-        encoding: str = 'utf-8',
+        encoding: str = "utf-8",
         min_freq: int = 5,
         min_pmi: float = 1.0,
-        min_entropy: float = 0.5
+        min_entropy: float = 0.5,
     ) -> None:
         self.new_word_detector.min_freq = min_freq
         self.new_word_detector.min_pmi = min_pmi
@@ -587,7 +629,7 @@ class NewWordDetectorManager:
         top_k: int = 100,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> List[Tuple[str, Dict[str, float]]]:
         return self.new_word_detector.detect(top_k, min_freq, min_pmi, min_entropy)
 
@@ -597,9 +639,11 @@ class NewWordDetectorManager:
         top_k: int = 20,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> List[Tuple[str, Dict[str, float]]]:
-        return self.new_word_detector.detect_from_text(text, top_k, min_freq, min_pmi, min_entropy)
+        return self.new_word_detector.detect_from_text(
+            text, top_k, min_freq, min_pmi, min_entropy
+        )
 
     def get_word_score(self, word: str) -> Dict[str, float]:
         return self.new_word_detector.get_word_score(word)
@@ -620,7 +664,7 @@ class NewWordDetectorManager:
         min_pmi: Optional[float] = None,
         min_entropy: Optional[float] = None,
         pos_tag: Optional[str] = None,
-        weight: float = 1.0
+        weight: float = 1.0,
     ) -> List[Tuple[str, Dict[str, float]]]:
         return self.new_word_detector.auto_extend_dictionary(
             dictionary,
@@ -629,7 +673,7 @@ class NewWordDetectorManager:
             min_pmi=min_pmi,
             min_entropy=min_entropy,
             pos_tag=pos_tag,
-            weight=weight
+            weight=weight,
         )
 
     def is_trained(self) -> bool:
@@ -642,7 +686,7 @@ class NewWordDetectorManager:
         self,
         min_freq: Optional[int] = None,
         min_pmi: Optional[float] = None,
-        min_entropy: Optional[float] = None
+        min_entropy: Optional[float] = None,
     ) -> None:
         self.new_word_detector.set_thresholds(min_freq, min_pmi, min_entropy)
 
@@ -659,7 +703,7 @@ class HybridSegmentorManager:
         crf_segmentor: Optional[CRFSegmentor] = None,
         perceptron_segmentor: Optional[PerceptronSegmentor] = None,
         lattice_segmentor: Optional[LatticeSegmentor] = None,
-        lattice_segmentor_provider: Optional[callable] = None
+        lattice_segmentor_provider: Optional[callable] = None,
     ):
         self._hybrid_config = hybrid_config
         self._hybrid_segmentor: Optional[HybridSegmentor] = None
@@ -677,8 +721,7 @@ class HybridSegmentorManager:
     def _init_hybrid_segmentor(self) -> None:
         config = self._hybrid_config or HybridConfig()
         self._hybrid_segmentor = HybridSegmentor(
-            dictionary=self._dictionary,
-            config=config
+            dictionary=self._dictionary, config=config
         )
 
         if self._hmm_segmentor and self._hmm_segmentor.is_trained():
@@ -728,7 +771,7 @@ class HybridSegmentorManager:
     def get_config(self) -> Optional[HybridConfig]:
         return self._hybrid_config
 
-    def load_dl_model(self, model_path: str, model_type: str = 'bert') -> bool:
+    def load_dl_model(self, model_path: str, model_type: str = "bert") -> bool:
         if self._hybrid_segmentor is None:
             self._init_hybrid_segmentor()
 
@@ -739,7 +782,7 @@ class HybridSegmentorManager:
         hmm_segmentor: Optional[HMMSegmentor] = None,
         crf_segmentor: Optional[CRFSegmentor] = None,
         perceptron_segmentor: Optional[PerceptronSegmentor] = None,
-        lattice_segmentor: Optional[LatticeSegmentor] = None
+        lattice_segmentor: Optional[LatticeSegmentor] = None,
     ) -> None:
         if self._hybrid_segmentor is None:
             return
