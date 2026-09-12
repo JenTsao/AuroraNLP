@@ -149,6 +149,7 @@ class DictionaryVersionManager:
         os.makedirs(self.storage_dir, exist_ok=True)
         self.versions: Dict[str, DictionaryVersion] = {}
         self.current_version: Optional[str] = None
+        self._commit_order: List[str] = []
         self._load_versions()
     
     def _load_versions(self):
@@ -164,10 +165,11 @@ class DictionaryVersionManager:
             except Exception as e:
                 print(f"加载版本文件 {file_name} 失败: {e}")
         
-        # 按时间戳排序，最新的版本作为当前版本
+        # 按时间戳排序恢复提交顺序，最新的版本作为当前版本
         if self.versions:
-            sorted_versions = sorted(self.versions.values(), key=lambda v: v.timestamp, reverse=True)
-            self.current_version = sorted_versions[0].version_id
+            sorted_versions = sorted(self.versions.values(), key=lambda v: v.timestamp)
+            self._commit_order = [v.version_id for v in sorted_versions]
+            self.current_version = self._commit_order[-1] if self._commit_order else None
     
     def _save_version(self, version: DictionaryVersion):
         """保存版本记录"""
@@ -229,6 +231,7 @@ class DictionaryVersionManager:
         
         # 保存版本
         self.versions[version_id] = version
+        self._commit_order.append(version_id)
         self._save_version(version)
         self.current_version = version_id
         
@@ -248,27 +251,26 @@ class DictionaryVersionManager:
     
     def rollback(self, steps: int, dictionary) -> str:
         """回滚到之前的版本"""
-        if not self.versions or not self.current_version:
+        if not self._commit_order or not self.current_version:
             raise ValueError("没有版本记录")
         
-        # 按时间戳排序版本
-        sorted_versions = sorted(self.versions.values(), key=lambda v: v.timestamp, reverse=True)
-        current_index = next((i for i, v in enumerate(sorted_versions) if v.version_id == self.current_version), -1)
+        # 使用提交顺序（按时间升序，最新在后）
+        current_index = self._commit_order.index(self.current_version) if self.current_version in self._commit_order else -1
         
         if current_index == -1:
             raise ValueError("当前版本未找到")
         
-        target_index = current_index + steps
-        if target_index >= len(sorted_versions):
+        target_index = current_index - steps
+        if target_index < 0:
             raise ValueError("回滚步数过多")
         
-        target_version = sorted_versions[target_index]
+        target_version = self.versions[self._commit_order[target_index]]
         self.checkout(target_version.version_id, dictionary)
         return target_version.version_id
     
     def get_version_history(self) -> List[DictionaryVersion]:
-        """获取版本历史"""
-        return sorted(self.versions.values(), key=lambda v: v.timestamp, reverse=True)
+        """获取版本历史（按提交顺序，最新在后）"""
+        return [self.versions[vid] for vid in self._commit_order if vid in self.versions]
     
     def get_version_info(self, version_id: str) -> Optional[DictionaryVersion]:
         """获取版本信息"""
