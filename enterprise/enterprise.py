@@ -63,16 +63,16 @@ class StructuredLogRecord:
         level: LogLevel,
         message: str,
         logger_name: str = "auroranlp",
-        timestamp: Optional[float] = None,
-        extra: Optional[Dict[str, Any]] = None,
-        context: Optional[Dict[str, Any]] = None,
-        exception: Optional[BaseException] = None,
-        source_file: Optional[str] = None,
-        source_line: Optional[int] = None,
-        source_func: Optional[str] = None,
-        request_id: Optional[str] = None,
-        trace_id: Optional[str] = None,
-        span_id: Optional[str] = None,
+        timestamp: float | None = None,
+        extra: dict[str, Any] | None = None,
+        context: dict[str, Any] | None = None,
+        exception: BaseException | None = None,
+        source_file: str | None = None,
+        source_line: int | None = None,
+        source_func: str | None = None,
+        request_id: str | None = None,
+        trace_id: str | None = None,
+        span_id: str | None = None,
     ):
         self.level = level
         self.message = message
@@ -88,9 +88,9 @@ class StructuredLogRecord:
         self.trace_id = trace_id
         self.span_id = span_id
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         """转换为字典"""
-        result: Dict[str, Any] = {
+        result: dict[str, Any] = {
             "timestamp": datetime.fromtimestamp(
                 self.timestamp, tz=timezone.utc
             ).isoformat(),
@@ -379,7 +379,7 @@ class MemoryLogHandler(LogHandler):
     def close(self) -> None:
         self._records.clear()
 
-    def get_records(self) -> List[StructuredLogRecord]:
+    def get_records(self) -> list[StructuredLogRecord]:
         return list(self._records)
 
     def clear(self) -> None:
@@ -447,20 +447,20 @@ class Logger:
         logger.error("处理失败", error_code=500, extra={"detail": "timeout"})
     """
 
-    _global_context: Dict[str, Any] = {}
+    _global_context: dict[str, Any] = {}
     _global_context_lock = threading.RLock()
 
     def __init__(
         self,
         name: str = "auroranlp",
         level: LogLevel = LogLevel.INFO,
-        handlers: Optional[List[LogHandler]] = None,
+        handlers: list[LogHandler] | None = None,
     ):
         self._name = name
         self._level = level
-        self._handlers: List[LogHandler] = handlers or []
-        self._filters: List[LogFilter] = []
-        self._context: Dict[str, Any] = {}
+        self._handlers: list[LogHandler] = handlers or []
+        self._filters: list[LogFilter] = []
+        self._context: dict[str, Any] = {}
         self._lock = threading.RLock()
 
     @property
@@ -519,8 +519,8 @@ class Logger:
         self,
         level: LogLevel,
         message: str,
-        extra: Optional[Dict[str, Any]] = None,
-        exception: Optional[BaseException] = None,
+        extra: dict[str, Any] | None = None,
+        exception: BaseException | None = None,
     ) -> StructuredLogRecord:
         """构建结构化日志记录"""
         # 获取调用者信息
@@ -530,7 +530,7 @@ class Logger:
         source_func = frame.name if frame else None
 
         # 合并上下文
-        merged_context: Dict[str, Any] = {}
+        merged_context: dict[str, Any] = {}
         with self._global_context_lock:
             merged_context.update(self._global_context)
         merged_context.update(self._context)
@@ -551,8 +551,8 @@ class Logger:
         self,
         level: LogLevel,
         message: str,
-        extra: Optional[Dict[str, Any]] = None,
-        exception: Optional[BaseException] = None,
+        extra: dict[str, Any] | None = None,
+        exception: BaseException | None = None,
     ) -> None:
         """核心日志方法"""
         if level < self._level:
@@ -584,7 +584,7 @@ class Logger:
     def error(
         self,
         message: str,
-        exception: Optional[BaseException] = None,
+        exception: BaseException | None = None,
         **extra: Any,
     ) -> None:
         self._log(LogLevel.ERROR, message, extra, exception)
@@ -592,7 +592,7 @@ class Logger:
     def fatal(
         self,
         message: str,
-        exception: Optional[BaseException] = None,
+        exception: BaseException | None = None,
         **extra: Any,
     ) -> None:
         self._log(LogLevel.FATAL, message, extra, exception)
@@ -600,7 +600,7 @@ class Logger:
     def critical(
         self,
         message: str,
-        exception: Optional[BaseException] = None,
+        exception: BaseException | None = None,
         **extra: Any,
     ) -> None:
         self._log(LogLevel.CRITICAL, message, extra, exception)
@@ -618,10 +618,10 @@ class LogManager:
     集中管理所有Logger实例，提供统一配置。
     """
 
-    _instance: Optional["LogManager"] = None
+    _instance: LogManager | None = None
     _instance_lock = threading.RLock()
 
-    def __new__(cls) -> "LogManager":
+    def __new__(cls) -> LogManager:
         with cls._instance_lock:
             if cls._instance is None:
                 cls._instance = super().__new__(cls)
@@ -631,9 +631,9 @@ class LogManager:
     def __init__(self):
         if self._initialized:
             return
-        self._loggers: Dict[str, Logger] = {}
-        self._global_handlers: List[LogHandler] = []
-        self._global_filters: List[LogFilter] = []
+        self._loggers: dict[str, Logger] = {}
+        self._global_handlers: list[LogHandler] = []
+        self._global_filters: list[LogFilter] = []
         self._default_level = LogLevel.INFO
         self._lock = threading.RLock()
         self._initialized = True
@@ -712,7 +712,7 @@ class HealthCheck(ABC):
     def name(self) -> str: ...
 
     @abstractmethod
-    def check(self) -> Tuple[HealthStatus, Optional[str], Optional[Dict[str, Any]]]: ...
+    def check(self) -> tuple[HealthStatus, str | None, dict[str, Any] | None]: ...
 
 
 class MemoryHealthCheck(HealthCheck):
@@ -726,7 +726,7 @@ class MemoryHealthCheck(HealthCheck):
     def name(self) -> str:
         return "memory"
 
-    def check(self) -> Tuple[HealthStatus, Optional[str], Optional[Dict[str, Any]]]:
+    def check(self) -> tuple[HealthStatus, str | None, dict[str, Any] | None]:
         try:
             import gc
 
@@ -770,7 +770,7 @@ class DiskHealthCheck(HealthCheck):
     def name(self) -> str:
         return "disk"
 
-    def check(self) -> Tuple[HealthStatus, Optional[str], Optional[Dict[str, Any]]]:
+    def check(self) -> tuple[HealthStatus, str | None, dict[str, Any] | None]:
         try:
             statvfs = os.statvfs(self._path)
             free = statvfs.f_frsize * statvfs.f_bfree
@@ -814,8 +814,8 @@ class HealthChecker:
             self,
             name: str,
             status: HealthStatus,
-            message: Optional[str] = None,
-            metadata: Optional[Dict[str, Any]] = None,
+            message: str | None = None,
+            metadata: dict[str, Any] | None = None,
             duration_ms: float = 0.0,
         ):
             self.name = name
@@ -824,7 +824,7 @@ class HealthChecker:
             self.metadata = metadata
             self.duration_ms = duration_ms
 
-        def to_dict(self) -> Dict[str, Any]:
+        def to_dict(self) -> dict[str, Any]:
             return {
                 "name": self.name,
                 "status": self.status.value,
@@ -839,9 +839,9 @@ class HealthChecker:
         def __init__(
             self,
             overall_status: HealthStatus,
-            checks: List["HealthChecker.CheckResult"],
-            version: Optional[str] = None,
-            uptime_seconds: Optional[float] = None,
+            checks: list[HealthChecker.CheckResult],
+            version: str | None = None,
+            uptime_seconds: float | None = None,
         ):
             self.overall_status = overall_status
             self.checks = checks
@@ -849,7 +849,7 @@ class HealthChecker:
             self.uptime_seconds = uptime_seconds
             self.timestamp = time.time()
 
-        def to_dict(self) -> Dict[str, Any]:
+        def to_dict(self) -> dict[str, Any]:
             return {
                 "status": self.overall_status.value,
                 "timestamp": self.timestamp,
@@ -865,20 +865,20 @@ class HealthChecker:
 
     def __init__(
         self,
-        version: Optional[str] = None,
-        start_time: Optional[float] = None,
+        version: str | None = None,
+        start_time: float | None = None,
     ):
-        self._checks: Dict[str, HealthCheck] = {}
+        self._checks: dict[str, HealthCheck] = {}
         self._version = version
         self._start_time = start_time or time.time()
         self._lock = threading.RLock()
 
     @property
-    def version(self) -> Optional[str]:
+    def version(self) -> str | None:
         return self._version
 
     @version.setter
-    def version(self, value: Optional[str]):
+    def version(self, value: str | None):
         self._version = value
 
     @property
@@ -928,7 +928,7 @@ class HealthChecker:
         """Readiness 探针：检测服务是否可接收请求"""
         return self.check_liveness()
 
-    def _compute_overall(self, results: List[CheckResult]) -> HealthStatus:
+    def _compute_overall(self, results: list[CheckResult]) -> HealthStatus:
         if not results:
             return HealthStatus.HEALTHY
         has_unhealthy = any(r.status == HealthStatus.UNHEALTHY for r in results)
@@ -963,7 +963,7 @@ class PrometheusMetric:
         name: str,
         type: MetricType,
         help: str,
-        labels: Optional[Dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
     ):
         self._name = name
         self._type = type
@@ -986,7 +986,7 @@ class PrometheusMetric:
     @abstractmethod
     def to_exposition(self) -> str: ...
 
-    def _format_labels(self, additional: Optional[Dict[str, str]] = None) -> str:
+    def _format_labels(self, additional: dict[str, str] | None = None) -> str:
         merged = {**self._labels, **(additional or {})}
         if not merged:
             return ""
@@ -1001,13 +1001,13 @@ class PrometheusCounter(PrometheusMetric):
         self,
         name: str,
         help: str,
-        labels: Optional[Dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
     ):
         super().__init__(name, MetricType.COUNTER, help, labels)
         self._value = 0.0
-        self._values: Dict[str, float] = {}
+        self._values: dict[str, float] = {}
 
-    def inc(self, amount: float = 1.0, labels: Optional[Dict[str, str]] = None) -> None:
+    def inc(self, amount: float = 1.0, labels: dict[str, str] | None = None) -> None:
         if amount < 0:
             raise ValueError("Counter 只能增加")
         with self._lock:
@@ -1039,13 +1039,13 @@ class PrometheusGauge(PrometheusMetric):
         self,
         name: str,
         help: str,
-        labels: Optional[Dict[str, str]] = None,
+        labels: dict[str, str] | None = None,
     ):
         super().__init__(name, MetricType.GAUGE, help, labels)
         self._value = 0.0
-        self._values: Dict[str, float] = {}
+        self._values: dict[str, float] = {}
 
-    def set(self, value: float, labels: Optional[Dict[str, str]] = None) -> None:
+    def set(self, value: float, labels: dict[str, str] | None = None) -> None:
         with self._lock:
             if labels:
                 key = tuple(sorted(labels.items()))
@@ -1053,7 +1053,7 @@ class PrometheusGauge(PrometheusMetric):
             else:
                 self._value = value
 
-    def inc(self, amount: float = 1.0, labels: Optional[Dict[str, str]] = None) -> None:
+    def inc(self, amount: float = 1.0, labels: dict[str, str] | None = None) -> None:
         with self._lock:
             if labels:
                 key = tuple(sorted(labels.items()))
@@ -1061,7 +1061,7 @@ class PrometheusGauge(PrometheusMetric):
             else:
                 self._value += amount
 
-    def dec(self, amount: float = 1.0, labels: Optional[Dict[str, str]] = None) -> None:
+    def dec(self, amount: float = 1.0, labels: dict[str, str] | None = None) -> None:
         self.inc(-amount, labels)
 
     def to_exposition(self) -> str:
@@ -1092,7 +1092,7 @@ class PrometheusRegistry:
     """
 
     def __init__(self):
-        self._metrics: Dict[str, PrometheusMetric] = {}
+        self._metrics: dict[str, PrometheusMetric] = {}
         self._lock = threading.RLock()
 
     def register(self, metric: PrometheusMetric) -> None:
@@ -1106,7 +1106,7 @@ class PrometheusRegistry:
             if name in self._metrics:
                 del self._metrics[name]
 
-    def get_metric(self, name: str) -> Optional[PrometheusMetric]:
+    def get_metric(self, name: str) -> PrometheusMetric | None:
         """获取指标"""
         with self._lock:
             return self._metrics.get(name)
@@ -1126,7 +1126,7 @@ class PrometheusRegistry:
 def generate_dockerfile_content(
     base_image: str = "python:3.12-slim",
     work_dir: str = "/app",
-    extra_deps: Optional[List[str]] = None,
+    extra_deps: list[str] | None = None,
 ) -> str:
     """生成 Dockerfile 内容"""
     deps = extra_deps or []
@@ -1570,9 +1570,9 @@ class Token:
         self,
         token_type: TokenType,
         value: str,
-        user_id: Optional[str] = None,
-        permissions: Optional[list[Permission]] = None,
-        expires_at: Optional[float] = None,
+        user_id: str | None = None,
+        permissions: list[Permission] | None = None,
+        expires_at: float | None = None,
     ):
         self.token_type = token_type
         self.value = value
@@ -1604,7 +1604,7 @@ class AuthContext:
         cls._local.token = token
 
     @classmethod
-    def get_token(cls) -> Optional[Token]:
+    def get_token(cls) -> Token | None:
         """获取当前请求的令牌"""
         return getattr(cls._local, "token", None)
 
@@ -1633,7 +1633,7 @@ class Authenticator:
             if token_value in self._tokens:
                 del self._tokens[token_value]
 
-    def authenticate(self, token_value: str) -> Optional[Token]:
+    def authenticate(self, token_value: str) -> Token | None:
         """验证令牌，返回Token对象或None"""
         with self._lock:
             token = self._tokens.get(token_value)
@@ -1645,7 +1645,7 @@ class Authenticator:
 class Authorizer:
     """授权器，检查权限"""
 
-    def __init__(self, authenticator: Optional[Authenticator] = None):
+    def __init__(self, authenticator: Authenticator | None = None):
         self.authenticator = authenticator
 
     def has_permission(self, token: Token, permission: Permission) -> bool:
@@ -1796,7 +1796,7 @@ class ConfigManager:
 
     def __init__(self):
         self._stores: dict[str, Any] = {}
-        self._default_store: Optional[str] = None
+        self._default_store: str | None = None
         self._lock = threading.Lock()
 
     def add_store(self, name: str, store, is_default: bool = False):
@@ -1807,19 +1807,19 @@ class ConfigManager:
                 self._default_store = name
 
     def get(
-        self, key: str, default: Any = None, store_name: Optional[str] = None
+        self, key: str, default: Any = None, store_name: str | None = None
     ) -> Any:
         """获取配置"""
         store = self._get_store(store_name)
         return store.get(key, default) if store else default
 
-    def set(self, key: str, value: Any, store_name: Optional[str] = None):
+    def set(self, key: str, value: Any, store_name: str | None = None):
         """设置配置"""
         store = self._get_store(store_name)
         if store and hasattr(store, "set"):
             store.set(key, value)
 
-    def _get_store(self, name: Optional[str]):
+    def _get_store(self, name: str | None):
         """获取配置存储"""
         with self._lock:
             target = name or self._default_store
@@ -1841,7 +1841,7 @@ class DeploymentState(Enum):
 class TrafficRule:
     """流量规则，定义如何分配流量"""
 
-    def __init__(self, percentage: float, key: Optional[str] = None):
+    def __init__(self, percentage: float, key: str | None = None):
         self.percentage = percentage
         self.key = key or "random"
 
@@ -1853,8 +1853,8 @@ class DeploymentVersion:
         self,
         version_id: str,
         state: DeploymentState,
-        traffic_rule: Optional[TrafficRule] = None,
-        metadata: Optional[dict[str, Any]] = None,
+        traffic_rule: TrafficRule | None = None,
+        metadata: dict[str, Any] | None = None,
     ):
         self.version_id = version_id
         self.state = state
@@ -1876,11 +1876,11 @@ class CanaryDeployer:
 
     def __init__(self):
         self._versions: dict[str, DeploymentVersion] = {}
-        self._current_stable: Optional[str] = None
+        self._current_stable: str | None = None
         self._lock = threading.Lock()
 
     def deploy_version(
-        self, version_id: str, metadata: Optional[dict[str, Any]] = None
+        self, version_id: str, metadata: dict[str, Any] | None = None
     ):
         """部署新版本作为稳定版本"""
         with self._lock:
@@ -1900,7 +1900,7 @@ class CanaryDeployer:
         self,
         version_id: str,
         percentage: float,
-        metadata: Optional[dict[str, Any]] = None,
+        metadata: dict[str, Any] | None = None,
     ):
         """部署灰度版本，分配指定百分比的流量"""
         with self._lock:
@@ -1936,7 +1936,7 @@ class CanaryDeployer:
                 if self._current_stable:
                     self._versions[self._current_stable].traffic_rule.percentage = 100.0
 
-    def select_version(self, request_key: Optional[str] = None) -> Optional[str]:
+    def select_version(self, request_key: str | None = None) -> str | None:
         """根据规则选择处理请求的版本"""
         with self._lock:
             rand_val = hash(request_key or str(time.time())) % 10000 / 100.0
@@ -2000,7 +2000,7 @@ class DataBackupManager:
         self._backups: list[dict[str, Any]] = []
 
     def create_backup(
-        self, source_path: str, backup_type: BackupType, name: Optional[str] = None
+        self, source_path: str, backup_type: BackupType, name: str | None = None
     ) -> str:
         """创建备份"""
         backup_name = name or f"backup_{int(time.time())}"
@@ -2063,7 +2063,7 @@ class FailoverController:
     def __init__(self, strategy: FailoverStrategy = FailoverStrategy.AUTOMATIC):
         self.strategy = strategy
         self._nodes: dict[str, ClusterNode] = {}
-        self._current_master: Optional[str] = None
+        self._current_master: str | None = None
         self._lock = threading.Lock()
 
     def register_node(self, node: ClusterNode):
@@ -2078,7 +2078,7 @@ class FailoverController:
         with self._lock:
             return list(self._nodes.values())
 
-    def get_current_master(self) -> Optional[ClusterNode]:
+    def get_current_master(self) -> ClusterNode | None:
         """获取当前主节点"""
         with self._lock:
             return self._nodes.get(self._current_master)
@@ -2089,7 +2089,7 @@ class FailoverController:
             if node_id in self._nodes:
                 self._nodes[node_id].heartbeat()
 
-    def failover(self) -> Optional[ClusterNode]:
+    def failover(self) -> ClusterNode | None:
         """执行故障转移，选举新的主节点"""
         with self._lock:
             if self.strategy == FailoverStrategy.NONE:
