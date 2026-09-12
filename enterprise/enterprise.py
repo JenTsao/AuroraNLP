@@ -15,6 +15,7 @@ AuroraNLP 企业级功能模块 - 阶段六
 
 约束：零外部依赖，纯Python标准库实现
 """
+
 from __future__ import annotations
 
 import json
@@ -1806,9 +1807,7 @@ class ConfigManager:
             if is_default or self._default_store is None:
                 self._default_store = name
 
-    def get(
-        self, key: str, default: Any = None, store_name: str | None = None
-    ) -> Any:
+    def get(self, key: str, default: Any = None, store_name: str | None = None) -> Any:
         """获取配置"""
         store = self._get_store(store_name)
         return store.get(key, default) if store else default
@@ -1879,9 +1878,7 @@ class CanaryDeployer:
         self._current_stable: str | None = None
         self._lock = threading.Lock()
 
-    def deploy_version(
-        self, version_id: str, metadata: dict[str, Any] | None = None
-    ):
+    def deploy_version(self, version_id: str, metadata: dict[str, Any] | None = None):
         """部署新版本作为稳定版本"""
         with self._lock:
             version = DeploymentVersion(
